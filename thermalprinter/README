@@ -1,0 +1,9 @@
+Build an internet-connected thermal printer with an electric imp. 
+
+Contents:
+1. electric imp device firmware (thermalPrinter.nut): this should be pasted into the "device" field of your model in the electric imp IDE. This code runs on the imp card, and is responsible for actually sending serial data over the wire to the printer.
+
+2.  electric imp agent code (thermalPrinter-agent.nut): this should be pasted into the "agent" field of your model in the electric imp IDE. This code runs in a VM inside the electric imp cloud and communicates with the imp card. The agent is responsible for receiving and parsing new messages via HTTP, as well as sending out responses to those HTTP requests.
+
+3. demo website (index.html): this is a small page that gives your printer a web-based UI. You'll need to put it on a server of some sort to use it from anywhere, but you can run it locally and it will (in most cases) work. Note that the page depends on bootstrap (http://twitter.github.com/bootstrap/)
+

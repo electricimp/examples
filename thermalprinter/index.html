@@ -1,0 +1,207 @@
+/*
+Copyright (C) 2013 electric imp, inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
+and associated documentation files (the "Software"), to deal in the Software without restriction, 
+including without limitation the rights to use, copy, modify, merge, publish, distribute, 
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is 
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial 
+portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE 
+AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+<!DOCTYPE html>
+<html lang="en">
+<html>
+	<head>
+		<title>IMPrinter</title>
+		<meta charset="utf-8">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <meta name="description" content="">
+	    <meta name="author" content="">
+	    <!-- Note that this page requires bootstrap (http://twitter.github.com/bootstrap/) -->
+		<link href="../bootstrap/css/bootstrap.min.css" rel="stylesheet">
+		<style>
+			#typer {
+				height:40px;
+				font-size:160%;
+				margin:20 0 20 0;
+			}
+
+			.centered {
+				text-align:center;
+				padding:40px;
+			}
+			.btn-bar {
+				height: 20px;
+			}
+
+		</style>
+	</head>
+	<body>
+
+		<div class="container">
+			<div class="span12 centered">
+
+				<h2>Electric Imp Printer</h2>
+
+				<!-- Picture of the imp printer goes here -->
+				<img src="./imPrinter.jpg" width=300 height=265 alt="the imPrinter">
+
+				<!-- print success / failure indicator goes here -->
+				<span id="printSuccess" style="padding-top: 20px; display: none;"><div class="alert alert-success"><h4>Success!</h4> Your message was printed</div></span>
+				<span id="printFail" style="padding-top: 20 px; display: none;"><div class="alert alert-error"><h4>Whoops!</h4> Something went wrong printing your message</div></span>
+
+				<form>
+					<!-- Here is the printer text formatting toolbar -->
+					<div class="btn-toolbar">
+						<div class="btn-group" data-toggle="buttons-radio">
+						    <a class="btn btn-bar active" href="#" onClick="setJustLeft()"><i class="icon-align-left"></i></a>
+						    <a class="btn btn-bar" href="#" onClick="setJustCntr()"><i class="icon-align-center"></i></a>
+						    <a class="btn btn-bar" href="#" onClick="setJustRight()"><i class="icon-align-right"></i></a>
+						</div>
+						<div class="btn-group" data-toggle="button">
+						    <a class="btn btn-bar" href="#" onClick="toggleBold()"><i class="icon-bold"></i></a>
+						    <a class="btn btn-bar" href="#" onClick="toggleUl()"><u>U</u></a>
+						    <a class="btn btn-bar" href="#" onClick="toggleDelLine()"><del> deleted </del></a>
+						    <a class="btn btn-bar btn-inverse" href="#" onClick="toggleInv()">inverse</a>
+						    <a class="btn btn-bar" href="#" onClick="toggleUpdown()">upside-down</a>
+						</div>
+						<div class="btn-group" data-toggle="button">
+						    <a class="btn btn-bar" href="#" onClick="printLogo()"><i class="icon-camera"></i></a>
+						</div>
+					</div>
+					<!-- Here is where you actually type your message and hit print -->
+					<p><input class="input-xxlarge" id="typer" name="message" type=text placeholder="Your message here..." maxsize=400></p>
+					<p><input class="btn btn-large btn-success" id="send" onClick="sendMessage(this.form)" value="Print"></p>
+				</form>
+			</div>
+		</div>
+
+		<script src="../bootstrap/js/bootstrap.js"></script>
+		<script> 
+			// this nice little table holds all of the data we pass to the
+			// electric imp agent when we ask it to print
+			settings = {
+				justify: "left",
+				bold: false,
+				underline: false,
+				deleteLine: false,
+				reverse: false,
+				updown: false,
+				text: "",
+			}
+
+			// this is where you put your agent URL. You can find your URL under
+			// "device settings" in the electric imp IDE
+			impURL = "http://agent.electricimp.com/YOUR_UNIQUE_URL";
+
+			// this takes the text from the form, prepares it, makes JSON of the
+			// above printer settings table, and POSTs the whole thing to 
+			// your electric imp agent
+			function sendMessage(form) {
+				// grab the text from the html form and word-wrap it
+				settings.text = wordwrap(form.message.value, 31, "\n", true);
+				// create a new HTTP request object
+				if (window.XMLHttpRequest) {
+					request=new XMLHttpRequest();
+				} else {
+					// in case you're on internet explorer...
+					request=new ActiveXObject("Microsoft.XMLHTTP");
+				}
+				try {
+					// note that we POST the text message to a URL extention, "/text"
+					// images go to a separate extension (not implemented here)
+					request.open("POST", impURL+"/text", false);
+					// make JSON from the settings table
+					var json = JSON.stringify(settings);
+					console.log(json);
+					// send the POST
+					request.send(json);
+					console.log("Sent message to imp");
+					// check to see what we got back, and set the success or failure
+					// banner on the page appropriately
+					if (request.status == 200) {
+						document.getElementById('printSuccess').style.display = "block";
+						document.getElementById('printFail').style.display = "none";
+					} else {
+						document.getElementById('printSuccess').style.display = "none";
+						document.getElementById('printFail').style.display = "block";
+					}
+				} catch(err) {
+					console.log("Error sending command to imp");
+					document.getElementById('printSuccess').style.display = "none";
+					document.getElementById('printFail').style.display = "block";
+				}
+			}
+
+			function printLogo() {
+				if (window.XMLHttpRequest) {
+					request=new XMLHttpRequest();
+				} else {
+					// in case you're on internet explorer...
+					request=new ActiveXObject("Microsoft.XMLHTTP");
+				}
+				// print the imp logo by sending a generic request to /logo
+				request.open("GET", impURL+"/logo", false);
+				// make JSON from the settings table
+				request.send(json);
+				console.log("Sent logo request to imp");
+			}
+
+			// A handy JS implementation of PHP's "wordwrap" function
+			// to make our imp firmware and agent nice and simple, we handle 
+			// word-wrapping to the printer's paper width out here, client-side
+			function wordwrap( str, width, brk, cut ) {
+			    brk = brk || '\n';
+			    width = width || 75;
+			    cut = cut || false;
+			    if (!str) { return str; }
+			    var regex = '.{1,' +width+ '}(\\s|$)' + (cut ? '|.{' +width+ '}|.+$' : '|\\S+?(\\s|$)');
+			    return str.match( RegExp(regex, 'g') ).join( brk );
+			}
+
+			// hooks for the various buttons in the text toolbar to change
+			// the parameters passed to the agent when we hit "print"
+			function setJustLeft() {
+				settings.justify = "left";
+				console.log("set left justify");
+			}
+			function setJustRight() {
+				settings.justify = "right";
+				console.log("set right justify");
+			}
+			function setJustCntr() {
+				settings.justify = "center";
+				console.log("set centered");
+			}
+			function toggleBold() {
+				settings.bold = !settings.bold;
+				console.log("bold set to "+settings.bold);
+			}
+			function toggleUl() {
+				settings.underline = !settings.underline;
+				console.log("underline set to "+settings.underline);
+			}
+			function toggleDelLine() {
+				settings.deleteLine = !settings.deleteLine;
+				console.log("strikethrough set to "+settings.deleteLine);
+			}
+			function toggleInv() {
+				settings.reverse = !settings.reverse;
+				console.log("inverted set to "+settings.reverse);
+			}
+			function toggleUpdown() {
+				settings.updown = !settings.updown;
+				console.log("updown set to "+settings.updown);
+			}
+		</script>
+	</body>
+</html>
