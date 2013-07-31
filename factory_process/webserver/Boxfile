@@ -1,0 +1,16 @@
+db1:
+  name: devices
+web1:
+  name: codeigniter
+  php_extensions:
+    - mysqli
+    - mysql
+    - curl
+    - imagick
+    - json
+  after_build:
+    # Move pagoda config file to app/config
+    - "mv pagoda/database.php application/config/database.php"
+  shared_writable_dirs: 
+    - application/cache
+    - application/logs

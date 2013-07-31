@@ -1,0 +1,4 @@
+web1:
+  before_deploy:
+    # Import sample database file
+    - "mysql -h $DB1_HOST --port $DB1_PORT -u $DB1_USER -p$DB1_PASS $DB1_NAME < /var/www/pagoda/ci-devices-setup.sql"
