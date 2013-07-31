@@ -7,3 +7,15 @@ The example factory blinkup process documented here involves the following compo
 4/ Output device, such as a printer, web page or LED display, to print out the successful enrollments
 
 
+The event flow looks something like this:
+-----------------------------------------
+Factory blinkup fixture
+    -->  Target device  
+             -->  Enrollment webhook  
+             -->  Fixture results webhook - agent.send()
+                      -->  Printer agent  
+                               -->  Google Charts (QR code generator)
+                               -->  Printout
+-----------------------------------------
+
+
