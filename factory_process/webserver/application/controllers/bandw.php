@@ -19,6 +19,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 class BandW extends CI_Controller {
 
+	// Generates a binary stream of data representing a version of the provided image (url) that has been
+	// stripped down to black-and-white and scaled to the provided size.
 	public function index()
 	{
 		$height = isset($_REQUEST['height']) ? $_REQUEST['height'] : 384;

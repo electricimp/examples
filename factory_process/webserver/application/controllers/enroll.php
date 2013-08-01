@@ -26,6 +26,7 @@ class Enroll extends CI_Controller {
 		$device_id = element("device_id", $_REQUEST);
 		if ($device_id) {
 
+			// Writes the enrollment data to the database and logs
 			$this->db->set('when', 'now()', false);
 			$this->db->set('device_id', $device_id);
 			$this->db->set('msg', "Blessing successful");

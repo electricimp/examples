@@ -27,6 +27,7 @@ class Database extends CI_Controller {
 	}
 
 
+	// Creates new tables in the database, clobbering the old data. Use with caution.
 	public function index()
 	{
 		// Logs table

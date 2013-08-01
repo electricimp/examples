@@ -26,6 +26,7 @@ class Blinkup extends CI_Controller {
 		$device_id = element("device_id", $_REQUEST);
 		if ($device_id) {
 
+			// Writes to the log and devices databases
 			$this->db->set('when', 'now()', false);
 			$this->db->set('device_id', $device_id);
 			$this->db->set('msg', "Blinkup successful");

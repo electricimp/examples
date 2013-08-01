@@ -41,7 +41,7 @@ http.onrequest(function(req, res) {
 
 
 function qr(barcode, text) {
-	local _url = "http://chart.apis.google.com/chart?cht=qr&chs=384x384&chld=H|0&" + http.urlencode({chl="barcode"});
+	local _url = "http://chart.apis.google.com/chart?cht=qr&chs=384x384&chld=H|0&" + http.urlencode({chl=barcode});
     local convertUrl = "http://devious-dorris.gopagoda.com/bandw";
     server.log("Loading url: " + _url);
 

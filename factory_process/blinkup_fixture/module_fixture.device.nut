@@ -72,7 +72,7 @@ switch (mac) {
                 hardware.pin9.write(1);
                 imp.wakeup(0.2, function() {
                     hardware.pin9.write(0);                    
-                    server.factoryblinkup(SSID, PASSWORD, hardware.pin9, BLINKUP_ACTIVEHIGH);
+                    server.factoryblinkup(SSID, PASSWORD, hardware.pin9, BLINKUP_ACTIVEHIGH | BLINKUP_FAST);
                     agent.send("testresult", {device_id = impeeid, mac = mac, msg = "Starting factory blinkup."})
                 })
             }

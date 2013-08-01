@@ -14,6 +14,11 @@ FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TOR
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
  
+/* 
+ * This is the driver software for the Adafruit A2 Micro panel thermal printer.
+ * http://www.adafruit.com/datasheets/A2-user%20manual.pdf
+ *
+ */
 
 imp.configure("Printer", [], []);
 server.log("Device: Printer Started");

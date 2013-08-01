@@ -29,7 +29,7 @@ class Test extends CI_Controller {
 
 	public function index()
 	{
-		// Output the data
+		// Output a sample of the content of the database to the screen.
 		$query1 = $this->db->query('SHOW TABLES');
 		foreach ($query1->result_array() as $table) {
 			echo "Table: " . $table['Tables_in_devices'] . "\n";

@@ -19,23 +19,33 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 class FactoryLog extends CI_Controller {
 
-	protected $agent = "http://agent.electricimp.com/_YFPEUUjNmE_";
+	protected $printer_agent = "http://agent.electricimp.com/_YFPEUUjNmE_";
 	public function index()
 	{
 		log_message("info", "factorylog: " . print_r($_REQUEST, true));
 		echo "OK\n";
 
+		// Extract the values from the urlencoded request
 		$device_id = element('device_id', $_REQUEST);
 		$mac = element('mac', $_REQUEST);
 		$success = element('success', $_REQUEST);
 		$passed = element('passed', $_REQUEST);
+
 		if ($success && $passed && $device_id && $mac) {
+
+			// Update the database with the mac address
+			$sql = "UPDATE devices
+					SET mac = ?
+					WHERE id = ?";
+			$this->db->query($sql, array($mac, $device_id));
+
+			// Send the information to the printer
 			$this->load->library('curl'); 
 			$printout = "Device ID: $device_id\n"
 			          . "Mac: $mac\n"
 					  . "Time: " . gmdate("Y-m-d H:i:s");
 			$json = json_encode(array("barcode" => $device_id, "text" => $printout));
-			$this->curl->simple_post($this->agent . "/qr", $json);
+			$this->curl->simple_post($this->printer_agent . "/qr", $json);
 		}
 
 	}
