@@ -25,7 +25,7 @@ class sensor {
     addr      = null;
     ready     = false;
     name      = "sensor";
-    static registry = {};
+    static sensorlist = {};
     
     constructor(_i2c=null, _pin_en_l=null, _pin_drain=null, _addr=null) {
         i2c = _i2c;
@@ -40,7 +40,7 @@ class sensor {
 
         // Test the sensor and if its alive then setup a handler to execute all functions of the class
         if (test()) {
-            registry[name] <- this;
+            sensorlist[name] <- this;
             agent.on(name, agent_event.bindenv(this));
         }
     }
@@ -88,14 +88,14 @@ class sensor {
             if (root == null) root = ::nv;
             foreach (k,v in root) {
                 if (typeof v == "array" || typeof v == "table") {
-                    server.log("NV: " + k + " => " + v)
+                    log("NV: " + k + " => " + v)
                     dump_nv(v);
                 } else {
-                    server.log("NV: " + k + " => " + v)
+                    log("NV: " + k + " => " + v)
                 }
             }
         } else {
-            server.log("NV: Not defined");
+            log("NV: Not defined");
         }
         
     }
@@ -115,14 +115,14 @@ class sensor {
     
     
 	function get_bootreason() {
-        // server.log("GET bootreason: " + get_nv("reason"));
+        // log("GET bootreason: " + get_nv("reason"));
         return get_nv("reason");
 	}
 
 
 	function set_bootreason(_reason = null) {
         set_nv("reason", _reason);
-        // server.log("SET bootreason to " + _reason);
+        // log("SET bootreason to " + _reason);
 	}
     
     function agent_event(data) {
@@ -147,7 +147,7 @@ class sensor {
             try {
                 method.acall(params);
             } catch (e) {
-                server.log(format("Exception while executing '%s.%s': %s", name, data.method, e))
+                log(format("Exception while executing '%s.%s': %s", name, data.method, e))
             }
         }
     }
@@ -171,10 +171,15 @@ class sensor {
 
 		server.log("Sleeping in " + delay + " for " + dur + ". Last wake reason: " + get_wake_reason());
 		imp.wakeup(delay, function() {
-			if (i2c) i2c.read(addr, lis3dh.INT1_SRC, 1); // Clear the interupt pin
-			if (i2c) i2c.read(addr, lis3dh.TAP_SRC, 1); // Clear the interupt pin
-			server.expectonlinein(dur);
-			imp.deepsleepfor(dur);
+			imp.onidle(function() {
+				// Clearing the interrupt pins like this is a bit hacky but it gets the job done.
+				// If squirrel had a destructor() function, I would prefer to do it there.
+				if (i2c) i2c.read(addr, lis3dh.INT1_SRC, 1); 
+				if (i2c) i2c.read(addr, lis3dh.TAP_SRC, 1); 
+
+				server.expectonlinein(dur);
+				imp.deepsleepfor(dur);
+			}.bindenv(this))
 		}.bindenv(this))
 
 	}
@@ -310,7 +315,7 @@ class lis3dh extends sensor {
 		axes.y <- (math.fabs(init_pos.y) < 0.5);
 		axes.z <- (math.fabs(init_pos.z) < 0.5);
 		axes.cfg <- ((axes.x ? 0x02 : 0x00) | (axes.y ? 0x08 : 0x00) | (axes.z ? 0x20 : 0x00)).tochar();
-		// server.log(format("Initial orientation:  X: %0.02f, Y: %0.02f, Z: %0.02f  =>  0x%02x", init_pos.x, init_pos.y, init_pos.z, axes.cfg[0]));
+		// log(format("Initial orientation:  X: %0.02f, Y: %0.02f, Z: %0.02f  =>  0x%02x", init_pos.x, init_pos.y, init_pos.z, axes.cfg[0]));
 
 		// Setup the accelerometer for sleep-polling
 		i2c.write(addr, CTRL_REG1 + "\xA7");		// Turn on the sensor, enable X, Y, and Z, ODR = 100 Hz
@@ -444,7 +449,7 @@ class lis3dh extends sensor {
 				local sign = (reason[0] & 0x08) == 0x08 ? -1 : 1;
                 
 				// Call the callback 
-				// server.log(format("Clickety clack: [X: %d, Y: %d, Z: %d, Sign: %d]", xtap, ytap, ztap, sign))
+				// log(format("Clickety clack: [X: %d, Y: %d, Z: %d, Sign: %d]", xtap, ytap, ztap, sign))
 				callback();
 			}
                 
@@ -696,7 +701,7 @@ class tsl2561 extends sensor {
 		// Round to 2 decimal places
 		lux = (lux*100).tointeger() / 100.0;
 
-        // server.log(format("Ch0: 0x%04X Ch1: 0x%04X Ratio: %f Lux: %f", ch0, ch1, ratio, lux));
+        // log(format("Ch0: 0x%04X Ch1: 0x%04X Ratio: %f Lux: %f", ch0, ch1, ratio, lux));
         return {lux = lux};
     }
 
@@ -786,76 +791,76 @@ class tmp112 extends sensor {
 
 
 	function print_conf(callback = null) {
-        server.log("/-----------------------------------------------\\");
+        log("/-----------------------------------------------\\");
 		local conf = i2c.read(addr, CONF_REG.tochar(), 2);
         if (conf == null) {
-            server.log("TMP112 not responding");
+            log("TMP112 not responding");
         } else {
-    		server.log(format("TMP112 Conf Reg at 0x%02x: 0x%02x%02x", addr, conf[0], conf[1]));
+    		log(format("TMP112 Conf Reg at 0x%02x: 0x%02x%02x", addr, conf[0], conf[1]));
 
     		// Extended Mode
     		if (conf[1] & 0x10) {
-    			server.log("TMP112 Extended Mode Enabled.");
+    			log("TMP112 Extended Mode Enabled.");
     		} else {
-    			server.log("TMP112 Extended Mode Disabled.");
+    			log("TMP112 Extended Mode Disabled.");
     		}
     
     		// Shutdown Mode
     		if (conf[0] & 0x01) {
-    			server.log("TMP112 Shutdown Enabled.");
+    			log("TMP112 Shutdown Enabled.");
     		} 
     		else {
-    			server.log("TMP112 Shutdown Disabled.");
+    			log("TMP112 Shutdown Disabled.");
     		}
     
     		// One-shot Bit (Only care in shutdown mode)
     		if (conf[0] & 0x80) {
-    			server.log("TMP112 One-shot Bit Set.");
+    			log("TMP112 One-shot Bit Set.");
     		} else {
-    			server.log("TMP112 One-shot Bit Not Set.");
+    			log("TMP112 One-shot Bit Not Set.");
     		}
     
     		// Thermostat or Comparator Mode
     		if (conf[0] & 0x02) {
-    			server.log("TMP112 in Interrupt Mode.");
+    			log("TMP112 in Interrupt Mode.");
     		} else {
-    			server.log("TMP112 in Comparator Mode.");
+    			log("TMP112 in Comparator Mode.");
     		}
     
     		// Alert Polarity
     		if (conf[0] & 0x04) {
-    			server.log("TMP112 Alert Pin Polarity Active-High.");
+    			log("TMP112 Alert Pin Polarity Active-High.");
     		} else {
-    			server.log("TMP112 Alert Pin Polarity Active-Low.");
+    			log("TMP112 Alert Pin Polarity Active-Low.");
     		}
     
     		// Alert Pin
     		if (hardware.pin1.read()) {
     			if (conf[0] & 0x04) {
-    				server.log("TMP112 Alert Pin Asserted (high).");
+    				log("TMP112 Alert Pin Asserted (high).");
     			} else {
-    				server.log("TMP112 Alert Pin Not Asserted (high).");
+    				log("TMP112 Alert Pin Not Asserted (high).");
     			}
     		} else {
     			if (conf[0] & 0x04) {
-    				server.log("TMP112 Alert Pin Not Asserted (low).");
+    				log("TMP112 Alert Pin Not Asserted (low).");
     			} else {
-    				server.log("TMP112 Alert Pin Asserted (low).");
+    				log("TMP112 Alert Pin Asserted (low).");
     			}
     		}
     
     		// Alert Bit
     		if (conf[1] & 0x20) {
     			if (conf[0] & 0x04) {
-    				server.log("TMP112 Alert Bit Set (high).");
+    				log("TMP112 Alert Bit Set (high).");
     			} else {
-    				server.log("TMP112 Alert Bit Not Set (high).");
+    				log("TMP112 Alert Bit Not Set (high).");
     			}
     		} else {
     			if (conf[0] & 0x04) {
-    				server.log("TMP112 Alert Bit Not Set (low).");
+    				log("TMP112 Alert Bit Not Set (low).");
     			} else {
-    				server.log("TMP112 Alert Bit Set (low).");
+    				log("TMP112 Alert Bit Set (low).");
     			}
     		}
     
@@ -863,16 +868,16 @@ class tmp112 extends sensor {
     		local cr = (conf[1] & 0xC0) >> 6;
     		switch (cr) {
     			case 0:
-    				server.log("TMP112 Conversion Rate Set to 0.25 Hz.");
+    				log("TMP112 Conversion Rate Set to 0.25 Hz.");
     				break;
     			case 1:
-    				server.log("TMP112 Conversion Rate Set to 1 Hz.");
+    				log("TMP112 Conversion Rate Set to 1 Hz.");
     				break;
     			case 2:
-    				server.log("TMP112 Conversion Rate Set to 4 Hz.");
+    				log("TMP112 Conversion Rate Set to 4 Hz.");
     				break;
     			case 3:
-    				server.log("TMP112 Conversion Rate Set to 8 Hz.");
+    				log("TMP112 Conversion Rate Set to 8 Hz.");
     				break;
     			default:
     				server.error("TMP112 Conversion Rate Invalid: " + format("0x%02x",cr));
@@ -880,18 +885,18 @@ class tmp112 extends sensor {
     
     		// Fault Queue
     		local fq = (conf[0] & 0x18) >> 3;
-    		server.log(format("TMP112 Fault Queue shows %d Consecutive Fault(s).", fq));
+    		log(format("TMP112 Fault Queue shows %d Consecutive Fault(s).", fq));
     
     		// T-low register
     		local t_low = read_temp(T_LOW_REG);
-    		server.log(format("TMP112 Low Temperate is %0.02f deg C.", t_low));
+    		log(format("TMP112 Low Temperate is %0.02f deg C.", t_low));
     
     		// T-high register
     		local t_high = read_temp(T_HIGH_REG);
-    		server.log(format("TMP112 High Temperate is %0.02f deg C.", t_high));
+    		log(format("TMP112 High Temperate is %0.02f deg C.", t_high));
         }
         
-        server.log("\\-----------------------------------------------/");
+        log("\\-----------------------------------------------/");
         if (callback) callback();
 	}
 	
@@ -1015,7 +1020,7 @@ class nora extends sensor {
             break;
     
         default:
-            server.log("Unknown configuration request: " + key + " => " + val);
+            log("Unknown configuration request: " + key + " => " + val);
         }
     }
 
@@ -1043,7 +1048,7 @@ class nora extends sensor {
         
         // Copy the list of sensors to work through
         local readlist = [];
-        foreach (type,obj in registry) {
+        foreach (type,obj in sensorlist) {
             // Skip nora and busy devices
             if (obj.ready && obj.name != "nora") {
                 readlist.push(obj);
@@ -1054,24 +1059,24 @@ class nora extends sensor {
         read_all(readlist, function (results) {
             // Store the results
             nora_data.results.push(results);
-            // server.log("We have " + nora_data.results.len() + " samples in the buffer.")
+            // log("We have " + nora_data.results.len() + " samples in the buffer. Free memory: " + imp.getmemoryfree());
             
             // We have results, lets process them
-            if (server.isconnected()) {
-                // We are connected, so send the results
-                connected(SERVER_CONNECTED, nora_data, _callback);
-            } else {
-                // We are not connected, but should be
-                if (nora_data.results.len() % nora_data.offlinesamples == 0) {
-                    // connect, send and clear
-                    server.connect(function(status) {
-                        connected(status, nora_data, _callback);
-                    }.bindenv(this), 30)
-                } else {
-                    connected(NO_SERVER, nora_data, _callback);
-                }
-            }
-        });
+			if (server.isconnected()) {
+				// We are connected, so send the results
+				connected(SERVER_CONNECTED, nora_data, _callback);
+			} else {
+				// We are not connected, but should be
+				if (nora_data.results.len() % nora_data.offlinesamples == 0) {
+					// connect, send and clear
+					server.connect(function(status) {
+						connected(status, nora_data, _callback);
+					}.bindenv(this), 30)
+				} else {
+					connected(NO_SERVER, nora_data, _callback);
+				}
+			}
+		}.bindenv(this));
     }
     
     
@@ -1097,7 +1102,6 @@ class nora extends sensor {
             if (_callback) {
                 _callback(nora_data.results)
             } else {
-                // server.log("We have " + nora_data.results.len() + " samples to send")
                 agent.send(name + ".read", nora_data.results);
             }
             nora_data.results = [];
@@ -1108,9 +1112,17 @@ class nora extends sensor {
         set_bootreason(name + ".read");
         
         // Go back to sleep but disconnect first
-        // server.log("Sleeping for " + nora_data.sleepfor + " seconds with " + nora_data.results.len() + " sample set in the buffer.");
+        // log("Sleeping for " + nora_data.sleepfor + " seconds with " + nora_data.results.len() + " sample set in the buffer.");
 		sleep(nora_data.sleepfor);
     }
+}
+
+
+// **********************************************************************************************************************************
+function log(msg) {
+	server.setsendtimeoutpolicy(SUSPEND_ON_ERROR, WAIT_TIL_SENT, 30);
+	server.log(msg);
+	server.setsendtimeoutpolicy(RETURN_ON_ERROR, WAIT_TIL_SENT, 30);
 }
 
 
@@ -1120,7 +1132,7 @@ server.setsendtimeoutpolicy(RETURN_ON_ERROR, WAIT_TIL_SENT, 30);
 imp.configure("Nora v2", [], []);
 
 // Some debug stuff
-// server.log("Wake reason: " + nora.get_wake_reason());
+// log("Wake reason: " + nora.get_wake_reason());
 // nora.dump_nv();
 
 // Load up individual sensors
