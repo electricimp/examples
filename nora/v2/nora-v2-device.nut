@@ -671,7 +671,7 @@ class mpl115 extends sensor {
 class tsl2561 extends sensor {
 
     static WAIT = 450;
-    static name = "ambient";
+    static name = "light";
     
     constructor(_i2c, _pin_en_l = null, _pin_drain = null, _addr = 0x52) {
         base.constructor(_i2c, _pin_en_l, _pin_drain, _addr);
@@ -1140,7 +1140,7 @@ nora <- nora();
 accel <- lis3dh(hardware.i2c89);
 thermistor <- hih6131(hardware.i2c89, hardware.pin2, hardware.pin5);
 pressure <- mpl115(hardware.i2c89, hardware.pin2, hardware.pin5);
-ambient <- tsl2561(hardware.i2c89, hardware.pin2, hardware.pin5);
+light <- tsl2561(hardware.i2c89, hardware.pin2, hardware.pin5);
 battery <- battery(hardware.pin7);
 temperature <- tmp112(hardware.i2c89);
 

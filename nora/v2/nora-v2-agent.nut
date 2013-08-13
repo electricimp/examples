@@ -44,15 +44,11 @@ function read_remote_data(dummy = null) {
         if (res) server.log("Temp: " + res.temperature + ", Humidity: " + res.humidity);
     })
     
-    remote("thermistor", "read", [], function(res) {
-        if (res) server.log("Temp: " + res.temperature + ", Humidity: " + res.humidity);
-    })
-    
     remote("pressure", "read", [], function (res) {
         if (res) server.log("Pressure: " + res.pressure);
     });
     
-    remote("ambient", "read", [], function (res) {
+    remote("light", "read", [], function (res) {
         if (res) server.log("Lux: " + res.lux);
     });
     
