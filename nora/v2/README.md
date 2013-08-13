@@ -20,4 +20,3 @@ This nora (v2) example classes and agent encapsulate most of the functionality o
 |               | `click_detect`     | wakes the imp up when the accelerometer detects a clicking motion
 | nora          | `read`             | returns all the sensors then goes to sleep and offline. wakes up for more readings until the buffer is full and sends these offline
 |               | `sleep`            | waits some time then puts the imp to deep sleep
-| --------------|--------------------------------------------
