@@ -980,7 +980,7 @@ class battery extends sensor {
 
 
     function test() {
-        return true;
+        return ready = true;
     }
   
     function read(callback = null) {
@@ -1009,7 +1009,7 @@ class nora extends sensor {
     }
     
     function test() {
-        return true;
+        return ready = true;
     }
     
     function configure(key, val, callback = null) {
@@ -1050,6 +1050,7 @@ class nora extends sensor {
         local readlist = [];
         foreach (type,obj in sensorlist) {
             // Skip nora and busy devices
+			// server.log(obj.name + ": " + obj.ready)
             if (obj.ready && obj.name != "nora") {
                 readlist.push(obj);
             }            
