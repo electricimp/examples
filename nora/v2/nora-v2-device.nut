@@ -1057,7 +1057,7 @@ class nora extends sensor {
             // server.log("We have " + nora_data.results.len() + " samples in the buffer.")
             
             // We have results, lets process them
-            if (false && server.isconnected()) {
+            if (server.isconnected()) {
                 // We are connected, so send the results
                 connected(SERVER_CONNECTED, nora_data, _callback);
             } else {
