@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 
-const CALENDAR_URL = "http://devious-dorris.gopagoda.com/meeting_minder/get";
+const CALENDAR_URL = ""; // URL that will serve up JSON {now=..., next=...};
 const REFRESH_TIME = 60; // Once a minute
 
 function check_calendar() {
