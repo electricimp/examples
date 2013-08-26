@@ -18,12 +18,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 
-
 const CALENDAR_URL = "http://devious-dorris.gopagoda.com/meeting_minder/get";
-const REFRESH_TIME = 900; // 15 minutes, maximum
+const REFRESH_TIME = 60; // Once a minute
 
 function check_calendar() {
-	// Request the calendar from Google (via Pagodabox)
     http.get(CALENDAR_URL, {}).sendasync(function (res) {
         local now = null;
         local next = null;
@@ -32,7 +30,6 @@ function check_calendar() {
             if (typeof json == "array") {
                 device.send("display", null)
             } else if (typeof json == "table") {
-				// We have a response for storage
                 now = ("now" in json) ? json.now : null;
                 next = ("next" in json) ? json.next : null;
                 device.send("display", {now=now, next=next});
