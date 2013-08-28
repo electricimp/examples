@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <title>Installation - Zend Framework Manual</title>
+
+</head>
+<body>
+<table width="100%">
+    <tr valign="top">
+        <td width="85%">
+            <table width="100%">
+                <tr>
+                    <td width="25%" style="text-align: left;">
+                    <a href="introduction.overview.html">Overview</a>
+                    </td>
+
+                    <td width="50%" style="text-align: center;">
+                        <div class="up"><span class="up"><a href="introduction.html">Introduction to Zend Gdata</a></span><br />
+                        <span class="home"><a href="manual.html">Programmer's Reference Guide</a></span></div>
+                    </td>
+
+                    <td width="25%" style="text-align: right;">
+                        <div class="next" style="text-align: right; float: right;"><a href="learning.html">Learning Zend Gdata</a></div>
+                    </td>
+                </tr>
+            </table>
+<hr />
+<div id="introduction.installation" class="chapter"><div class="info"><h1>Installation</h1></div>
+    
+
+    <p class="para">
+        See the <a href="requirements.html" class="link">requirements appendix</a> for a detailed list of
+        requirements for Zend Framework.
+    </p>
+
+    <p class="para">
+        Installing Zend Framework is extremely simple. Once you have downloaded and extracted the
+        framework, you should add the <var class="filename">/library</var> folder in the distribution to
+        the beginning of your include path. You may also want to move the library folder
+        to another – possibly shared – location on your file system.
+    </p>
+
+    <ul class="itemizedlist">
+        <li class="listitem">
+            <p class="para">
+                <a href="http://framework.zend.com/download/latest" class="link external">&raquo; Download the latest
+                stable release.</a> This version, available in both
+                <var class="filename">.zip</var> and <var class="filename">.tar.gz</var> formats, is a
+                good choice for those who are new to Zend Framework.
+            </p>
+        </li>
+
+        <li class="listitem">
+            <p class="para">
+                <a href="http://framework.zend.com/download/snapshot" class="link external">&raquo; Download the latest
+                nightly snapshot.</a> For those who would brave the cutting edge, the
+                nightly snapshots represent the latest progress of Zend Framework development.
+                Snapshots are bundled with documentation either in English only or in all
+                available languages. If you anticipate working with the latest Zend Framework
+                developments, consider using a Subversion (<acronym class="acronym">SVN</acronym>) client.
+            </p>
+        </li>
+
+        <li class="listitem">
+            <p class="para">
+                Using a <a href="http://subversion.tigris.org" class="link external">&raquo; Subversion</a>
+                (<acronym class="acronym">SVN</acronym>) client. Zend Framework is open source software, and the
+                Subversion repository used for its development is publicly available. Consider
+                using <acronym class="acronym">SVN</acronym> to get Zend Framework if you already use
+                <acronym class="acronym">SVN</acronym> for your application development, want to
+                contribute back to the framework, or need to upgrade your framework version
+                more often than releases occur.
+            </p>
+
+            <p class="para">
+                <a href="http://svnbook.red-bean.com/nightly/en/svn.ref.svn.c.export.html" class="link external">&raquo; 
+                Exporting</a> is useful if you want to get a particular framework revision
+                without the <var class="filename">.svn</var> directories as created in a working copy.
+            </p>
+
+            <p class="para">
+                <a href="http://svnbook.red-bean.com/nightly/en/svn.ref.svn.c.checkout.html" class="link external">&raquo; 
+                Check out a working copy</a> if you want contribute to Zend Framework, a
+                working copy can be updated any time with
+                <a href="http://svnbook.red-bean.com/nightly/en/svn.ref.svn.c.update.html" class="link external">&raquo; 
+                svn update</a> and changes can be commited to our <acronym class="acronym">SVN</acronym>
+                repository with the
+                <a href="http://svnbook.red-bean.com/nightly/en/svn.ref.svn.c.commit.html" class="link external">&raquo; 
+                svn commit</a> command.
+            </p>
+
+            <p class="para">
+                An
+                <a href="http://svnbook.red-bean.com/nightly/en/svn.advanced.externals.html" class="link external">&raquo; 
+                externals definition</a> is quite convenient for developers already using
+                <acronym class="acronym">SVN</acronym> to manage their application&#039;s working copies.
+            </p>
+
+            <p class="para">
+                The <acronym class="acronym">URL</acronym> for the trunk of Zend Framework&#039;s <acronym class="acronym">SVN</acronym>
+                repository is: <a href="http://framework.zend.com/svn/framework/standard/trunk" class="link external">&raquo; 
+                    http://framework.zend.com/svn/framework/standard/trunk</a>
+            </p>
+        </li>
+    </ul>
+
+    <p class="para">
+        Once you have a copy of Zend Framework available, your application needs to be able to
+        access the framework classes. Though there are
+        <a href="http://www.php.net/manual/en/configuration.changes.php" class="link external">&raquo; 
+        several ways to achieve this</a>, your <acronym class="acronym">PHP</acronym>
+        <a href="http://www.php.net/manual/en/ini.core.php#ini.include-path" class="link external">&raquo; include_path</a>
+        needs to contain the path to Zend Framework&#039;s library.
+    </p>
+
+    <p class="para">
+        Zend provides a <a href="http://framework.zend.com/docs/quickstart" class="link external">&raquo; QuickStart</a>
+        to get you up and running as quickly as possible. This is an excellent way to begin
+        learning about the framework with an emphasis on real world examples that you can build
+        upon.
+    </p>
+
+    <p class="para">
+        Since Zend Framework components are loosely coupled, you may use a somewhat unique
+        combination of them in your own applications. The following chapters provide a
+        comprehensive reference to Zend Framework on a component-by-component basis.
+    </p>
+</div>
+        <hr />
+
+            <table width="100%">
+                <tr>
+                    <td width="25%" style="text-align: left;">
+                    <a href="introduction.overview.html">Overview</a>
+                    </td>
+
+                    <td width="50%" style="text-align: center;">
+                        <div class="up"><span class="up"><a href="introduction.html">Introduction to Zend Gdata</a></span><br />
+                        <span class="home"><a href="manual.html">Programmer's Reference Guide</a></span></div>
+                    </td>
+
+                    <td width="25%" style="text-align: right;">
+                        <div class="next" style="text-align: right; float: right;"><a href="learning.html">Learning Zend Gdata</a></div>
+                    </td>
+                </tr>
+            </table>
+</td>
+        <td style="font-size: smaller;" width="15%"> <style type="text/css">
+#leftbar {
+	float: left;
+	width: 186px;
+	padding: 5px;
+	font-size: smaller;
+}
+ul.toc {
+	margin: 0px 5px 5px 5px;
+	padding: 0px;
+}
+ul.toc li {
+	font-size: 85%;
+	margin: 1px 0 1px 1px;
+	padding: 1px 0 1px 11px;
+	list-style-type: none;
+	background-repeat: no-repeat;
+	background-position: center left;
+}
+ul.toc li.header {
+	font-size: 115%;
+	padding: 5px 0px 5px 11px;
+	border-bottom: 1px solid #cccccc;
+	margin-bottom: 5px;
+}
+ul.toc li.active {
+	font-weight: bold;
+}
+ul.toc li a {
+	text-decoration: none;
+}
+ul.toc li a:hover {
+	text-decoration: underline;
+}
+</style>
+ <ul class="toc">
+  <li class="header home"><a href="manual.html">Programmer's Reference Guide</a></li>
+  <li class="header up"><a href="manual.html">Programmer's Reference Guide</a></li>
+  <li class="header up"><a href="introduction.html">Introduction to Zend Gdata</a></li>
+  <li><a href="introduction.overview.html">Overview</a></li>
+  <li class="active"><a href="introduction.installation.html">Installation</a></li>
+ </ul>
+ </td>
+    </tr>
+</table>
+</body>
+</html>

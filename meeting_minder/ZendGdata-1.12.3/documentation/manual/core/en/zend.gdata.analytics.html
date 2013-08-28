@@ -1,0 +1,176 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <title>Using Google Analytics - Zend Framework Manual</title>
+
+</head>
+<body>
+<table width="100%">
+    <tr valign="top">
+        <td width="85%">
+            <table width="100%">
+                <tr>
+                    <td width="25%" style="text-align: left;">
+                    <a href="zend.gdata.html">Zend_Gdata</a>
+                    </td>
+
+                    <td width="50%" style="text-align: center;">
+                        <div class="up"><span class="up"><a href="zend.gdata.html">Zend_Gdata</a></span><br />
+                        <span class="home"><a href="manual.html">Programmer's Reference Guide</a></span></div>
+                    </td>
+
+                    <td width="25%" style="text-align: right;">
+                        <div class="next" style="text-align: right; float: right;"><a href="zend.gdata.authsub.html">Authenticating with AuthSub</a></div>
+                    </td>
+                </tr>
+            </table>
+<hr />
+<div id="zend.gdata.analytics" class="section"><div class="info"><h1 class="title">Using Google Analytics</h1></div>
+    
+
+    <p class="para">
+        The Google Analytics <acronym class="acronym">API</acronym> allows client applications to 
+        request data, saved in the analytics accounts.
+    </p>
+
+    <p class="para">
+        See <a href="http://code.google.com/apis/analytics/docs/gdata/v2/gdataOverview.html" class="link external">&raquo; http://code.google.com/apis/analytics/docs/gdata/v2/gdataOverview.html</a>
+        for more information about the Google Analytics <acronym class="acronym">API</acronym>.
+    </p>
+
+    <div class="section" id="zend.gdata.analytics.accounts" name="zend.gdata.analytics.accounts"><div class="info"><h1 class="title">Retrieving account data</h1></div>
+        
+
+        <p class="para">
+           Using the account feed, you are able to retrieve a list of all the accounts available to a specified user.  
+        </p>
+
+        <div class="programlisting php"><div class="phpcode"><div class="php" style="font-family: monospace;"><ol><li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;"><span style="color: #0000ff;">$service</span> = Zend_Gdata_Analytics::<span style="color: #006600;">AUTH_SERVICE_NAME</span>;</div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;"><span style="color: #0000ff;">$client</span> = Zend_Gdata_ClientLogin::<span style="color: #006600;">getHttpClient</span><span style="color: #66cc66;">&#40;</span><span style="color: #0000ff;">$email</span>, <span style="color: #0000ff;">$password</span>, <span style="color: #0000ff;">$service</span><span style="color: #66cc66;">&#41;</span>;</div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;"><span style="color: #0000ff;">$analytics</span> = <span style="color: #000000; font-weight: bold;">new</span> Zend_Gdata_Analytics<span style="color: #66cc66;">&#40;</span><span style="color: #0000ff;">$client</span><span style="color: #66cc66;">&#41;</span>;&nbsp; </div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;"><span style="color: #0000ff;">$accounts</span> = <span style="color: #0000ff;">$analytics</span>-&gt;<span style="color: #006600;">getAccountFeed</span><span style="color: #66cc66;">&#40;</span><span style="color: #66cc66;">&#41;</span>;</div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;">&nbsp;</div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;"><span style="color: #b1b100;">foreach</span> <span style="color: #66cc66;">&#40;</span><span style="color: #0000ff;">$accounts</span> <span style="color: #b1b100;">as</span> <span style="color: #0000ff;">$account</span><span style="color: #66cc66;">&#41;</span> <span style="color: #66cc66;">&#123;</span>&nbsp; </div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;">&nbsp; <a href="http://www.php.net/echo"><span style="color: #000066;">echo</span></a> <span style="color: #ff0000;">&quot;<span style="color: #000099; font-weight: bold;">\n</span>{$account-&gt;title}<span style="color: #000099; font-weight: bold;">\n</span>&quot;</span>;</div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;"><span style="color: #66cc66;">&#125;</span></div></li></ol></div></div></div>
+
+
+        <p class="para">
+            The <strong class="command">$analytics-&gt;getAccountFeed()</strong> call, results in a 
+            <span class="classname">Zend_Gdata_Analytics_AccountFeed</span> object that  contains
+            <span class="classname">Zend_Gdata_Analytics_AccountEntry</span> objects. Each of this
+            objects represent a google analytics account.
+        </p>
+    </div>
+
+    <div class="section" id="zend.gdata.analytics.reports" name="zend.gdata.analytics.reports"><div class="info"><h1 class="title">Retrieving report data</h1></div>
+        
+
+        <p class="para">
+            Besides the account feed, google offers a data feed, to retrieve report data using
+            the Google Analytics <acronym class="acronym">API</acronym>. To easily request for these reports,
+            Zend_Gdata_Analytics offers a simple query construction interface. You can use all
+            the <a href="http://code.google.com/intl/de-CH/apis/analytics/docs/gdata/dimsmets/dimsmets.html" class="link external">&raquo; metrics
+            and dimensions</a> specified by the API. Additionaly you can apply some <a href="http://code.google.com/intl/de-CH/apis/analytics/docs/gdata/v2/gdataReferenceDataFeed.html#filters" class="link external">&raquo; filters</a>
+            to retrieve some <a href="http://code.google.com/intl/de-CH/apis/analytics/docs/gdata/gdataCommonQueries.html" class="link external">&raquo; common
+            data</a> or even complex results.
+        </p>
+
+        <div class="programlisting php"><div class="phpcode"><div class="php" style="font-family: monospace;"><ol><li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;"><span style="color: #0000ff;">$query</span> = <span style="color: #0000ff;">$service</span>-&gt;<span style="color: #006600;">newDataQuery</span><span style="color: #66cc66;">&#40;</span><span style="color: #66cc66;">&#41;</span>-&gt;<span style="color: #006600;">setProfileId</span><span style="color: #66cc66;">&#40;</span><span style="color: #0000ff;">$profileId</span><span style="color: #66cc66;">&#41;</span>&nbsp; </div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;">&nbsp; -&gt;<span style="color: #006600;">addMetric</span><span style="color: #66cc66;">&#40;</span>Zend_Gdata_Analytics_DataQuery::<span style="color: #006600;">METRIC_BOUNCES</span><span style="color: #66cc66;">&#41;</span>&nbsp; &nbsp;</div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;">&nbsp; -&gt;<span style="color: #006600;">addMetric</span><span style="color: #66cc66;">&#40;</span>Zend_Gdata_Analytics_DataQuery::<span style="color: #006600;">METRIC_VISITS</span><span style="color: #66cc66;">&#41;</span> </div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;">&nbsp; -&gt;<span style="color: #006600;">addDimension</span><span style="color: #66cc66;">&#40;</span>Zend_Gdata_Analytics_DataQuery::<span style="color: #006600;">DIMENSION_MEDIUM</span><span style="color: #66cc66;">&#41;</span>&nbsp; </div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;">&nbsp; -&gt;<span style="color: #006600;">addDimension</span><span style="color: #66cc66;">&#40;</span>Zend_Gdata_Analytics_DataQuery::<span style="color: #006600;">DIMENSION_SOURCE</span><span style="color: #66cc66;">&#41;</span>&nbsp; </div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;">&nbsp; -&gt;<span style="color: #006600;">addFilter</span><span style="color: #66cc66;">&#40;</span><span style="color: #ff0000;">&quot;ga:browser==Firefox&quot;</span><span style="color: #66cc66;">&#41;</span>&nbsp; </div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;">&nbsp; -&gt;<span style="color: #006600;">setStartDate</span><span style="color: #66cc66;">&#40;</span><span style="color: #ff0000;">'2011-05-01'</span><span style="color: #66cc66;">&#41;</span>&nbsp; &nbsp;</div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;">&nbsp; -&gt;<span style="color: #006600;">setEndDate</span><span style="color: #66cc66;">&#40;</span><span style="color: #ff0000;">'2011-05-31'</span><span style="color: #66cc66;">&#41;</span>&nbsp; &nbsp;</div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;">&nbsp; -&gt;<span style="color: #006600;">addSort</span><span style="color: #66cc66;">&#40;</span>Zend_Gdata_Analytics_DataQuery::<span style="color: #006600;">METRIC_VISITS</span>, <span style="color: #000000; font-weight: bold;">true</span><span style="color: #66cc66;">&#41;</span>&nbsp; </div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;">&nbsp; -&gt;<span style="color: #006600;">addSort</span><span style="color: #66cc66;">&#40;</span>Zend_Gdata_Analytics_DataQuery::<span style="color: #006600;">METRIC_BOUNCES</span>, <span style="color: #000000; font-weight: bold;">false</span><span style="color: #66cc66;">&#41;</span>&nbsp; </div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;">&nbsp; -&gt;<span style="color: #006600;">setMaxResults</span><span style="color: #66cc66;">&#40;</span><span style="color: #cc66cc;">50</span><span style="color: #66cc66;">&#41;</span>; </div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;">&nbsp; </div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;"><span style="color: #0000ff;">$result</span> = <span style="color: #0000ff;">$analytics</span>-&gt;<span style="color: #006600;">getDataFeed</span><span style="color: #66cc66;">&#40;</span><span style="color: #0000ff;">$query</span><span style="color: #66cc66;">&#41;</span>;</div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;"><span style="color: #b1b100;">foreach</span><span style="color: #66cc66;">&#40;</span><span style="color: #0000ff;">$result</span> <span style="color: #b1b100;">as</span> <span style="color: #0000ff;">$row</span><span style="color: #66cc66;">&#41;</span><span style="color: #66cc66;">&#123;</span>&nbsp; </div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;">&nbsp; <a href="http://www.php.net/echo"><span style="color: #000066;">echo</span></a> <span style="color: #0000ff;">$row</span>-&gt;<span style="color: #006600;">getMetric</span><span style="color: #66cc66;">&#40;</span><span style="color: #ff0000;">'ga:visits'</span><span style="color: #66cc66;">&#41;</span>.<span style="color: #ff0000;">&quot;<span style="color: #000099; font-weight: bold;">\t</span>&quot;</span>;&nbsp; </div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;">&nbsp; <a href="http://www.php.net/echo"><span style="color: #000066;">echo</span></a> <span style="color: #0000ff;">$row</span>-&gt;<span style="color: #006600;">getValue</span><span style="color: #66cc66;">&#40;</span><span style="color: #ff0000;">'ga:bounces'</span><span style="color: #66cc66;">&#41;</span>.<span style="color: #ff0000;">&quot;<span style="color: #000099; font-weight: bold;">\n</span>&quot;</span>;&nbsp; </div></li>
+<li style="font-family: 'Courier New', Courier, monospace; color: black; font-weight: normal; font-style: normal;"><div style="font-family: 'Courier New', Courier, monospace; font-weight: normal;"><span style="color: #66cc66;">&#125;</span></div></li></ol></div></div></div>
+
+    </div>
+</div>
+        <hr />
+
+            <table width="100%">
+                <tr>
+                    <td width="25%" style="text-align: left;">
+                    <a href="zend.gdata.html">Zend_Gdata</a>
+                    </td>
+
+                    <td width="50%" style="text-align: center;">
+                        <div class="up"><span class="up"><a href="zend.gdata.html">Zend_Gdata</a></span><br />
+                        <span class="home"><a href="manual.html">Programmer's Reference Guide</a></span></div>
+                    </td>
+
+                    <td width="25%" style="text-align: right;">
+                        <div class="next" style="text-align: right; float: right;"><a href="zend.gdata.authsub.html">Authenticating with AuthSub</a></div>
+                    </td>
+                </tr>
+            </table>
+</td>
+        <td style="font-size: smaller;" width="15%"> <style type="text/css">
+#leftbar {
+	float: left;
+	width: 186px;
+	padding: 5px;
+	font-size: smaller;
+}
+ul.toc {
+	margin: 0px 5px 5px 5px;
+	padding: 0px;
+}
+ul.toc li {
+	font-size: 85%;
+	margin: 1px 0 1px 1px;
+	padding: 1px 0 1px 11px;
+	list-style-type: none;
+	background-repeat: no-repeat;
+	background-position: center left;
+}
+ul.toc li.header {
+	font-size: 115%;
+	padding: 5px 0px 5px 11px;
+	border-bottom: 1px solid #cccccc;
+	margin-bottom: 5px;
+}
+ul.toc li.active {
+	font-weight: bold;
+}
+ul.toc li a {
+	text-decoration: none;
+}
+ul.toc li a:hover {
+	text-decoration: underline;
+}
+</style>
+ <ul class="toc">
+  <li class="header home"><a href="manual.html">Programmer's Reference Guide</a></li>
+  <li class="header up"><a href="manual.html">Programmer's Reference Guide</a></li>
+  <li class="header up"><a href="reference.html">Zend Gdata Reference</a></li>
+  <li class="header up"><a href="zend.gdata.html">Zend_Gdata</a></li>
+  <li class="active"><a href="zend.gdata.analytics.html">Using Google Analytics</a></li>
+  <li><a href="zend.gdata.authsub.html">Authenticating with AuthSub</a></li>
+  <li><a href="zend.gdata.books.html">Using the Book Search Data API</a></li>
+  <li><a href="zend.gdata.clientlogin.html">Authenticating with ClientLogin</a></li>
+  <li><a href="zend.gdata.calendar.html">Using Google Calendar</a></li>
+  <li><a href="zend.gdata.docs.html">Using Google Documents List Data API</a></li>
+  <li><a href="zend.gdata.spreadsheets.html">Using Google Spreadsheets</a></li>
+  <li><a href="zend.gdata.gapps.html">Using Google Apps Provisioning</a></li>
+  <li><a href="zend.gdata.photos.html">Using Picasa Web Albums</a></li>
+  <li><a href="zend.gdata.youtube.html">Using the YouTube Data API</a></li>
+  <li><a href="zend.gdata.exception.html">Catching Gdata Exceptions</a></li>
+ </ul>
+ </td>
+    </tr>
+</table>
+</body>
+</html>

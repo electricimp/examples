@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Zend Gdata API Documentation</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></meta><link rel="stylesheet" href="../css/template.css" type="text/css"></link><script type="text/javascript" src="../js/jquery-1.4.2.min.js"></script><script type="text/javascript" src="../js/jquery.tools.min.js"></script><script type="text/javascript" src="../js/jquery-ui-1.8.2.custom.min.js"></script><script type="text/javascript" src="../js/template.js"></script></head><body><div id="content"><h1 class="file">Loader.php</h1><div id="file-nav-box"><div id="file-nav-options">
+              Show:
+              <img src="../images/icons/visibility_public.png" alt="Public" id="show-public"></img><img src="../images/icons/visibility_protected.png" alt="Protected" id="show-protected"></img><img src="../images/icons/visibility_private.png" alt="Private" id="show-private"></img><span class="attribute" id="show-inherited">inherited</span></div><div id="file-nav-container"><ul id="file-nav"><li><a href="#classes"><img src="../images/icons/class.png" alt="Class" height="14"></img>
+                          Classes
+                      </a><ul><li><a href="#\Zend_Loader">\Zend_Loader</a></li></ul></li></ul><div style="clear: left;"></div></div><div id="file-nav-tab">
+              Table of Contents
+          </div></div><a name="top" class="anchor"></a><div id="file-description"><div class="short-description">Zend Framework</div><div class="long-description"><p>LICENSE</p>
+
+<p>This source file is subject to the new BSD license that is bundled
+with this package in the file LICENSE.txt.
+It is also available through the world-wide-web at this URL:
+http://framework.zend.com/license/new-bsd
+If you did not receive a copy of the license and are unable to
+obtain it through the world-wide-web, please send an email
+to license@zend.com so we can send you a copy immediately.</p></div></div><dl class="file-info"><dt>Category</dt><dd>Zend
+         
+    </dd><dt>Copyright</dt><dd>Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+         
+    </dd><dt>License</dt><dd><a href="http://framework.zend.com/license/new-bsd">New BSD License</a>
+         
+    </dd><dt>Package</dt><dd>Zend_Loader
+         
+    </dd><dt>Version</dt><dd>$Id: Loader.php 24593 2012-01-05 20:35:02Z matthew $
+         
+    </dd></dl><a name="classes" class="anchor"></a><a id="\Zend_Loader" class="anchor"></a><h2 class="class">\Zend_Loader<div class="to-top"><a href="#top">jump to top</a></div></h2><div class="class"><small class="package"><b>Package: </b>Zend\Loader</small><div class="short-description">Static methods for loading classes and files.</div><div class="long-description"></div><dl class="class-info"><dt>Category</dt><dd>Zend
+         
+    </dd><dt>Copyright</dt><dd>Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+         
+    </dd><dt>License</dt><dd><a href="http://framework.zend.com/license/new-bsd">New BSD License</a>
+         
+    </dd></dl><h3>Methods</h3><div><a id="\Zend_Loader::_includeFile()" class="anchor"></a><div class="method protected"><a href="#" class="gripper"><img src="../images/icons/arrow_right.png"></img><img src="../images/icons/arrow_down.png" style="display: none;"></img></a><code class="title"><img src="../images/icons/method.png" alt="method" title="method"></img><img src="../images/icons/visibility_protected.png" style="margin-right: 5px" alt="protected"></img><span class="highlight">_includeFile</span><span class="nb-faded-text">(string $filespec, boolean $once = false)</span> : boolean</code><div class="description"><span class="attribute">static</span><p class="short_description">Attempt to include() the file.</p></div><div class="code-tabs"><div class="long-description"><p>include() is not prefixed with the @ operator because if
+the file is loaded and contains a parse error, execution
+will halt silently and this is difficult to debug.</p>
+
+<p>Always set display_errors = Off on production servers!</p></div><strong>Parameters</strong><table class="argument-info"><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tr><th>$filespec</th><td>string</td><td><em></em></td></tr><tr><th>$once</th><td>boolean</td><td><em></em></td></tr></table><strong>Returns</strong><table class="argument-info"><thead><tr><th>Type</th><th>Description</th></tr></thead><tr><td>boolean</td><td></td></tr></table><strong>Details</strong><dl class="function-info"><dt>Deprecated</dt><dd>Since 1.5.0; use loadFile() instead
+         
+    </dd></dl></div><div class="clear"></div></div><a id="\Zend_Loader::_securityCheck()" class="anchor"></a><div class="method protected"><a href="#" class="gripper"><img src="../images/icons/arrow_right.png"></img><img src="../images/icons/arrow_down.png" style="display: none;"></img></a><code class="title"><img src="../images/icons/method.png" alt="method" title="method"></img><img src="../images/icons/visibility_protected.png" style="margin-right: 5px" alt="protected"></img><span class="highlight">_securityCheck</span><span class="nb-faded-text">(string $filename)</span> : void</code><div class="description"><span class="attribute">static</span><p class="short_description">Ensure that filename does not contain exploits</p></div><div class="code-tabs"><div class="long-description"></div><strong>Parameters</strong><table class="argument-info"><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tr><th>$filename</th><td>string</td><td><em></em></td></tr></table><strong>Throws</strong><table class="argument-info"><thead><tr><th>Exception</th><th>Description</th></tr></thead><tr><td><a href="../files/Exception.html#\Zend_Exception">\Zend_Exception</a></td><td><em></em></td></tr></table></div><div class="clear"></div></div><a id="\Zend_Loader::autoload()" class="anchor"></a><div class="method public"><a href="#" class="gripper"><img src="../images/icons/arrow_right.png"></img><img src="../images/icons/arrow_down.png" style="display: none;"></img></a><code class="title"><img src="../images/icons/method.png" alt="method" title="method"></img><img src="../images/icons/visibility_public.png" style="margin-right: 5px" alt="public"></img><span class="highlight">autoload</span><span class="nb-faded-text">(string $class)</span> : string | false</code><div class="description"><span class="attribute">static</span><p class="short_description">spl_autoload() suitable implementation for supporting class autoloading.</p></div><div class="code-tabs"><div class="long-description"><p>Attach to spl_autoload() using the following:</p>
+
+<pre><code>spl_autoload_register(array('Zend_Loader', 'autoload'));
+</code></pre></div><strong>Parameters</strong><table class="argument-info"><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tr><th>$class</th><td>string</td><td><em></em></td></tr></table><strong>Returns</strong><table class="argument-info"><thead><tr><th>Type</th><th>Description</th></tr></thead><tr><td>string | false</td><td>Class name on success; false on failure</td></tr></table><strong>Details</strong><dl class="function-info"><dt>Deprecated</dt><dd>Since 1.8.0
+         
+    </dd></dl></div><div class="clear"></div></div><a id="\Zend_Loader::explodeIncludePath()" class="anchor"></a><div class="method public"><a href="#" class="gripper"><img src="../images/icons/arrow_right.png"></img><img src="../images/icons/arrow_down.png" style="display: none;"></img></a><code class="title"><img src="../images/icons/method.png" alt="method" title="method"></img><img src="../images/icons/visibility_public.png" style="margin-right: 5px" alt="public"></img><span class="highlight">explodeIncludePath</span><span class="nb-faded-text">(string | null $path = null)</span> : array</code><div class="description"><span class="attribute">static</span><p class="short_description">Explode an include path into an array</p></div><div class="code-tabs"><div class="long-description"><p>If no path provided, uses current include_path. Works around issues that
+occur when the path includes stream schemas.</p></div><strong>Parameters</strong><table class="argument-info"><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tr><th>$path</th><td>string | null</td><td><em></em></td></tr></table><strong>Returns</strong><table class="argument-info"><thead><tr><th>Type</th><th>Description</th></tr></thead><tr><td>array</td><td></td></tr></table></div><div class="clear"></div></div><a id="\Zend_Loader::isReadable()" class="anchor"></a><div class="method public"><a href="#" class="gripper"><img src="../images/icons/arrow_right.png"></img><img src="../images/icons/arrow_down.png" style="display: none;"></img></a><code class="title"><img src="../images/icons/method.png" alt="method" title="method"></img><img src="../images/icons/visibility_public.png" style="margin-right: 5px" alt="public"></img><span class="highlight">isReadable</span><span class="nb-faded-text">(string $filename)</span> : boolean</code><div class="description"><span class="attribute">static</span><p class="short_description">Returns TRUE if the $filename is readable, or FALSE otherwise.</p></div><div class="code-tabs"><div class="long-description"><p>This function uses the PHP include_path, where PHP's is_readable()
+does not.</p>
+
+<p>Note from ZF-2900:
+If you use custom error handler, please check whether return value
+ from error_reporting() is zero or not.
+At mark of fopen() can not suppress warning if the handler is used.</p></div><strong>Parameters</strong><table class="argument-info"><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tr><th>$filename</th><td>string</td><td><em></em></td></tr></table><strong>Returns</strong><table class="argument-info"><thead><tr><th>Type</th><th>Description</th></tr></thead><tr><td>boolean</td><td></td></tr></table></div><div class="clear"></div></div><a id="\Zend_Loader::loadClass()" class="anchor"></a><div class="method public"><a href="#" class="gripper"><img src="../images/icons/arrow_right.png"></img><img src="../images/icons/arrow_down.png" style="display: none;"></img></a><code class="title"><img src="../images/icons/method.png" alt="method" title="method"></img><img src="../images/icons/visibility_public.png" style="margin-right: 5px" alt="public"></img><span class="highlight">loadClass</span><span class="nb-faded-text">(string $class, string | array $dirs = null)</span> : void</code><div class="description"><span class="attribute">static</span><p class="short_description">Loads a class from a PHP file.</p></div><div class="code-tabs"><div class="long-description"><p>The filename must be formatted
+as "$class.php".</p>
+
+<p>If $dirs is a string or an array, it will search the directories
+in the order supplied, and attempt to load the first matching file.</p>
+
+<p>If $dirs is null, it will split the class name at underscores to
+generate a path hierarchy (e.g., "Zend_Example_Class" will map
+to "Zend/Example/Class.php").</p>
+
+<p>If the file was not found in the $dirs, or if no $dirs were specified,
+it will attempt to load it from PHP's include_path.</p></div><strong>Parameters</strong><table class="argument-info"><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tr><th>$class</th><td>string</td><td><em><ul>
+<li>The full class name of a Zend component.</li>
+</ul>
+</em></td></tr><tr><th>$dirs</th><td>string | array</td><td><em><ul>
+<li>OPTIONAL Either a path or an array of paths
+                        to search.</li>
+</ul>
+</em></td></tr></table><strong>Throws</strong><table class="argument-info"><thead><tr><th>Exception</th><th>Description</th></tr></thead><tr><td><a href="../files/Exception.html#\Zend_Exception">\Zend_Exception</a></td><td><em></em></td></tr></table></div><div class="clear"></div></div><a id="\Zend_Loader::loadFile()" class="anchor"></a><div class="method public"><a href="#" class="gripper"><img src="../images/icons/arrow_right.png"></img><img src="../images/icons/arrow_down.png" style="display: none;"></img></a><code class="title"><img src="../images/icons/method.png" alt="method" title="method"></img><img src="../images/icons/visibility_public.png" style="margin-right: 5px" alt="public"></img><span class="highlight">loadFile</span><span class="nb-faded-text">(string $filename, string | array $dirs = null, boolean $once = false)</span> : boolean</code><div class="description"><span class="attribute">static</span><p class="short_description">Loads a PHP file.</p></div><div class="code-tabs"><div class="long-description"><p>This is a wrapper for PHP's include() function.</p>
+
+<p>$filename must be the complete filename, including any
+extension such as ".php".  Note that a security check is performed that
+does not permit extended characters in the filename.  This method is
+intended for loading Zend Framework files.</p>
+
+<p>If $dirs is a string or an array, it will search the directories
+in the order supplied, and attempt to load the first matching file.</p>
+
+<p>If the file was not found in the $dirs, or if no $dirs were specified,
+it will attempt to load it from PHP's include_path.</p>
+
+<p>If $once is TRUE, it will use include_once() instead of include().</p></div><strong>Parameters</strong><table class="argument-info"><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tr><th>$filename</th><td>string</td><td><em></em></td></tr><tr><th>$dirs</th><td>string | array</td><td><em><ul>
+<li>OPTIONAL either a path or array of paths
+                  to search.</li>
+</ul>
+</em></td></tr><tr><th>$once</th><td>boolean</td><td><em></em></td></tr></table><strong>Returns</strong><table class="argument-info"><thead><tr><th>Type</th><th>Description</th></tr></thead><tr><td>boolean</td><td></td></tr></table><strong>Throws</strong><table class="argument-info"><thead><tr><th>Exception</th><th>Description</th></tr></thead><tr><td><a href="../files/Exception.html#\Zend_Exception">\Zend_Exception</a></td><td><em></em></td></tr></table></div><div class="clear"></div></div><a id="\Zend_Loader::registerAutoload()" class="anchor"></a><div class="method public"><a href="#" class="gripper"><img src="../images/icons/arrow_right.png"></img><img src="../images/icons/arrow_down.png" style="display: none;"></img></a><code class="title"><img src="../images/icons/method.png" alt="method" title="method"></img><img src="../images/icons/visibility_public.png" style="margin-right: 5px" alt="public"></img><span class="highlight">registerAutoload</span><span class="nb-faded-text">(string $class = 'Zend_Loader', boolean $enabled = true)</span> : void</code><div class="description"><span class="attribute">static</span><p class="short_description">Register {@link autoload()} with spl_autoload()</p></div><div class="code-tabs"><div class="long-description"></div><strong>Parameters</strong><table class="argument-info"><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tr><th>$class</th><td>string</td><td><em><p>(optional)</p>
+</em></td></tr><tr><th>$enabled</th><td>boolean</td><td><em><p>(optional)</p>
+</em></td></tr></table><strong>Throws</strong><table class="argument-info"><thead><tr><th>Exception</th><th>Description</th></tr></thead><tr><td><a href="../files/Exception.html#\Zend_Exception">\Zend_Exception</a></td><td><em>if spl_autoload() is not found
+or if the specified class does not have an autoload() method.</em></td></tr></table><strong>Details</strong><dl class="function-info"><dt>Deprecated</dt><dd>Since 1.8.0
+         
+    </dd></dl></div><div class="clear"></div></div><a id="\Zend_Loader::standardiseFile()" class="anchor"></a><div class="method public"><a href="#" class="gripper"><img src="../images/icons/arrow_right.png"></img><img src="../images/icons/arrow_down.png" style="display: none;"></img></a><code class="title"><img src="../images/icons/method.png" alt="method" title="method"></img><img src="../images/icons/visibility_public.png" style="margin-right: 5px" alt="public"></img><span class="highlight">standardiseFile</span><span class="nb-faded-text">(string $file)</span> : string</code><div class="description"><span class="attribute">static</span><p class="short_description">Standardise the filename.</p></div><div class="code-tabs"><div class="long-description"><p>Convert the supplied filename into the namespace-aware standard,
+based on the Framework Interop Group reference implementation:
+http://groups.google.com/group/php-standards/web/psr-0-final-proposal</p>
+
+<p>The filename must be formatted as "$file.php".</p></div><strong>Parameters</strong><table class="argument-info"><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tr><th>$file</th><td>string</td><td><em><ul>
+<li>The file name to be loaded.</li>
+</ul>
+</em></td></tr></table><strong>Returns</strong><table class="argument-info"><thead><tr><th>Type</th><th>Description</th></tr></thead><tr><td>string</td><td></td></tr></table></div><div class="clear"></div></div></div></div></div><small class="footer">
+            Documentation was generated by
+            <a href="http://phpdoc.org">phpDocumentor
+                2.0.0a12</a>.
+        </small></body></html>
