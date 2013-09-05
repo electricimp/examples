@@ -1026,11 +1026,22 @@ screen <- ST7735_LCD(128, 160, hardware.spi257, hardware.pin8, hardware.pin9, ha
 
 // Do we clobber the memory on boot? Are we in the middle of something
 clobber <- false;
+
+// Slide show walk
 walking <- false;
+function walk(init = null) {
+    if (init != null) walking = init;
+    if (walking) {
+        imp.wakeup(3, walk);
+        screen.display(flash.next_file());
+    }
+}
 
 // Initialise the flash and mark the system as ready
 flash.init(function() {
 
+    walk(true);
+    
     // Display an existing file
     agent.on("display", function(filename) {
         screen.display(filename);
@@ -1057,41 +1068,31 @@ flash.init(function() {
     // Wipe the memory
     agent.on("wipe", function(d) {
         screen.animating = null;
-        walking = false;
+        walk(false);
         flash.init(function() {
             screen.clear();
             agent.send("wipe", true);
         }, true);
     })
     
-    // Left button = pinD = Previous
+    // Left button = pinD = Slideshow
     hardware.pinD.configure(DIGITAL_IN_PULLUP, function() {
         imp.sleep(0.02);
         if (hardware.pinD.read() == 0) {
-            walking = false;
-            screen.display(flash.prev_file());
+            if (walking) {
+                walk(false);
+            } else {
+                walk(true);
+            }
         }
     })
     
-    // Middle button = Start slide show
+    // Middle button = Get a cat
     hardware.pinC.configure(DIGITAL_IN_PULLUP, function() {
         imp.sleep(0.02);
         if (hardware.pinC.read() == 0) {
-            
-            return agent.send("cat", "get");
-            
-            function walk() {
-                if (walking) {
-                    imp.wakeup(3, walk);
-                    screen.display(flash.next_file());
-                }
-            }
-            if (walking) {
-                walking = false;
-            } else {
-                walking = true;
-                walk();
-            }
+            walk(false);
+            screen.display(flash.next_file());
         }
     })
     
@@ -1099,8 +1100,7 @@ flash.init(function() {
     hardware.pinB.configure(DIGITAL_IN_PULLUP, function() {
         imp.sleep(0.02);
         if (hardware.pinB.read() == 0) {
-            walking = false;
-            screen.display(flash.next_file());
+            agent.send("cat", "get");
         }
     })
         
