@@ -187,10 +187,10 @@ const FILE_STATUS_SENDING = 4;
 
 // MX25L3206E SPI Flash
 class spiFlash {
-    // 64 blocks of 64k each = 4mb
+    // 16 blocks of 64k each = 1mb
     static FAT_SIZE = 65536;                // 1 block reserved for FAT
-    static TOTAL_MEMORY = 4194304;          // 4 Megabytes
-    static LOAD_BUFFER_SIZE = 4096;         // 4kb
+    static TOTAL_MEMORY = 1048576;          // 1 Megabytes
+    static LOAD_BUFFER_SIZE = 8192;         // 8kb
 
     // spi interface
     spi = null;
@@ -200,12 +200,12 @@ class spiFlash {
     fat = null;
     config = null;
     load_pos = 0;
+    current_file = null;
 
     // The callbacks
     init_callback = null;
     load_files_files = [];
     load_files_callback = null;
-	sync_config_callback = null;
 
 	// Status
 	busy = false;
@@ -222,9 +222,6 @@ class spiFlash {
         agent.on("flash.load.data", load_data.bindenv(this));
         agent.on("flash.load.finish", load_finish.bindenv(this));
         agent.on("flash.load.error", load_error.bindenv(this));
-        agent.on("flash.save.finish", save_finish.bindenv(this));
-        agent.on("flash.save.error", save_error.bindenv(this));
-        agent.on("config.sync", sync_config.bindenv(this));
 
         spi.configure(CLOCK_IDLE_LOW | MSB_FIRST, SPI_CLOCK_SPEED_FLASH);
         cs_l.configure(DIGITAL_OUT);
@@ -391,7 +388,7 @@ class spiFlash {
         spi.write(CE);
         cs_l.write(1);
 
-        imp.wakeup(0, checkStatus(callback).bindenv(this));
+        imp.wakeup(1, checkStatus(callback).bindenv(this));
     }
 
     // -------------------------------------------------------------------------
@@ -507,12 +504,10 @@ class spiFlash {
     // -------------------------------------------------------------------------
     // Writes a new buffer of data to the file system
     function append_file(filename, buffer, length) {
-		local rtrn = false;
 		if (fat.root.free + length >= TOTAL_MEMORY) {
 			local oldlength = length;
 			length = TOTAL_MEMORY - fat.root.free;
 			server.log("Cropping the last sample from " + oldlength + " to " + length);
-			rtrn = true;
 		}
 		if (length > 0) {
 			// server.log("Data: " + length + " bytes for " + filename + ":" + fat[filename].finish);
@@ -521,7 +516,7 @@ class spiFlash {
 			fat[filename].status = FILE_STATUS_INIT;
 			fat.root.free += length;
 		}
-		return rtrn;
+		return length;
 	}
 
 
@@ -533,7 +528,7 @@ class spiFlash {
         local realignment = (fat.root.free % 256 == 0) ? 0 : (256-(fat.root.free % 256));
         fat.root.free += realignment;
 
-		fat[filename].status = FILE_STATUS_READY;
+		if (filename in fat) fat[filename].status = FILE_STATUS_READY;
 		write_fat(function() {
 			if (callback) callback(filename);
 		}.bindenv(this))
@@ -560,7 +555,7 @@ class spiFlash {
         request.filename <- filename;
         request.url <- url;
         request.start <- 0;
-        request.finish <- LOAD_BUFFER_SIZE - 1;
+        request.finish <- LOAD_BUFFER_SIZE;
         agent.send("flash.load", request);
     }
 
@@ -583,7 +578,7 @@ class spiFlash {
 			response.filename <- request.filename;
 			response.url <- request.url;
 			response.start <- 0;
-			response.finish <- LOAD_BUFFER_SIZE - 1;
+			response.finish <- LOAD_BUFFER_SIZE;
 			agent.send("flash.load", response);
 		}
 	}
@@ -593,18 +588,22 @@ class spiFlash {
     // Handle the loading of a new data chunk from the agent
     function load_data(response) {
 
-		append_file(response.filename, response.chunk, response.chunk.len());
-
-        response.start += response.chunk.len();
-        response.finish += response.chunk.len();
-        agent.send("flash.load", response);
+		local written = append_file(response.filename, response.chunk, response.chunk.len());
+        if (written == response.chunk.len()) {
+            response.start += response.chunk.len();
+            response.finish += response.chunk.len();
+            agent.send("flash.load", response);
+        } else {
+            response.err <- "Only " + written + " of " + response.chunk.len() + " bytes where written to flash";
+            load_error(response);
+        }
     }
 
     // -------------------------------------------------------------------------
     // Handle the finish of an entire file from the agent
     function load_finish(response) {
 
-        server.log("Finished writing " + (fat[response.filename].finish - fat[response.filename].start) + " bytes of " + response.filename + " to flash");
+        server.log("Finished writing " + (fat[response.filename].finish - fat[response.filename].start) + " bytes of '" + response.filename + "' to flash");
 		busy = false;
 
 		local callback = fat[response.filename].callback;
@@ -687,126 +686,71 @@ class spiFlash {
 
 
     // -------------------------------------------------------------------------
-	function save_files(callback = null) {
-
-		busy = true;
-		foreach (filename,file in fat) {
-			if (file_exists(filename)) {
-				fat[filename].status = FILE_STATUS_SENDING;
-				save_file(filename, function(success) {
-					if (success) {
-						unlink(filename, function() {
-							save_files(callback);
-						}.bindenv(this));
-					} else {
-						save_files(callback);
-					}
-				}.bindenv(this));
-				return;
-			}
-		}
-
-		// Mark all the sending files as ready again
-		foreach (filename,file in fat) {
-			if (file_exists(filename, FILE_STATUS_SENDING)) {
-				fat[filename].status = FILE_STATUS_READY;
-			}
-		}
-
-		// This should only get to here on the last execution when there are no more files
-		write_fat(function() {
-			busy = false;
-			if (callback) callback();
-		}.bindenv(this));
-	}
-
-
+    function prev_file() {
+        
+        // Load up the list of files into a numbered list
+        local filenames = [];
+        foreach (filename,stuff in fat) {
+            if (file_exists(filename)) {
+                filenames.push(filename);
+            }
+        }
+        
+        // Find the current file, in order to find the prev file
+        if (filenames.len() == 0) {
+            current_file = null;
+        } else if (current_file == null || !file_exists(current_file)) {
+            current_file = filenames[filenames.len()-1];
+        } else {
+            for (local i = filenames.len()-1; i >= 0; i--) {
+                if (filenames[i] == current_file) {
+                    if (i-1 >= 0) {
+                        current_file = filenames[i-1];
+                    } else {
+                        current_file = filenames[filenames.len()-1];
+                    }
+                    break;
+                }
+            }
+        }
+        
+        return current_file;
+    }
+    
     // -------------------------------------------------------------------------
-	function save_file(filename, callback = null) {
-
-		fat[filename].callback <- callback;
-		local start = fat[filename].start;
-		local finish = fat[filename].finish;
-		local length = finish - start;
-
-		for (local i = 0; i < length; i += LOAD_BUFFER_SIZE) {
-
-			local blength = LOAD_BUFFER_SIZE;
-			if (i+blength > length) {
-				blength = length - i;
-			}
-
-			local request = {};
-			request.data <- readBlob(start+i, blength);
-			request.start <- i;
-			request.finish <- i + blength;
-			request.length <- length;
-			request.filename <- filename;
-            request.device_id <- hardware.getimpeeid();
-
-			agent.send("flash.save", request);
-		}
-	}
-
-
-    // -------------------------------------------------------------------------
-	function save_finish(filename) {
-
-		server.log("File '" + filename + ".wav' has been sent and acked");
-        if (filename in fat && "callback" in fat[filename] && fat[filename].callback != null) {
-            local callback = fat[filename].callback;
-            delete fat[filename].callback;
-            callback(true);
-		}
-
-	}
-
-
-    // -------------------------------------------------------------------------
-	function save_error(filename) {
-
-		server.log("File '" + filename + ".wav' failed to send so is skipped");
-        if (filename in fat && "callback" in fat[filename] && fat[filename].callback != null) {
-            local callback = fat[filename].callback;
-            delete fat[filename].callback;
-            callback(false);
-		}
-
-	}
-
-
-    // -------------------------------------------------------------------------
-	function get_config(key, defvalue = null) {
-		if (key in config) return config[key];
-		return defvalue;
-	}
-
-
-    // -------------------------------------------------------------------------
-	function sync_config(newconfig = null, callback = null) {
-		if (newconfig == null) {
-			// STEP 1 - Send the config to the other side
-			sync_config_callback = callback;
-			// server.log("BEFORE: " + config.email);
-			agent.send("config.sync", config);
-		} else if (typeof newconfig == "table") {
-			// STEP 2 - Receive config from the other side
-			// server.log("AFTER: " + newconfig.email);
-			if (newconfig.updated > config.updated) {
-				config = newconfig;
-				if (sync_config_callback) {
-					local callback = sync_config_callback;
-					sync_config_callback = null;
-					write_fat(callback);
-				}
-			} else if (sync_config_callback) {
-				local callback = sync_config_callback;
-				sync_config_callback = null;
-				if (callback) callback();
-			}
-		}
-	}
-
+    function next_file() {
+        
+        // Load up the list of files into a numbered list
+        local filenames = [];
+        foreach (filename,stuff in fat) {
+            if (file_exists(filename)) {
+                filenames.push(filename);
+            }
+        }
+        
+        // Find the current file, in order to find the next file
+        if (filenames.len() == 0) {
+            current_file = null;
+        } else if (current_file == null || !file_exists(current_file)) {
+            current_file = filenames[0];
+        } else {
+            for (local i = 0; i < filenames.len(); i++) {
+                if (filenames[i] == current_file) {
+                    if (i+1 < filenames.len()) {
+                        current_file = filenames[i+1];
+                    } else {
+                        current_file = filenames[0];
+                    }
+                    break;
+                }
+            }
+        }
+        
+        return current_file;
+    }
+    
+    
+    
 }
 
 
@@ -882,6 +826,7 @@ class ST7735_LCD {
     // Screen buffers
     pixelCount = null;
     buffer = null;
+    animating = null;
     
     // I/O pins
     spi = null;
@@ -962,6 +907,7 @@ class ST7735_LCD {
     function initialize() {
         // server.log("Initializing...");
         
+        lite.write(0.0);                    // Turn off backlight
         reset();                            // HW/SW reset
         command(SLPOUT);                    // Wake from sleep
         command(DISPON);                    // Display on
@@ -969,7 +915,6 @@ class ST7735_LCD {
         command(FRMCTR1, "\x00\x06\x03");   // Refresh rate / "porch" settings
         command(MADCTL, "\xC0");            // Origin = top-left
         clear();                            // Clear screen
-        lite.write(1.0);                    // Turn on backlight
     }
     
     
@@ -979,27 +924,30 @@ class ST7735_LCD {
         
         if (color == null) color = BLACK;
         if (color.len() != 2) return false;
-        // server.log(format("Scanning %d pixels of 0x%02x 0x%02x", pixelCount, color[0], color[1]));
+        
+        // if we are writing all black, turn off the backlight
+        lite.write(color == BLACK ? 0.0 : 1.0);
         
         command(RAMWR);
         cs_l.write(0);
-            
-        local spi_write = spi.write.bindenv(spi);
-        local buffer_writen = buffer.writen.bindenv(buffer);
         
+        // Fill a buffer with a colour
+        local color32 = color[0] << 24 | color[1] << 16 | color[0] << 8 | color[1];
         buffer.seek(0);
-        for (local i = 0; i < pixelCount; i++) {
-            
-            buffer_writen(color[0], 'b');
-            buffer_writen(color[1], 'b');
-            
-            if (buffer.tell() == buffer.len()) {
-                spi_write(buffer);
-                buffer.seek(0);
-            }
+        for (local i = 0; i < buffer.len(); i += 4) {
+            buffer.writen(color32, 'i');
+        }
+        
+        // Send the buffer lots of times
+        buffer.seek(0);
+        local loops = 2 * pixelCount / buffer.len();
+        for (local i = 0; i < loops; i++) {
+            spi.write(buffer);
+            buffer.seek(0);
         }
         
         cs_l.write(1);
+        animating = null;
         
     }
     
@@ -1007,39 +955,61 @@ class ST7735_LCD {
     // Displays a file on the screen
     function display(filename) {
     
-        if (flash.file_exists(filename)) {
+        if (flash.busy) {
+            // server.log("The device is busy, probably loading.")
+            return false;
+        }
+        else if (filename && flash.file_exists(filename)) {
             
-            command(RAMWR);
-                
-            // server.log("Displaying file '" + filename + "' from " + flash.fat[filename].start + " to " + flash.fat[filename].finish)
-            for (local i = flash.fat[filename].start; i < flash.fat[filename].finish; i += buffer.len()) {
-                // server.log("Reading buffer from " + i + " to " + (i + buffer.len()))
-                
-                buffer.seek(0);
-                local buf = flash.readBlob(i, buffer.len());
-                buffer.writeblob(buf);
-                
-                cs_l.write(0);
-                spi.write(buffer);
-                cs_l.write(1);
+            // Work out the buffer size. Either 10k or 4k.
+            local buffer_size = 10240;
+            if (buffer_size > imp.getmemoryfree()/2) {
+                buffer_size = 4096;
             }
             
-        } else {
+            // Check if we are playing an animation
+            if (flash.fat[filename].finish - flash.fat[filename].start > pixelCount*2) {
+                animating = filename;
+            } else {
+                animating = null;
+            }
+            
+            local bytes = 0;
+            local total_bytes = flash.fat[filename].finish - flash.fat[filename].start;
+            
+            command(RAMWR);
+            for (local i = flash.fat[filename].start; i < flash.fat[filename].finish; i += buffer_size) {
+                
+                local buf = flash.readBlob(i, buffer_size);
+                cs_l.write(0);
+                spi.write(buf);
+                cs_l.write(1);
+                
+                // If we have finished a frame and there is more data, sleep a bit
+                bytes += buf.len();
+                if (animating && (bytes % (pixelCount*2) == 0) && (bytes != total_bytes)) {
+                    imp.sleep(0.05);
+                }
+            }
+            
+            // turn the lights on
+            if (lite.read() < 1.0) lite.write(1.0);
+            
+            // Continue to execute this until the animation is stopped by someone else
+            if (animating) {
+                imp.wakeup(0.1, function() {
+                    // Start the animation again
+                    display(animating)
+                }.bindenv(this));
+            }
+            
+        } else if (filename) {
             server.log("File not found: " + filename);
         }
     }
     
-    
 }
 // End ST7735_LCD class
-
-
-
-// =============================================================================
-function random_draw() {
-    // screen.clear(format("%c%c", math.rand() % 0xFF, math.rand() % 0xFF))
-    imp.wakeup(0.2, random_draw);
-}
 
 
 
@@ -1053,53 +1023,84 @@ flash <- spiFlash(hardware.spi257, hardware.pin1);
 
 // screen constructor. arguments: Width, Height, SPI, Backlight, Reset, Chip Select, Data/Command
 screen <- ST7735_LCD(128, 160, hardware.spi257, hardware.pin8, hardware.pin9, hardware.pin6, hardware.pinE, flash);
-random_draw();
 
-// Do we clobber the memory on boot?
+// Do we clobber the memory on boot? Are we in the middle of something
 clobber <- false;
+walking <- false;
 
 // Initialise the flash and mark the system as ready
 flash.init(function() {
 
-    // Play request
+    // Display an existing file
     agent.on("display", function(filename) {
         screen.display(filename);
     })
 
-    // Load request
+    // Load a new url
     agent.on("load", function(data) {
+        screen.animating = null;
         flash.load(data.filename, data.url, function(filename) {
             screen.display(filename);
         });
     })
 
+    
+    // List the files
     agent.on("list", function(d) {
         local filenames = [];
         foreach (filename,stuff in flash.fat) {
-            if (filename != "root") filenames.push(filename);
+            if (filename != "root") filenames.push(stuff);
         }
         agent.send("list", filenames);
     })
     
+    // Wipe the memory
+    agent.on("wipe", function(d) {
+        screen.animating = null;
+        walking = false;
+        flash.init(function() {
+            screen.clear();
+            agent.send("wipe", true);
+        }, true);
+    })
+    
+    // Left button = pinD = Previous
     hardware.pinD.configure(DIGITAL_IN_PULLUP, function() {
         imp.sleep(0.02);
         if (hardware.pinD.read() == 0) {
-            server.log("Click Button 1")
+            walking = false;
+            screen.display(flash.prev_file());
         }
     })
     
+    // Middle button = Start slide show
     hardware.pinC.configure(DIGITAL_IN_PULLUP, function() {
         imp.sleep(0.02);
         if (hardware.pinC.read() == 0) {
-            server.log("Click Button 2")
-            server.sleepfor(23*60*60);
+            
+            return agent.send("cat", "get");
+            
+            function walk() {
+                if (walking) {
+                    imp.wakeup(3, walk);
+                    screen.display(flash.next_file());
+                }
+            }
+            if (walking) {
+                walking = false;
+            } else {
+                walking = true;
+                walk();
+            }
         }
     })
     
+    // Right button = Next 
     hardware.pinB.configure(DIGITAL_IN_PULLUP, function() {
         imp.sleep(0.02);
         if (hardware.pinB.read() == 0) {
-            server.log("Click Button 3")
+            walking = false;
+            screen.display(flash.next_file());
         }
     })
         
