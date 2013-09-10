@@ -3,8 +3,7 @@
 // Setup the global variables
 var params = $.url().param();
 var agentid = params['agent'].slice(-12);
-var agenturl = "https://agent.electricimp.com/" + agentid;
-var fburl = "https://devices.firebaseIO.com/agents/" + agentid;
+var fburl = "https://[databasename].firebaseIO.com/agents/" + agentid;
 var fb = new Firebase(fburl);
 
 function set_status(status) {
