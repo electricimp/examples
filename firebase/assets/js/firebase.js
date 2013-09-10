@@ -26,7 +26,7 @@ function set_status(status) {
 
 
 function set_button(status) {
-	if (status === null || status === undefined || status == false) {
+	if (status === null || status === undefined || status === false) {
 		$("#pin8").html('<i class="icon-black icon-question-sign"></i> Unknown');
 		$("#pin8").removeClass("active");
 		$("#pin8").addClass("disabled");
