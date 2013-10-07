@@ -24,26 +24,17 @@ THE SOFTWARE.
 
 
 //------------------------------------------------------------------------------------------
-// Sign up with an account on http://loggly.com and replace the TOKEN with the provided one.
+// This is a sample use of the agent.send("log") functionality. Basically, anything you write 
+// to agent.send("log") will be sent directly to loggly.com.
 //
-const LOGGLY_URL = "https://logs-01.loggly.com/inputs/TOKEN/tag/imp/";
-function log(message, callback = null) {
-    if (typeof message != "object") {
-        message = {message = message};
-    }
-    message.agenturl <- http.agenturl();
+imp.wakeup(1, function() {
     
-    http.post(LOGGLY_URL, {}, http.jsonencode(message)).sendasync(function (res) {
-        if (res.statuscode != 200) server.log("Error posting to Logly: " + res.statuscode);
-        if (callback) callback(res);
-    })
-}
+    try {
+        local x = 1 / 0;
+    } catch (e) {
+        server.log("Exception: " + e)
+        agent.send("log", {exception = e});
+    }
 
-//------------------------------------------------------------------------------------------
-// This is a sample application for the log function above. It simply sends any "log" event 
-// from the device to loggly.
-//
-device.on("log", function(logmsg) {
-    log(logmsg);
-});
+})
 
