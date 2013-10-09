@@ -1,21 +1,23 @@
-/*
-Copyright (C) 2013 electric imp, inc.
+<!--
+-Copyright (C) 2013 electric imp, inc.
+-
+-Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
+-and associated documentation files (the "Software"), to deal in the Software without restriction, 
+-including without limitation the rights to use, copy, modify, merge, publish, distribute, 
+-sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is 
+-furnished to do so, subject to the following conditions:
+-
+-The above copyright notice and this permission notice shall be included in all copies or substantial 
+-portions of the Software.
+-
+-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE 
+-AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
+-DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+-->
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
-and associated documentation files (the "Software"), to deal in the Software without restriction, 
-including without limitation the rights to use, copy, modify, merge, publish, distribute, 
-sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is 
-furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial 
-portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE 
-AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
-DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
 <!DOCTYPE html>
 <html lang="en">
 <html>
@@ -101,7 +103,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 			// this is where you put your agent URL. You can find your URL under
 			// "device settings" in the electric imp IDE
-			impURL = "http://agent.electricimp.com/YOUR_UNIQUE_URL";
+			impURL = "https://agent.electricimp.com/xETq8-VuECEd";
 
 			// this takes the text from the form, prepares it, makes JSON of the
 			// above printer settings table, and POSTs the whole thing to 
@@ -152,6 +154,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 				// print the imp logo by sending a generic request to /logo
 				request.open("GET", impURL+"/logo", false);
 				// make JSON from the settings table
+				var json = JSON.stringify(settings);
 				request.send(json);
 				console.log("Sent logo request to imp");
 			}

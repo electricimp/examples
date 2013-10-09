@@ -160,7 +160,26 @@ http.onrequest(function(request,res){
         
         // send response 
         res.send(200, "printed");
-    } else {
+    }
+    else if (request.path == "/logo") {
+        server.log("Agent printing logo");
+        printLogo();
+        // send response 
+        res.send(200, "printed");
+
+    } 
+    else if (request.path == "/plain") {
+        server.log("Agent received plain text");
+        local message = request.query["p"];
+        server.log("Text of message: "+message);//.text);
+        // now feed the message down and print it
+        // the PHP script that feeds us text takes care of doing the word wrapping 
+        device.send("printnolf", message);
+        // send response 
+        res.send(200, "printed");
+
+    } 
+    else {
         server.log("Agent got unknown request: "+request.body);
         res.send(400, "request error");
     }
