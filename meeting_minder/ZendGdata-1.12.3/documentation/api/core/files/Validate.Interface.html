@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Zend Gdata API Documentation</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></meta><link rel="stylesheet" href="../css/template.css" type="text/css"></link><script type="text/javascript" src="../js/jquery-1.4.2.min.js"></script><script type="text/javascript" src="../js/jquery.tools.min.js"></script><script type="text/javascript" src="../js/jquery-ui-1.8.2.custom.min.js"></script><script type="text/javascript" src="../js/template.js"></script></head><body><div id="content"><h1 class="file">Validate/Interface.php</h1><div id="file-nav-box"><div id="file-nav-options">
+              Show:
+              <img src="../images/icons/visibility_public.png" alt="Public" id="show-public"></img><img src="../images/icons/visibility_protected.png" alt="Protected" id="show-protected"></img><img src="../images/icons/visibility_private.png" alt="Private" id="show-private"></img><span class="attribute" id="show-inherited">inherited</span></div><div id="file-nav-container"><ul id="file-nav"></ul><div style="clear: left;"></div></div><div id="file-nav-tab">
+              Table of Contents
+          </div></div><a name="top" class="anchor"></a><div id="file-description"><div class="short-description">Zend Framework</div><div class="long-description"><p>LICENSE</p>
+
+<p>This source file is subject to the new BSD license that is bundled
+with this package in the file LICENSE.txt.
+It is also available through the world-wide-web at this URL:
+http://framework.zend.com/license/new-bsd
+If you did not receive a copy of the license and are unable to
+obtain it through the world-wide-web, please send an email
+to license@zend.com so we can send you a copy immediately.</p></div></div><dl class="file-info"><dt>Category</dt><dd>Zend
+         
+    </dd><dt>Copyright</dt><dd>Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+         
+    </dd><dt>License</dt><dd><a href="http://framework.zend.com/license/new-bsd">New BSD License</a>
+         
+    </dd><dt>Package</dt><dd>Zend_Validate
+         
+    </dd><dt>Version</dt><dd>$Id: Interface.php 24593 2012-01-05 20:35:02Z matthew $
+         
+    </dd></dl><a name="interfaces" class="anchor"></a><a id="\Zend_Validate_Interface" class="anchor"></a><h2 class="interface">\Zend_Validate_Interface<div class="to-top"><a href="#top">jump to top</a></div></h2><div class="class"><small class="package"><b>Package: </b>Zend\Validate</small><div class="long-description"></div><dl class="class-info"><dt>Category</dt><dd>Zend
+         
+    </dd><dt>Copyright</dt><dd>Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+         
+    </dd><dt>License</dt><dd><a href="http://framework.zend.com/license/new-bsd">New BSD License</a>
+         
+    </dd></dl><h3>Methods</h3><div><a id="\Zend_Validate_Interface::getMessages()" class="anchor"></a><div class="method public"><a href="#" class="gripper"><img src="../images/icons/arrow_right.png"></img><img src="../images/icons/arrow_down.png" style="display: none;"></img></a><code class="title"><img src="../images/icons/method.png" alt="method" title="method"></img><img src="../images/icons/visibility_public.png" style="margin-right: 5px" alt="public"></img><span class="highlight">getMessages</span><span class="nb-faded-text">()</span> : array</code><div class="description"><p class="short_description">Returns an array of messages that explain why the most recent isValid()
+call returned false.</p></div><div class="code-tabs"><div class="long-description"><p>The array keys are validation failure message identifiers,
+and the array values are the corresponding human-readable message strings.</p>
+
+<p>If isValid() was never called or if the most recent isValid() call
+returned true, then this method returns an empty array.</p></div><strong>Returns</strong><table class="argument-info"><thead><tr><th>Type</th><th>Description</th></tr></thead><tr><td>array</td><td></td></tr></table></div><div class="clear"></div></div><a id="\Zend_Validate_Interface::isValid()" class="anchor"></a><div class="method public"><a href="#" class="gripper"><img src="../images/icons/arrow_right.png"></img><img src="../images/icons/arrow_down.png" style="display: none;"></img></a><code class="title"><img src="../images/icons/method.png" alt="method" title="method"></img><img src="../images/icons/visibility_public.png" style="margin-right: 5px" alt="public"></img><span class="highlight">isValid</span><span class="nb-faded-text">(mixed $value)</span> : boolean</code><div class="description"><p class="short_description">Returns true if and only if $value meets the validation requirements</p></div><div class="code-tabs"><div class="long-description"><p>If $value fails validation, then this method returns false, and
+getMessages() will return an array of messages that explain why the
+validation failed.</p></div><strong>Parameters</strong><table class="argument-info"><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tr><th>$value</th><td>mixed</td><td><em></em></td></tr></table><strong>Returns</strong><table class="argument-info"><thead><tr><th>Type</th><th>Description</th></tr></thead><tr><td>boolean</td><td></td></tr></table><strong>Throws</strong><table class="argument-info"><thead><tr><th>Exception</th><th>Description</th></tr></thead><tr><td>\Zend_Validate_Exception</td><td><em>If validation of $value is impossible</em></td></tr></table></div><div class="clear"></div></div></div></div></div><small class="footer">
+            Documentation was generated by
+            <a href="http://phpdoc.org">phpDocumentor
+                2.0.0a12</a>.
+        </small></body></html>
