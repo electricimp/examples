@@ -7,28 +7,26 @@
  */
 
 imp.configure("RGB Led", [], []);
+server.log("Device Started");
 
-// configure LEDs
 red <- hardware.pin1;
-green <- hardware.pin2;
-blue <- hardware.pin5;
 red.configure(PWM_OUT, 1.0/500.0, 1.0);
+
+green <- hardware.pin2;
 green.configure(PWM_OUT, 1.0/500.0, 1.0);
+
+blue <- hardware.pin5;
 blue.configure(PWM_OUT, 1.0/500.0, 1.0);
 
-// Set LEDs
-function set(r,g,b) {
-    server.log(format("Setting color to (%i,%i,%i)", r,g,b));
-    red.write(1 - r/255.0);
-    green.write(1 - g/255.0);
-    blue.write(1 - b/255.0);
+function setRGB(r,g,b) {
+    red.write(r);
+    green.write(g);
+    blue.write(b);
 }
 
-// Turn LED off to start
-set(0,0,0);
+function setLEDHandler(color) {
+    server.log("Got a setLED message from the agent");
+    setRGB(color.red, color.green, color.blue);
+}
 
-// When we get a "setRGB" message from the agent:
-agent.on("setRGB", function(c) {
-    // set the LEDs
-    set(c.r, c.g, c.b);
-});
+agent.on("setLED", setLEDHandler);
