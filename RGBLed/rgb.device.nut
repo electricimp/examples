@@ -26,6 +26,10 @@ function setRGB(r,g,b) {
 
 function setLEDHandler(color) {
     server.log("Got a setLED message from the agent");
+
+	// this is a bug in the video
+    //setRGB(color.red, color.blue, color.green);
+    
     setRGB(color.red, color.green, color.blue);
 }
 
