@@ -32,7 +32,7 @@ THE SOFTWARE.
 //
 // =============================================================================
 class timer {
-    
+
     cancelled = false;
     paused = false;
     running = false;
@@ -44,14 +44,15 @@ class timer {
     // -------------------------------------------------------------------------
     constructor(_params = null, _send_self = false) {
         params = _params;
+        send_self = _send_self;
     }
-    
+
     // -------------------------------------------------------------------------
     function update(_params) {
         params = _params;
         return this;
     }
-    
+
     // -------------------------------------------------------------------------
     function set(_duration, _callback) {
         assert(running == false);
@@ -60,35 +61,32 @@ class timer {
         imp.wakeup(_duration, alarm.bindenv(this))
         return this;
     }
-    
+
     // -------------------------------------------------------------------------
     function repeat(_interval, _callback) {
         assert(running == false);
         interval = _interval;
-        running = true;
-        callback = _callback;
-        imp.wakeup(interval, alarm.bindenv(this))
-        return this;
+        return set(_interval, _callback);
     }
-    
+
     // -------------------------------------------------------------------------
     function cancel() {
         cancelled = true;
         return this;
     }
-    
+
     // -------------------------------------------------------------------------
     function pause() {
         paused = true;
         return this;
     }
-    
+
     // -------------------------------------------------------------------------
     function unpause() {
         paused = false;
         return this;
     }
-    
+
     // -------------------------------------------------------------------------
     function alarm() {
         if (interval > 0 && !cancelled) {
@@ -96,7 +94,7 @@ class timer {
         } else {
             running = false;
         }
-        
+
         if (callback && !cancelled && !paused) {
             if (!send_self && params == null) {
                 callback();
@@ -106,7 +104,7 @@ class timer {
                 callback(params);
             } else  if (send_self && params != null) {
                 callback(this, params);
-            } 
+            }
         }
     }
 }
