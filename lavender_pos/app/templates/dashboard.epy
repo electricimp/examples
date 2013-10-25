@@ -1,0 +1,21 @@
+{% extends "base.epy" %}
+
+{% block content %}
+    <a href="/purchase" class="button" id="purchase-button">Make a purchase!</a>
+    <table class="table table-striped">
+        <thead style="border-bottom: 1px solid #333; margin-bottom: 2px;">
+            <tr>
+                <td style="width: 175px;">Date</td>
+                <td style="width: 150px;">Company</td>
+                <td style="width: 50px;">Amount</td>
+            </tr>
+        </thead>
+        {% for transaction in transactions %}
+            <tr>
+                <td>{{ transaction.time }}</td>
+                <td>{{ transaction.company }}</td>
+                <td>{{ transaction.amount }}</td>
+            </tr>
+        {% endfor %}
+    <table>
+{% endblock %}

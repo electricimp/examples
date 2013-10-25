@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, target-densitydpi=high-dpi" />
+        <title>Electric Imp | POS</title>
+
+        <link rel="stylesheet" type="text/css"
+            href="http://fonts.googleapis.com/css?family=Montserrat" />
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static',
+            filename='css/normalize.css') }}" />
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static',
+            filename='css/style.css') }}" />
+
+        <link href="{{ url_for('static', filename='images/favicon.ico') }}"
+            rel="shortcut icon" type="images/x-icon" />
+    </head>
+
+    <body>
+        <div class="container">
+            <div class="top-bar">
+                <div class="user">
+                    {% if user.is_authenticated() %}
+                        <a href="/log-out" class="button">Log out</a>
+                    {% else %}
+                        <form action="" method="post" class="sign-in-form">
+                            <h2>Sign In</h2>
+                            {% for field in sign_in_form %}
+                                {% if field.errors %}
+                                    {{ field(placeholder=field.label.text,
+                                           class='errors') }}
+                                {% else %}
+                                    {{ field(placeholder=field.label.text) }}
+                                {% endif %}
+                            {% endfor %}
+
+                            <input type="submit" class="button" value="Log in" />
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% block content %}{% endblock %}
+            <div class="clear"></div>
+        </div>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+        {% block js %}{% endblock %}
+    </body>
+</html>

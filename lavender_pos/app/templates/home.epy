@@ -1,0 +1,25 @@
+{% extends "base.epy" %}
+
+{% block content %}
+    <form action="{{ url_for('index') }}" method="post" class="main-form">
+        <h2>Sign Up</h2>
+        {% for field in sign_up_form %}
+            <div>
+                {{ field.label if field.widget.input_type != 'hidden' }}
+
+                {% if field.errors %}
+                    {{ field(class='errors') }}
+                    <p class="errors">
+                        {% for error in field.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </p>
+                {% else %}
+                    {{ field() }}
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <input type="submit" class="button" value="Sign Up" />
+    </form>
+{% endblock %}
