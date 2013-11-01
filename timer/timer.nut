@@ -40,13 +40,22 @@ class timer {
     interval = 0;
     params = null;
     send_self = false;
+    static timers = [];
 
     // -------------------------------------------------------------------------
     constructor(_params = null, _send_self = false) {
         params = _params;
         send_self = _send_self;
+        timers.push(this); // Prevents scoping death
     }
 
+    // -------------------------------------------------------------------------
+    function _cleanup() {
+        foreach (k,v in timers) {
+            if (timers == this) return timers.remove(k);
+        }
+    }
+    
     // -------------------------------------------------------------------------
     function update(_params) {
         params = _params;
@@ -93,6 +102,7 @@ class timer {
             imp.wakeup(interval, alarm.bindenv(this))
         } else {
             running = false;
+            _cleanup();
         }
 
         if (callback && !cancelled && !paused) {
