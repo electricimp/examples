@@ -52,7 +52,7 @@ class timer {
     // -------------------------------------------------------------------------
     function _cleanup() {
         foreach (k,v in timers) {
-            if (timers == this) return timers.remove(k);
+            if (v == this) return timers.remove(k);
         }
     }
     
