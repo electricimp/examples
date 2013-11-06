@@ -1,6 +1,6 @@
 class offlineLogging{
     UART = null;
-    DEBUG_EN = false;
+    DEBUG_EN = null;
     // Pass the UART object ie hardware.uart6E, Baud rate, and Offline Enable True/False
     constructor(uart,baud, enable){
         this.UART = uart;
