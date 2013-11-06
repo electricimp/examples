@@ -1,29 +1,24 @@
-class offlineLogging{
-    UART = null;
-    DEBUG_EN = null;
+class logger{
+    _uart = null;
+    _debug = null;
     // Pass the UART object ie hardware.uart6E, Baud rate, and Offline Enable True/False
-    constructor(uart,baud, enable){
-        this.UART = uart;
-        this.UART.configure(baud, 8, PARITY_NONE, 1,0 ,function(){});
-        this.DEBUG_EN = enable;
+    constructor(uart, baud, enable=true){
+        _uart = uart;
+        _uart.configure(baud, 8, PARITY_NONE, 1, NO_RX | NO_CTSRTS );
+        _debug = enable;
     }
     
-    function printstring(message){
-        foreach(idx,char in message){
-            this.UART.write(char);
-        }
-    }
+    function enable(){_debug = true;}
     
-    function offline_enable(enable){
-        this.DEBUG_EN = enable;
-    }
+    function disable(){_debug = false;}    
     
     function log(message){
-        if (this.DEBUG_EN){
-            this.printstring(message);
-        }
+        _debug && _uart.write(message + "\n");
         server.log(message);
     }
 }
-globalDebug <-  offlineLogging(hardware.uart6E, 19200, true)
+
+globalDebug <-  logger(hardware.uart6E, 19200)
 globalDebug.log("Testing, Testing, 123...");
+globalDebug.disable();
+globalDebug.log("Testing, Testing, 456...");
