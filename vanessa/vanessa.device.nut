@@ -21,12 +21,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
  * Vanessa Reference Design Firmware
  * Tom Byrne
  * tom@electricimp.com
- * 10/21/2013
+ * 11/21/2013
  */
 
 // SPI Clock Rate in kHz
 const SPICLK = 7500;
-// I/O Expander 7-bit address
+// I/O Expander 8-bit address
 const IOEXP_ADDR = 0x40;
 
 /* GLOBAL CLASS AND FUNCTION DEFINITIONS ------------------------------------*/
