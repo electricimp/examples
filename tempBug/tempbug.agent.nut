@@ -146,6 +146,7 @@ class Xively.Channel {
 /* REGISTER DEVICE CALLBACKS  ------------------------------------------------*/
 
 device.on("temp", function(datapoint) {
+	server.log("Got new temp data: "+datapoint+" degrees");
     xivelyChannel.Set(datapoint);
     xivelyFeed <- Xively.Feed(XIVELY_FEED_ID, [xivelyChannel]);
     xivelyClient.Put(xivelyFeed);
