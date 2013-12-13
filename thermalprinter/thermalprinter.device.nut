@@ -152,7 +152,15 @@ class printer {
         // print the buffer
         uart.write(FF);
     }
-    
+
+    // Load a buffer and print it immediately
+    function printnolf(printStr) {
+        // load the string into the buffer
+        uart.write(printStr);
+        // print the buffer
+        uart.write(FF);
+    }
+
     // load buffer into the printer's buffer without printing
     function load(buffer) {
         uart.write(buffer);
@@ -161,6 +169,7 @@ class printer {
     // this function pulls data from the agent down to the imp, which can then push it to the printer
     // part of the printer class because it eventually calls the "print downloaded image command" itself
     function pull() {
+        server.log("pull called " + this.loadedDataLength + "/" + this.imageDataLength);
         if(this.loadedDataLength < this.imageDataLength) {
             agent.send("pull", CHUNK_SIZE);
         } else {        
@@ -170,38 +179,42 @@ class printer {
             // tell the agent we're done and it should reset download pointers too
             agent.send("imageDone", 0);
             imp.sleep(0.5);
+            this.feed(1);
             this.reset();
             server.log("Device: done loading image");
         }
     }
     
     // this function writes a row of bitmap image data to the printer
-    function printImg(width, height, data) {
+    function printImgBuffer(data) {
 
+        server.log("printImgBuffer");
         // round width up to next byte boundary
-        local rowBytes = (width + 7) / 8;
-
+        local rowBytes = (this.imageWidth + 7) / 8;
+        server.log("rowbytes "+rowBytes);
         // enforce max width (384 pixels / 8 = 48 bytes)
         local rowBytesClipped = (rowBytes >= 48) ? 48 : rowBytes;
 
         // print up to 255 rows at a time
-        for (local rowStart = 0; rowStart < height; rowStart += 255) {
-            local chunkHeight = height - rowStart;
-            if (chunkHeight > 255) chunkHeight = 255;
+        //for (local rowStart = 0; rowStart < this.imageHeight; rowStart += 255) 
+        {
+            local chunkHeight = CHUNK_SIZE / rowBytes;//this.imageHeight - rowStart;
+            //if (chunkHeight > 255) chunkHeight = 255;
             // put printer in print-bitmap mode with some nasty magic numbers
             uart.write(18);
             uart.write(42);
             uart.write(chunkHeight);
             uart.write(rowBytesClipped);
 
-            for (local row = 0; row < chunkHeight; row++) {
+            for (local row = 0; row < chunkHeight; row++) 
+            {
                 uart.write(data.readblob(rowBytes));
                 uart.flush();
-                server.log("Printing row "+row+" of chunk "+(rowStart / 255));
+                server.log("Printing row "+row);
             }
         }
-        server.log("Done Printing Image");
-        this.feed(2);
+        server.log("Done Printing block");
+        //this.feed(2);
     }
     
     // print the buffer and feed n lines
@@ -364,19 +377,6 @@ class printer {
 // instatiate the printer object at global scope
 myPrinter <- printer(hardware.uart57, 19200);
 
-/*
-function ei() {
-    myPrinter.setJustify("center");
-    myPrinter.setBold(true);
-    myPrinter.print("electric imp");
-    myPrinter.feed(1);
-    myPrinter.reset();
-}
-
-imp.wakeup(0.5, ei);
-// once this callback is done, we've printed the logo and "electric imp" and reset the printer
-*/
-
 // Register some hooks for the agent to call, allowing the agent to push actions to the device
 // the most obvious: print a buffer of data
 agent.on("print", function(buffer) {
@@ -384,13 +384,22 @@ agent.on("print", function(buffer) {
     myPrinter.print(buffer);
 });
 
+agent.on("printnolf", function(buffer) {
+    server.log("Device: printing new buffer from agent (no lf): "+buffer);
+    myPrinter.printnolf(buffer);
+});
+
 // provides info on a bitmap to download and print
-agent.on("image", function(image) {
-    printImgBuffer(image.data);
+agent.on("downloadImage", function(imageParams) 
+{
+    server.log("downloadImage called "+imageParams[1]+","+imageParams[2]);
+    myPrinter.imageWidth = imageParams[1];
+    myPrinter.imageHeight = imageParams[2];
+    myPrinter.imageDataLength = imageParams[0];
+    myPrinter.pull();
 });
 
 // load chunks of an image as pulled from agent
-/*
 agent.on("imgData", function(buffer) {
     myPrinter.printImgBuffer(buffer);
     myPrinter.loadedDataLength += buffer.len();
@@ -399,7 +408,6 @@ agent.on("imgData", function(buffer) {
     imp.sleep(0.01);
     myPrinter.pull();
 });
-*/
 
 // allow the agent to load a buffer without printing
 agent.on("load", function(buffer) {
