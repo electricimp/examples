@@ -784,7 +784,7 @@ class TempSensor_rev3 {
             _poll_callback = callback;
             if (_poll_timer) imp.cancelwakeup(_poll_timer);
         } else if (!_poll_interval || !_poll_callback) {
-            server.error("You have to start TempSensor_rev2::poll() with an interval and callback")
+            server.error("You have to start TempSensor_rev3::poll() with an interval and callback")
             return false;
         }
         
@@ -888,7 +888,7 @@ class Potentiometer {
             _poll_callback = callback;
             if (_poll_timer) imp.cancelwakeup(_poll_timer);
         } else if (!_poll_interval || !_poll_callback) {
-            server.error("You have to start TempSensor_rev2::poll() with an interval and callback")
+            server.error("You have to start Potentiometer::poll() with an interval and callback")
             return false;
         }
         
