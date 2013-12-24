@@ -124,7 +124,7 @@ temp_sns <- hardware.pin9;
 myThermistor <- thermistor(temp_sns, b_therm, t0_therm, r_therm, 10, false);
 
 // enable the temperature sensor
-temp_sns_en_l.write(0);
+therm_en_l.write(0);
 // wait 5 ms to let things settle
 imp.sleep(0.005);
 // read the temperature and send it to the agent
@@ -132,7 +132,7 @@ agent.send("temp",format("%.2f",myThermistor.read_c()));
 // Prefer Fahrenheit? Use the line below instead of the one above.
 //agent.send("temp",format("%.2f",myThermistor.read_f()));
 // disable the temperature sensor again to save power
-tmp_sns_en_l.write(1);
+therm_en_l.write(1);
 
 //Sleep for 15 minutes and 1 second, minus the time past the 0:15
 //so we wake up near each 15 minute mark (prevents drifting on slow DHCP)
