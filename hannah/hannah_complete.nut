@@ -72,10 +72,10 @@ IO15    GPIO     Spare
 
 */
 
-const NO_DEVICE_ERR = "The device at I2C address 0x%02x is disabled.";
-const I2C_READ_ERR = "I2C Read Failure. Device: 0x%02x Register: 0x%02x";
-const BAD_TIMER_ERR = "You have to start %s with an interval and callback";
-const WRONG_DEVICE_ERR = "The device at I2C address 0x%02x is not a %s.";
+const ERR_NO_DEVICE = "The device at I2C address 0x%02x is disabled.";
+const ERR_I2C_READ = "I2C Read Failure. Device: 0x%02x Register: 0x%02x";
+const ERR_BAD_TIMER = "You have to start %s with an interval and callback";
+const ERR_WRONG_DEVICE = "The device at I2C address 0x%02x is not a %s.";
 
 //------------------------------------------------------------------------------
 // This class interfaces with the SX1509 IO expander. It sits on the I2C bus and 
@@ -121,6 +121,8 @@ class SX1509 {
                         REGMISC    = 0x1F,
                         REGRESET   = 0x7D}
 
+    // Constructor requires the i2c bus, the address on that bus and the hardware pin to use for interrupts
+    // These should all be configured before use here.
     constructor(i2c, address, int_pin){
         _i2c  = i2c;
         _addr = address;
@@ -135,26 +137,30 @@ class SX1509 {
 
     // ---- Low level functions ----
 
+    // Reads a single byte from a registry
     function readReg(register) {
         local data = _i2c.read(_addr, format("%c", register), 1);
         if (data == null) {
-            server.error(format(I2C_READ_ERR, _addr, register));
+            server.error(format(ERR_I2C_READ, _addr, register));
             return -1;
         }
         return data[0];
     }
     
+    // Writes a single byte to a registry
     function writeReg(register, data) {
         _i2c.write(_addr, format("%c%c", register, data));
         // server.log(format("Setting device 0x%02X register 0x%02X to 0x%02X", _addr, register, data));
     }
     
+    // Changes one bit out of the selected register (byte)
     function writeBit(register, bitn, level) {
         local value = readReg(register);
         value = (level == 0)?(value & ~(1<<bitn)):(value | (1<<bitn));
         writeReg(register, value);
     }
     
+    // Writes a registry but masks specific bits. Similar to writeBit but for multiple bits.
     function writeMasked(register, data, mask) {
         local value = readReg(register);
         value = (value & ~mask) | (data & mask);
@@ -268,11 +274,13 @@ class SX1509 {
         writeMasked(gpio >= 4 ? bank.REGSNSHI : bank.REGSNSLO, data, mask);
     }
 
+    // Resets all the IRQs
     function clearAllIrqs() {
         writeReg(BANK_A.REGINTSRC,0xff);
         writeReg(BANK_B.REGINTSRC,0xff);
     }
 
+    // Read all the IRQs as a single 16-bit bitmap
     function getIrq(){
         return ((readReg(BANK_B.REGINTSRC) & 0xFF) << 8) | (readReg(BANK_A.REGINTSRC) & 0xFF);
     }
@@ -332,29 +340,32 @@ class ExpGPIO {
     // http://electricimp.com/docs/api/hardware/pin/configure/
     static LED_OUT = 1000001;
     
+    // Constructor requires the IO Expander class and the pin number to aquire
     constructor(expander, gpio) {
         _expander = expander;
         _gpio     = gpio;
     }
     
     //Optional initial state (defaults to 0 just like the imp)
-    function configure(mode, param1 = null, param2 = null) {
+    function configure(mode, param = null) {
         _mode = mode;
         
-        // set the pin direction and configure the internal pullup resistor, if applicable
         if (mode == DIGITAL_OUT) {
-            // Param1 is the initial value of the pin, Param2 is unused.
+            // Digital out - Param is the initial value of the pin
+            // Set the direction, turn off the pull up and enable the pin
             _expander.setDir(_gpio,1);
             _expander.setPullUp(_gpio,0);
-            if(param1 != null) {
-                _expander.setPin(_gpio, param1);    
+            if(param != null) {
+                _expander.setPin(_gpio, param);    
             } else {
                 _expander.setPin(_gpio, 0);
             }
             
             return this;
         } else if (mode == ExpGPIO.LED_OUT) {
-            // Param1 is the initial intensity, Param2 is unused.
+            // LED out - Param is the initial intensity
+            // Set the direction, turn off the pull up and enable the pin
+            // Configure a bunch of other LED specific timers and settings
             _expander.setPullUp(_gpio, 0);
             _expander.setInputBuffer(_gpio, 0);
             _expander.setOpenDrain(_gpio, 1);
@@ -365,26 +376,31 @@ class ExpGPIO {
             _expander.setOff(_gpio, 0);
             _expander.setRiseTime(_gpio, 0);
             _expander.setFallTime(_gpio, 0);
-            _expander.setIntensityOn(_gpio, param1 > 0 ? param1 : 0);
-            _expander.setPin(_gpio, param1 > 0 ? 0 : 1);
+            _expander.setIntensityOn(_gpio, param > 0 ? param : 0);
+            _expander.setPin(_gpio, param > 0 ? 0 : 1);
             
             return this;
         } else if (mode == DIGITAL_IN) {
-            // Param1 is the callback function
+            // Digital in - Param is the callback function
+            // Set the direction and disable to pullup
             _expander.setDir(_gpio,0);
             _expander.setPullUp(_gpio,0);
+            // Fall through to the callback setup
         } else if (mode == DIGITAL_IN_PULLUP) {
-            // Param1 is the callback function
+            // Param is the callback function
+            // Set the direction and turn on the pullup
             _expander.setDir(_gpio,0);
             _expander.setPullUp(_gpio,1);
+            // Fall through to the callback setup
         }
         
-        // configure the pin to throw an interrupt, if necessary
-        if (typeof param1 == "function") {
+        if (typeof param == "function") {
+            // If we have a callback, configure it against a rising IRQ edge
             _expander.setIrqMask(_gpio,1);
             _expander.setIrqEdges(_gpio,1,1);
-            _expander.setCallback(_gpio, param1);
+            _expander.setCallback(_gpio, param);
         } else {
+            // Disable the callback for this pin
             _expander.setIrqMask(_gpio,0);
             _expander.setIrqEdges(_gpio,0,0);
             _expander.setCallback(_gpio,null);
@@ -393,34 +409,40 @@ class ExpGPIO {
         return this;
     }
     
+    // Reads the stats of the configured pin
     function read() { 
         return _expander.getPin(_gpio); 
     }
     
+    // Sets the state of the configured pin
     function write(state) { 
         _expander.setPin(_gpio,state); 
     }
     
+    // Set the intensity of an LED OUT pin. Don't use for other pin types.
     function setIntensity(intensity) { 
         _expander.setIntensityOn(_gpio,intensity); 
     }
     
-    function blink(ton, toff, ion, ioff, fade=true) { 
-        ton = (ton > 0x1F ? 0x1F : ton);
-        toff = (toff > 0x1F ? 0x1F : toff);
-        ion = ion & 0xFF;
-        ioff = (ioff > 0x07 ? 0x07 : ioff);
-        _expander.setTimeOn(_gpio, ton);
-        _expander.setOff(_gpio, toff << 3 | ioff);
+    // Set the blink rate of an LED OUT pin. Don't use for other pin types.
+    function blink(rampup, rampdown, intensityon, intensityoff = 0, fade=true) { 
+        rampup = (rampup > 0x1F ? 0x1F : rampup);
+        rampdown = (rampdown > 0x1F ? 0x1F : rampdown);
+        intensityon = intensityon & 0xFF;
+        intensityoff = (intensityoff > 0x07 ? 0x07 : intensityoff);
+        
+        _expander.setTimeOn(_gpio, rampup);
+        _expander.setOff(_gpio, rampdown << 3 | intensityoff);
         _expander.setRiseTime(_gpio, fade?5:0);
         _expander.setFallTime(_gpio, fade?5:0);
-        _expander.setIntensityOn(_gpio, ion);
-        _expander.setPin(_gpio, ion>0 ? 0 : 1)
+        _expander.setIntensityOn(_gpio, intensityon);
+        _expander.setPin(_gpio, intensityon>0 ? 0 : 1)
     }
     
-    function fade(on) {
-        _expander.setRiseTime(_gpio, on?5:0);
-        _expander.setFallTime(_gpio, on?5:0);
+    // Enable or disable fading (breathing)
+    function fade(on, risetime = 5, falltime = 5) {
+        _expander.setRiseTime(_gpio, on ? risetime : 0);
+        _expander.setFallTime(_gpio, on ? falltime : 0);
     }
 }
 
@@ -437,6 +459,7 @@ class RGBLED {
     ledG = null;
     ledB = null;
     
+    // Constructor requires the IO Expander object but the three pin numbers for R, G and B
     constructor(expander, gpioRed, gpioGreen, gpioBlue) {
         _expander = expander;
         ledR = ExpGPIO(_expander, gpioRed).configure(ExpGPIO.LED_OUT);
@@ -444,13 +467,21 @@ class RGBLED {
         ledB = ExpGPIO(_expander, gpioBlue).configure(ExpGPIO.LED_OUT);
     }
     
+    // Returns a table with the last/current values of the R, G and B intensities
+    function read() {
+        return {r = (256 - ledR.read() * 256).tointeger(), 
+                g = (256 - ledG.read() * 256).tointeger(), 
+                b = (256 - ledB.read() * 256).tointeger()};
+    }
+    
+    // Set the colour intensities (0-255) and an optional fade (boolean)
     function set(r, g, b, fade=false) {
-        // Turn the LEDs on but blinking off
         ledR.blink(0, 0, r.tointeger(), 0, fade);
         ledG.blink(0, 0, g.tointeger(), 0, fade);
         ledB.blink(0, 0, b.tointeger(), 0, fade);
     }
     
+    // Blink the LEDs at the given intensity, and time with optional fading (breathing)
     function blink(r, g, b, fade=true, timeon=1, timeoff=1) {
         // Turn them off and let them sync on their way on
         ledR.write(1); ledG.write(1); ledB.write(1); 
@@ -481,20 +512,21 @@ class RGBSensor {
     // Capacitors - Lower number = more sensitivity
     static MIN_CAP_COUNT = 0x0; // Min capacitor count
     static MAX_CAP_COUNT = 0xF; // Max capacitor count
-    static CAP_ADDRESSES = [0x06, 0x07, 0x08, 0x09];
+    static REG_CAPS = [0x06, 0x07, 0x08, 0x09];
     
     // Integration slots - Higher number = more sensitivity
     static MIN_INTEGRATION_SLOTS = 0x000;   // Min integration slots
-    static MAX_INTEGRATION_SLOTS = 0xfff;   // Max integration slots
-    static INT_ADDRESSES = [0x0a, 0x0c, 0x0e, 0x10];
+    static MAX_INTEGRATION_SLOTS = 0xFFF;   // Max integration slots
+    static REG_INT_SLOTS         = [0x0a, 0x0c, 0x0e, 0x10];
     
     // RGB reading
-    static CTRL_ADDRESS       = 0x00
-    static GET_COLOUR_READING = 0x01;
-    static COL_LOW_ADDRESSES  = [0x40, 0x42, 0x44, 0x46];
-    static COL_HI_ADDRESSES   = [0x41, 0x43, 0x45, 0x47];
+    static REG_CTRL        = 0x00
+    static REG_READ_COLOUR = 0x01;
+    static REG_LOW         = [0x40, 0x42, 0x44, 0x46];
+    static REG_HI          = [0x41, 0x43, 0x45, 0x47];
          
-        
+    
+    // Constructor requires the I2C and IO Expander objects, the I2C address and the pin to use for sleeping the sensor
     constructor(i2c, address, expander, gpioSleep) {
         _i2c  = i2c;
         _addr = address;  
@@ -503,39 +535,43 @@ class RGBSensor {
         initialise();
     }
     
+    // Wake up the sensor by pulling up the sleep pin
     function wake() { 
         _sleep.write(0); 
     }    
     
+    // Put the sensor to sleep by pulling down the sleep pin
     function sleep() { 
         _sleep.write(1); 
     }
     
+    // Initialise the sensor with the provided cap and timeslot settings
     function initialise(caps = 0x0F, timeslots = 0xFF) {
         wake();
         
-        local result1 = _i2c.write(_addr, format("%c%c", CTRL_ADDRESS, 0));
+        local result1 = _i2c.write(_addr, format("%c%c", REG_CTRL, 0));
         imp.sleep(0.01);
-        local result2 = setRGBCapacitorCounts(caps);
-        local result3 = setRGBIntegrationTimeSlots(timeslots);
+        local result2 = _setRGBCapacitorCounts(caps);
+        local result3 = _setRGBIntegrationTimeSlots(timeslots);
         
         sleep();
         
         return (result1 == 0) && result2 && result3;
     }
     
-    function setRGBCapacitorCounts(count)
+    // Internal functions to configure the capacitor counts and integration time slots
+    function _setRGBCapacitorCounts(count)
     {
         for (local capIndex = CAP_COLOUR.RED; capIndex <= CAP_COLOUR.CLEAR; ++capIndex) {
             local thecount = (typeof count == "array") ? count[capIndex] : count;
-            if (!setCapacitorCount(CAP_ADDRESSES[capIndex], thecount)) {
+            if (!_setCapacitorCount(REG_CAPS[capIndex], thecount)) {
                 return false;
             }
         }        
         return true;
     }
     
-    function setCapacitorCount(address, count) {
+    function _setCapacitorCount(address, count) {
         if (count < MIN_CAP_COUNT) {
             count = MIN_CAP_COUNT;
         } else if (count > MAX_CAP_COUNT) {
@@ -545,20 +581,20 @@ class RGBSensor {
         return _i2c.write(_addr, format("%c%c", address, count)) == 0;
     }
     
-    function setRGBIntegrationTimeSlots(value) {
+    function _setRGBIntegrationTimeSlots(value) {
         for (local intIndex = CAP_COLOUR.RED; intIndex <= CAP_COLOUR.CLEAR; ++intIndex) {
             local thevalue = (typeof value == "array") ? value[intIndex] : value;
-            if (!setIntegrationTimeSlot(INT_ADDRESSES[intIndex], thevalue & 0xff)) {
+            if (!_setIntegrationTimeSlot(REG_INT_SLOTS[intIndex], thevalue & 0xff)) {
                 return false;
             }
-            if (!setIntegrationTimeSlot(INT_ADDRESSES[intIndex] + 1, thevalue >> 8)) {
+            if (!_setIntegrationTimeSlot(REG_INT_SLOTS[intIndex] + 1, thevalue >> 8)) {
                 return false;
             }
         }        
         return true;
     }
 
-    function setIntegrationTimeSlot(address, value) {
+    function _setIntegrationTimeSlot(address, value) {
         
         if (value < MIN_INTEGRATION_SLOTS) {
             value = MIN_INTEGRATION_SLOTS;
@@ -569,44 +605,47 @@ class RGBSensor {
         return _i2c.write(_addr, format("%c%c", address, value)) == 0;
     }
     
+    // Returns the current RGB and C values from the sensor
     function read() { 
         
         local rgbc = [0, 0, 0 ,0];
         wake();
-        if (_i2c.write(_addr, format("%c%c", CTRL_ADDRESS, GET_COLOUR_READING)) == 0) {
+        if (_i2c.write(_addr, format("%c%c", REG_CTRL, REG_READ_COLOUR)) == 0) {
             // Wait for reading to complete
             local count = 0;
-            while (_i2c.read(_addr, format("%c", CTRL_ADDRESS), 1)[0] != 0) {
+            while (_i2c.read(_addr, format("%c", REG_CTRL), 1)[0] != 0) {
                 count++;
             }
             for (local colIndex = CAP_COLOUR.RED; colIndex <= CAP_COLOUR.CLEAR; ++colIndex) {
-                rgbc[colIndex] = _i2c.read(_addr,  format("%c", COL_LOW_ADDRESSES[colIndex]), 1)[0];
+                rgbc[colIndex] = _i2c.read(_addr,  format("%c", REG_LOW[colIndex]), 1)[0];
             }
             
             for (local colIndex = CAP_COLOUR.RED; colIndex <= CAP_COLOUR.CLEAR; ++colIndex) {
-                rgbc[colIndex] += _i2c.read(_addr,  format("%c", COL_HI_ADDRESSES[colIndex]), 1)[0] << 8;
+                rgbc[colIndex] += _i2c.read(_addr,  format("%c", REG_HI[colIndex]), 1)[0] << 8;
             }
         } else {
-            server.error("RGBSensor:GET_COLOUR_READING reading failed.")
+            server.error("RGBSensor:REG_READ_COLOUR reading failed.")
         }
         sleep();
         return { r = rgbc[0], g = rgbc[1], b = rgbc[2], c = rgbc[3] };
         
     }
     
+    // Regularly read the sensor values and return them in a callback
     function poll(interval = null, callback = null) {
         if (interval != null && callback != null) {
             _poll_callback = callback;
             _poll_interval = interval;
             if (_poll_timer) imp.cancelwakeup(_poll_timer);
         } else if (_poll_interval == null || _poll_callback == null) {
-            server.error(format(BAD_TIMER_ERR, RGBSensor::poll()))
+            server.error(format(ERR_BAD_TIMER, RGBSensor::poll()))
         }
         _poll_timer = imp.wakeup(_poll_interval, poll.bindenv(this));
         
         _poll_callback(read())
     }
 
+    // Stops the poller
     function stop() {
         if (_poll_timer) imp.cancelwakeup(_poll_timer);
         _poll_timer = null;
@@ -655,15 +694,17 @@ class TempSensor_rev2 {
     static REG_RMID = "\xFE";
     static REG_RDR  = "\xFF";
     
-    
+    // Constructor requires the I2C and IO Expander objects and the I2C address and pin number 
+    // to use for alerts. The alert pin isn't used in this class, so can actually be ignored.
     constructor(i2c, address, expander, gpioAlert) {
         _i2c  = i2c;
         _addr = address;  
         _expander = expander;
         
+        // Check we have the right sensor on this address
         local id = _i2c.read(_addr, REG_RMID, 1);
         if (!id || id[0] != 0xA1) {
-            server.error(format(WRONG_DEVICE_ERR, _addr, "SA5004X temperature sensor"))
+            server.error(format(ERR_WRONG_DEVICE, _addr, "SA5004X temperature sensor"))
             _disabled = true;
         } else {
             // Clear the config and the status register
@@ -671,19 +712,20 @@ class TempSensor_rev2 {
         }
     }
     
+    // Regularly poll the temperature and return the results to the callback
     function poll(interval = null, callback = null) {
-        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
+        if (_disabled) return server.error(format(ERR_NO_DEVICE, _addr));
         
         if (interval && callback) {
             _poll_interval = interval;
             _poll_callback = callback;
             if (_poll_timer) imp.cancelwakeup(_poll_timer);
         } else if (!_poll_interval || !_poll_callback) {
-            server.error(format(BAD_TIMER_ERR, "TempSensor_rev2::poll()"))
+            server.error(format(ERR_BAD_TIMER, "TempSensor_rev2::poll()"))
             return false;
         }
         
-        local temp = get();
+        local temp = read();
         _poll_timer = imp.wakeup(_poll_interval, poll.bindenv(this))
         if (temp != _last_temp) {
             if (_alert_lo == null || _alert_hi == null || ((temp <= _alert_lo && _last_alert != -1) || (temp >= _alert_hi && _last_alert != 1))) {
@@ -694,6 +736,9 @@ class TempSensor_rev2 {
         }
     }
     
+    // Configure the callback to be called when the temperature is outside the provided range (inclusive).
+    // This works like a thermometer in that it only triggers when moving above the hi or 
+    // below the low level.
     function alert(lo, hi, callback = null) {
         // Alert is an alias for poll
         _alert_lo = lo;
@@ -703,8 +748,9 @@ class TempSensor_rev2 {
         poll(1, callback);
     }
     
+    // Stops the poller and alert monitoring. Also puts the sensor to sleep.
     function stop() {
-        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
+        if (_disabled) return server.error(format(ERR_NO_DEVICE, _addr));
         
         if (_poll_timer) imp.cancelwakeup(_poll_timer);
         _poll_timer = null;
@@ -718,8 +764,9 @@ class TempSensor_rev2 {
         _running = false;
     }
     
-    function get() {
-        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
+    // Gets the current temperature
+    function read() {
+        if (_disabled) return server.error(format(ERR_NO_DEVICE, _addr));
         
         if (!_running) {
             // Configure a single shot reading
@@ -743,12 +790,6 @@ class TempSensor_rev2 {
 
     }
     
-    function check_alerts() {
-        local status = _i2c.read(_addr, REG_SR, 1)[0] & 0x60;
-        if (status == 0x20) return -1;
-        else if (status == 0x40) return 1;
-        else return 0;
-    }
 }
 
 //------------------------------------------------------------------------------
@@ -769,49 +810,51 @@ class TempSensor_rev3 {
     _running = false;
     _disabled = false;
     
-    static TEMP_REG      = "\x00";
-    static CONF_REG      = "\x01";
-    static T_LOW_REG     = "\x02";
-    static T_HIGH_REG    = "\x03";
-    static RESET_VAL     = "\x06"; // Send this value on general-call address (0x00) to reset device
+    static REG_TEMP      = "\x00";
+    static REG_CONF      = "\x01";
+    static REG_T_LOW     = "\x02";
+    static REG_T_HIGH    = "\x03";
     
-    
+    // Constructor requires the I2C and IO Expander objects and the pin number to send alerts to
     constructor(i2c, address, expander, gpioAlert) {
         _i2c  = i2c;
         _addr = address;  
         _expander = expander;
         
-        local id = _i2c.read(_addr, TEMP_REG, 1);
+        // Check we have the right sensor on this address
+        local id = _i2c.read(_addr, REG_TEMP, 1);
         if (id == null) {
-            server.error(format(WRONG_DEVICE_ERR, _addr, "TMP112 temperature sensor"))
+            server.error(format(ERR_WRONG_DEVICE, _addr, "TMP112 temperature sensor"))
             _disabled = true;
         } else {
-            // Turn the temperature reading off for now
-            _alert = ExpGPIO(_expander, gpioAlert).configure(DIGITAL_IN_PULLUP, alert_callback.bindenv(this));
+            // Setup the alert pin
+            _alert = ExpGPIO(_expander, gpioAlert).configure(DIGITAL_IN_PULLUP, _interruptHandler.bindenv(this));
             
             // Shutdown the sensor for now
-            local conf = _i2c.read(_addr, CONF_REG, 2);
-            _i2c.write(_addr, CONF_REG + format("%c%c", conf[0] | 0x01, conf[1]));
+            local conf = _i2c.read(_addr, REG_CONF, 2);
+            _i2c.write(_addr, REG_CONF + format("%c%c", conf[0] | 0x01, conf[1]));
         }
     }
     
-    function alert_callback(state) {
-        if (_alert_callback && state == 0) _alert_callback(get());
-    }
+    // Handles rising edges on the alert pin and triggers the callback
+    function _interruptHandler(state) {
+        if (_alert_callback && state == 0) _alert_callback(read());
+    }    
     
+    // Regularly report the temperature to the callback function, but only if its changed
     function poll(interval = null, callback = null) {
-        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
+        if (_disabled) return server.error(format(ERR_NO_DEVICE, _addr));
         
         if (interval && callback) {
             _poll_interval = interval;
             _poll_callback = callback;
             if (_poll_timer) imp.cancelwakeup(_poll_timer);
         } else if (!_poll_interval || !_poll_callback) {
-            server.error(format(BAD_TIMER_ERR, "TempSensor_rev2::poll()"))
+            server.error(format(ERR_BAD_TIMER, "TempSensor_rev2::poll()"))
             return false;
         }
         
-        local temp = get();
+        local temp = read();
         _poll_timer = imp.wakeup(_poll_interval, poll.bindenv(this))
         if (temp != _last_temp) {
             _poll_callback(temp);
@@ -820,8 +863,9 @@ class TempSensor_rev3 {
         
     }
     
+    // Setup an alert for when the temperature crosses below the lo or above the hi value.
     function alert(lo, hi, callback = null) {
-        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
+        if (_disabled) return server.error(format(ERR_NO_DEVICE, _addr));
         
         callback = callback ? callback : _poll_callback;
         stop();
@@ -829,16 +873,17 @@ class TempSensor_rev3 {
     
         local tlo = deg2int(lo, 0.0625, 12);
         local thi = deg2int(hi, 0.0625, 12);
-        _i2c.write(_addr, T_LOW_REG + format("%c%c", (tlo >> 8) & 0xFF, (tlo & 0xFF)));
-        _i2c.write(_addr, T_HIGH_REG + format("%c%c", (thi >> 8) & 0xFF, (thi & 0xFF)));
-        _i2c.write(_addr, CONF_REG + "\x62\x80"); // Run continuously
+        _i2c.write(_addr, REG_T_LOW + format("%c%c", (tlo >> 8) & 0xFF, (tlo & 0xFF)));
+        _i2c.write(_addr, REG_T_HIGH + format("%c%c", (thi >> 8) & 0xFF, (thi & 0xFF)));
+        _i2c.write(_addr, REG_CONF + "\x62\x80"); // Run continuously
 
         // Keep track of the fact that we are running continuously
         _running = true;       
     }
     
+    // Stopps the poller and alert and powers the sensor down
     function stop() {
-        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
+        if (_disabled) return server.error(format(ERR_NO_DEVICE, _addr));
         
         if (_poll_timer) imp.cancelwakeup(_poll_timer);
         _poll_timer = null;
@@ -848,24 +893,25 @@ class TempSensor_rev3 {
         _running = false;
         
         // Power the sensor down
-        local conf = _i2c.read(_addr, CONF_REG, 2);
-        _i2c.write(_addr, CONF_REG + format("%c%c", conf[0] | 0x01, conf[1]));
+        local conf = _i2c.read(_addr, REG_CONF, 2);
+        _i2c.write(_addr, REG_CONF + format("%c%c", conf[0] | 0x01, conf[1]));
         
     }
     
-    function get() {
-        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
+    // Returns the current temperature
+    function read() {
+        if (_disabled) return server.error(format(ERR_NO_DEVICE, _addr));
         
         if (!_running) {
-            local conf = _i2c.read(_addr, CONF_REG, 2);
-            _i2c.write(_addr, CONF_REG + format("%c%c", conf[0] | 0x80, conf[1]));
+            local conf = _i2c.read(_addr, REG_CONF, 2);
+            _i2c.write(_addr, REG_CONF + format("%c%c", conf[0] | 0x80, conf[1]));
         
             // Wait for conversion to be finished
-            while ((_i2c.read(_addr, CONF_REG, 1)[0] & 0x80) == 0x80);
+            while ((_i2c.read(_addr, REG_CONF, 1)[0] & 0x80) == 0x80);
         }
         
         // Get 12-bit signed temperature value in 0.0625C steps
-        local result = _i2c.read(_addr, TEMP_REG, 2);
+        local result = _i2c.read(_addr, REG_TEMP, 2);
         local temp = (result[0] << 8) + result[1];
         return int2deg(temp, 0.0625, 12);
     }
@@ -897,18 +943,19 @@ class Potentiometer {
         _gpioEnable = ExpGPIO(_expander, gpioEnable).configure(DIGITAL_OUT);
     }
     
+    // Regularly reads the pot value and returns it to the callback when the value changes
     function poll(interval = null, callback = null) {
         if (interval && callback) {
             _poll_interval = interval;
             _poll_callback = callback;
             if (_poll_timer) imp.cancelwakeup(_poll_timer);
         } else if (!_poll_interval || !_poll_callback) {
-            server.error(format(BAD_TIMER_ERR, "TempSensor_rev2::poll()"))
+            server.error(format(ERR_BAD_TIMER, "TempSensor_rev2::poll()"))
             return false;
         }
         
         _poll_timer = imp.wakeup(_poll_interval, poll.bindenv(this))
-        local new_pot_value = get();
+        local new_pot_value = read();
         if (_last_pot_value != new_pot_value) {
             _last_pot_value = new_pot_value;
             _poll_callback(new_pot_value);
@@ -916,6 +963,7 @@ class Potentiometer {
         
     }
 
+    // Stops the poller
     function stop() {
         if (_poll_timer) imp.cancelwakeup(_poll_timer);
         _poll_timer = null;
@@ -939,7 +987,7 @@ class Potentiometer {
         return _gpioEnable.read() == 0;
     }
 
-    // Sets the minimum and maximum of the output scale 
+    // Sets the minimum and maximum of the output scale. Optionally limit the values to integers.
     function scale(min, max, integer_only = false) {
         _min = min;
         _max = max;
@@ -947,8 +995,8 @@ class Potentiometer {
     }
     
     
-    // Gets the current value, rounded to three decimal places
-    function get () {
+    // Gets the current value, rounded to an integer or three decimal places 
+    function read() {
         local f = 0.0 + _min + (_pinRead.read() * (_max - _min) / 65535.0);
         if (_integer_only) return f.tointeger();
         else               return format("%0.03f", f).tofloat();
@@ -967,6 +1015,8 @@ class Servo {
     _gpioEnable = null;
     _pinWrite = null;
     
+    // Constructor requires the IO expander class, the pin number for the enable line,
+    // and the hardware pin for PWM output. The period and duty cycle are both optional.
     constructor(expander, gpioEnable, pinWrite, period=0.02, dutycycle=0.5) {
         _expander = expander;
         _pinWrite = pinWrite;
@@ -1006,6 +1056,7 @@ class Accelerometer_rev2 {
     _addr = null;
     _expander = null;
     _gpioInterrupt = null;
+    _alert_callback = null;
     _poll_timer = null;
     _poll_interval = null;
     _poll_callback = null;
@@ -1020,6 +1071,8 @@ class Accelerometer_rev2 {
     static DATA_ALL      = "\xA8";
     static WHO_AM_I      = "\x0F";
     
+    // This constructor requires the I2C and IO Expander objects, the address of the device
+    // and the expander pin number for the interrupt line.
     constructor(i2c, addr, expander, gpioInterrupt)
     {
         _i2c  = i2c;
@@ -1027,19 +1080,25 @@ class Accelerometer_rev2 {
         _expander = expander;
         local id = _i2c.read(_addr, WHO_AM_I, 1);
         if (!id || id[0] != 0x3B) {
-            server.error(format(WRONG_DEVICE_ERR, _addr, "LIS331DL accelerometer"))
+            server.error(format(ERR_WRONG_DEVICE, _addr, "LIS331DL accelerometer"))
             _disabled = true;
         } else {
-            _gpioInterrupt = ExpGPIO(_expander, gpioInterrupt).configure(DIGITAL_IN, _callbackHandler.bindenv(this));
+            _gpioInterrupt = ExpGPIO(_expander, gpioInterrupt).configure(DIGITAL_IN, _interruptHandler.bindenv(this));
         }
     }
     
-    function _callbackHandler() {
-        server.log("Not implemented yet.")
+    // This internal callback handler is unused in this implementation. 
+    function _interruptHandler(state) {
+        if (state == 1 && _alert_callback) {
+            _alert_callback(read());
+        }
     }
+
     
-    function get() {
-        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
+    // Returns the acceleration measured by the chip. Read the comments on the class
+    // to understand what these values mean.
+    function read() {
+        if (_disabled) return server.error(format(ERR_NO_DEVICE, _addr));
         
         local data = _i2c.read(_addr, DATA_ALL, 6);
         local x = 0, y = 0, z = 0;
@@ -1060,8 +1119,9 @@ class Accelerometer_rev2 {
         return {x = x, y = y, z = z};
     }
     
+    // Regularly read the acceleration data from the chip and returns it to the callback at a table.
     function poll(interval = null, callback = null) {
-        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
+        if (_disabled) return server.error(format(ERR_NO_DEVICE, _addr));
         if (interval && callback) {
             _poll_interval = interval;
             _poll_callback = callback;
@@ -1069,22 +1129,23 @@ class Accelerometer_rev2 {
             _i2c.write(_addr, CTRL_REG1 + "\xC7");      // Turn on the sensor, enable X, Y, and Z, ODR = 100 Hz
             _i2c.write(_addr, CTRL_REG2 + "\x00");      // High-pass filter disabled            
         } else if (!_poll_interval || !_poll_callback) {
-            server.error(format(BAD_TIMER_ERR, "Accelerometer_rev2::poll()"))
+            server.error(format(ERR_BAD_TIMER, "Accelerometer_rev2::poll()"))
             return false;
         }
         
-        local acc = get();
         _poll_timer = imp.wakeup(_poll_interval, poll.bindenv(this))
-        _poll_callback(acc.x, acc.y, acc.z);
+        _poll_callback(read());
     }
     
+    // The alert functionality on this chip is crap, so we just poll instead
     function alert(callback) {
         // Alert is an alias for poll in this accelerometer
         poll(1, callback);
     }
     
+    // Stop the poller
     function stop() {
-        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr)); 
+        if (_disabled) return server.error(format(ERR_NO_DEVICE, _addr)); 
         if (_poll_timer) imp.cancelwakeup(_poll_timer);
         _poll_timer = null;
         _poll_interval = null;
@@ -1138,6 +1199,8 @@ class Accelerometer_rev3 {
     static TIME_WINDOW   = "\x3D";
     static WHO_AM_I      = "\x0F";
     
+    // This constructor requires the I2C and IO Expander objects, the address of the device
+    // and the expander pin number for the interrupt line.
     constructor(i2c, addr, expander, gpioInterrupt)
     {
         _i2c  = i2c;
@@ -1146,23 +1209,24 @@ class Accelerometer_rev3 {
         
         local id = _i2c.read(_addr, WHO_AM_I, 1);
         if (!id || id[0] != 0x33) {
-            server.error(format(WRONG_DEVICE_ERR, _addr, "LIS3DH accelerometer"))
+            server.error(format(ERR_WRONG_DEVICE, _addr, "LIS3DH accelerometer"))
             _disabled = true;
         } else {
-            _gpioInterrupt = ExpGPIO(_expander, gpioInterrupt).configure(DIGITAL_IN, interruptHandler.bindenv(this));
+            _gpioInterrupt = ExpGPIO(_expander, gpioInterrupt).configure(DIGITAL_IN, _interruptHandler.bindenv(this));
             _i2c.write(_addr, CTRL_REG1 + "\x00");      // Turn off the sensor
         }
     }
     
-    function interruptHandler(state) {
+    // Handles the edge changes on the alert pin and calls the callback
+    function _interruptHandler(state) {
         if (state == 1 && _alert_callback) {
-            local acc = get();
-            _alert_callback(acc.x, acc.y, acc.z);
+            _alert_callback(read());
         }
     }
     
+    // Configures the chip to toggle the alert pin when the device moves in any direction.
     function alert(callback = null) {
-        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
+        if (_disabled) return server.error(format(ERR_NO_DEVICE, _addr));
         
         _alert_callback = callback;
         _running = true;
@@ -1181,24 +1245,25 @@ class Accelerometer_rev3 {
 
     }
     
+    // Regularly read the acceleration data and send it to the callback
     function poll(interval = null, callback = null) {
-        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
+        if (_disabled) return server.error(format(ERR_NO_DEVICE, _addr));
         if (interval && callback) {
             _poll_interval = interval;
             _poll_callback = callback;
             if (_poll_timer) imp.cancelwakeup(_poll_timer);
         } else if (!_poll_interval || !_poll_callback) {
-            server.error(format(BAD_TIMER_ERR, "Accelerometer_rev3::poll()"))
+            server.error(format(ERR_BAD_TIMER, "Accelerometer_rev3::poll()"))
             return false;
         }
         
-        local acc = get();
         _poll_timer = imp.wakeup(_poll_interval, poll.bindenv(this))
-        _poll_callback(acc.x, acc.y, acc.z);
+        _poll_callback(read());
     }
     
+    // Stop the poller and the alert functionality
     function stop() {
-        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr)); 
+        if (_disabled) return server.error(format(ERR_NO_DEVICE, _addr)); 
         if (_poll_timer) imp.cancelwakeup(_poll_timer);
         _poll_timer = null;
         _poll_interval = null;
@@ -1208,8 +1273,9 @@ class Accelerometer_rev3 {
         _i2c.write(_addr, CTRL_REG1 + "\x00");      // Turn off the sensor
     }
     
-    function get() {
-        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
+    // Read the accelerometer data and return it as a table
+    function read() {
+        if (_disabled) return server.error(format(ERR_NO_DEVICE, _addr));
 
         // Configure settings of the accelerometer
         if (!_running) {
@@ -1239,11 +1305,7 @@ class Accelerometer_rev3 {
             
             return {x = x, y = y, z = z};
         }
-
     }
-    
-    
-    
 }
 
 //------------------------------------------------------------------------------
@@ -1362,9 +1424,8 @@ function int2deg(temp, stepsize = 0.125, left_align_bits = 11) {
 
 //==============================================================================
 // Everything below here is sample application code. 
-// Mostly this logs values and status changes to server.log() but changes in temperature (above and below 
-// the provided thresholds) are displayed as LED colours. Some of the functions are muted as they are 
-// very noisy.
+// Mostly this logs values and status changes to server.log() but some changes are displayed as 
+// LED colours. Some of the functions are muted as they are very noisy.
 //
 hannah <- Hannah();
 hannah.led.blink(0, 20, 0, true);
@@ -1383,17 +1444,20 @@ hannah.on_pot_changed = function(state) {
 }
 hannah.on_btn1_changed = function(state) {
     server.log("Button 1 is triggered: " + (state ? "up" : "down"));
+    if (state) hannah.led.blink(20, 0, 0, true);
 }
 hannah.on_btn2_changed = function(state) {
     server.log("Button 2 is triggered: " + (state ? "up" : "down"));
+    if (state) hannah.led.blink(0, 0, 20, true);
 }
 hannah.on_hall_changed = function(state) {
     server.log("Hall sensor is triggered: " + (state ? "inactive" : "active"));
+    if (state) hannah.led.blink(0, 20, 0, true);
 }
 hannah.on_light_changed = function(state) {
     // server.log(format("Light: [%d,%d,%d,%d]", state.r, state.g, state.b, state.c ))
 }
-hannah.on_acc_changed = function(x, y, z) {
-    // server.log(format("Movement: x = %0.2f, y = %0.2f, z = %0.2f", x, y, z));
+hannah.on_acc_changed = function(acc) {
+    // server.log(format("Movement: x = %0.2f, y = %0.2f, z = %0.2f", acc.x, acc.y, acc.z));
 }
 
