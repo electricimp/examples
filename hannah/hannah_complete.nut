@@ -15,69 +15,130 @@ INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PA
 AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
 
-/*
+--------------------------------------------------------------------------------
+This code represents all the basic functionality of the Hannah rev2 and rev3 reference designs.
+The schematics can be found at http://electricimp.com/docs/hardware/resources/reference-designs/hannah/
+Not every function of every device has been coded for but extension of these classes should be easy.
+The Hannah class and the application logic are there to tie the individual classes together. They
+are not designed to be used as-is in a production environment.
+
+There are two specific areas of further exploration that may be completed at a later date:
+- Low power mode and shallow sleep processing (using pin1 for wakeup)
+- PWM output functionality in the GPIO class via the IO Expander
+--------------------------------------------------------------------------------
+
 
 ------ [ Imp pins ] ------
-Pin 1    Digital input	 Interrupt from GPIO expander
-Pin 2	 Analog input	 Potentiometer wiper
-Pin 5	 Digital output	 Servo port 1 PWM signal
-Pin 7	 Digital output	 Servo port 2 PWM signal
-Pin 8	 I2C SCL	     
-Pin 9	 I2C SDA
+Pin 1    Digital input      Interrupt from GPIO expander
+Pin 2    Analog input       Potentiometer wiper
+Pin 5    Digital output     Servo port 1 PWM signal
+Pin 7    Digital output     Servo port 2 PWM signal
+Pin 8    I2C SCL         
+Pin 9    I2C SDA
 
 
------- [ I2C Addresses ] ------
-0x38/0x1C   LIS331DLTR	        3-Axis accelerometer
-0xE8/0x74	ADJD-S311-CR999	    RGB light sensor
-0x98/0x4C	SA56004ED	        Temperature sensor
-0x7C/0x3E	SX1509BULTRT	    IO Expander
+------ [ I2C Addresses - rev 2 ] ------
+0x38/0x1C   LIS331DLTR          3-Axis accelerometer
+0xE8/0x74   ADJD-S311-CR999     RGB light sensor
+0x98/0x4C   SA56004ED           Temperature sensor
+0x7C/0x3E   SX1509BULTRT        IO Expander
+
+
+------ [ I2C Addresses - rev 3 ] ------
+0x30/0x18   LIS3DH              3-Axis accelerometer
+0xE8/0x74   ADJD-S311-CR999     RGB light sensor
+0x92/0x49   TMP112              Temperature sensor
+0x7C/0x3E   SX1509BULTRT        IO Expander
 
 
 ------ [ IO Expander pins ] ------
-IO0	    Input	 Button 1
-IO1	    Input	 Button 2
-IO2	    Input	 Hall switch
-IO3	    Input	 Accelerometer interrupt
-IO4	    Input	 Temperature sensor alert interrupt
-IO5	    Output	 LED Green
-IO6	    Output	 LED Blue
-IO7	    Output	 LED Red
-IO8	    Output	 Potentiometer enable
-IO9	    Output	 RGB light sensor sleep
-IO10	Output	 Servo ports 1 and 2 power enable
-IO11	GPIO	 Spare
-IO12	GPIO	 Spare
-IO13	GPIO	 Spare
-IO14	GPIO	 Spare
-IO15	GPIO	 Spare
+IO0     Input    Button 1
+IO1     Input    Button 2
+IO2     Input    Hall switch
+IO3     Input    Accelerometer interrupt
+IO4     Input    Temperature sensor alert interrupt
+IO5     Output   LED Green
+IO6     Output   LED Blue
+IO7     Output   LED Red
+IO8     Output   Potentiometer enable
+IO9     Output   RGB light sensor sleep
+IO10    Output   Servo ports 1 and 2 power enable
+IO11    GPIO     Spare
+IO12    GPIO     Spare
+IO13    GPIO     Spare
+IO14    GPIO     Spare
+IO15    GPIO     Spare
 
 */
 
-const NO_DEVICE = "The device at I2C address 0x%02x is disabled.";
-
+const NO_DEVICE_ERR = "The device at I2C address 0x%02x is disabled.";
+const I2C_READ_ERR = "I2C Read Failure. Device: 0x%02x Register: 0x%02x";
+const BAD_TIMER_ERR = "You have to start %s with an interval and callback";
+const WRONG_DEVICE_ERR = "The device at I2C address 0x%02x is not a %s.";
 
 //------------------------------------------------------------------------------
-class SX150x {
+// This class interfaces with the SX1509 IO expander. It sits on the I2C bus and 
+// data can be directed to the connected devices via its I2C address. Interrupts
+// from the devices can be fed back to the imp via the configured imp hardware pin.
+// 
+class SX1509 {
+
     //Private variables
     _i2c       = null;
     _addr      = null;
     _callbacks = null;
     _int_pin   = null;
+    
+    // I/O Expander internal registers
+    static BANK_A = {   REGDATA    = 0x11,
+                        REGDIR     = 0x0F,
+                        REGPULLUP  = 0x07,
+                        REGPULLDN  = 0x09,
+                        REGINTMASK = 0x13,
+                        REGSNSHI   = 0x16,
+                        REGSNSLO   = 0x17,
+                        REGINTSRC  = 0x19,
+                        REGINPDIS  = 0x01,
+                        REGOPENDRN = 0x0B,
+                        REGLEDDRV  = 0x21,
+                        REGCLOCK   = 0x1E,
+                        REGMISC    = 0x1F,
+                        REGRESET   = 0x7D}
 
-    //Pass in pre-configured I2C since it may be used by other devices
-    constructor(i2c, address, int_pin) {
+    static BANK_B = {   REGDATA    = 0x10,
+                        REGDIR     = 0x0E,
+                        REGPULLUP  = 0x06,
+                        REGPULLDN  = 0x08,
+                        REGINTMASK = 0x12,
+                        REGSNSHI   = 0x14,
+                        REGSNSLO   = 0x15,
+                        REGINTSRC  = 0x18,
+                        REGINPDIS  = 0x00,
+                        REGOPENDRN = 0x0A,
+                        REGLEDDRV  = 0x20,
+                        REGCLOCK   = 0x1E,
+                        REGMISC    = 0x1F,
+                        REGRESET   = 0x7D}
+
+    constructor(i2c, address, int_pin){
         _i2c  = i2c;
-        _addr = address;  //8-bit address
+        _addr = address;
         _callbacks = [];
+        _callbacks.resize(16, null);
         _int_pin = int_pin;
+
+        reset();
+        clearAllIrqs();
     }
+    
+
+    // ---- Low level functions ----
 
     function readReg(register) {
         local data = _i2c.read(_addr, format("%c", register), 1);
         if (data == null) {
-            server.error(format("I2C Read Failure. Device: 0x%02x Register: 0x%02x", _addr, register));
+            server.error(format(I2C_READ_ERR, _addr, register));
             return -1;
         }
         return data[0];
@@ -151,74 +212,30 @@ class SX150x {
         writeReg(bank(0).REGRESET, 0x34);
     }
 
-    // synchronises the device with a software reset
-    function sync() {
-        writeBit(bank(0).REGMISC, 2, 1);
-        reboot();
-        writeBit(bank(0).REGMISC, 2, 0);
-    }
-
-    //configure which callback should be called for each pin transition
+    // configure which callback should be called for each pin transition
     function setCallback(gpio, _callback) {
         _callbacks.insert(gpio, _callback);
         
         // Initialize the interrupt Pin
-        hardware.pin1.configure(DIGITAL_IN_PULLUP, callback.bindenv(this));
+        hardware.pin1.configure(DIGITAL_IN_PULLUP, fire_callback.bindenv(this));
     }
 
-    function callback() {
+    // finds and executes the callback after the irq pin (pin 1) fires
+    function fire_callback() {
         local irq = getIrq();
         clearAllIrqs();
         for (local i = 0; i < 16; i++){
             if ( (irq & (1 << i)) && (typeof _callbacks[i] == "function")){
-                _callbacks[i](getPin(i)); // Just testing this out for now. It might work ok.
+                _callbacks[i](getPin(i)); 
             }
         }
     }
-}
 
-//------------------------------------------------------------------------------
-class SX1509 extends SX150x {
     
-    // I/O Expander internal registers
-    static BANK_A = {   REGDATA    = 0x11,
-                        REGDIR     = 0x0F,
-                        REGPULLUP  = 0x07,
-                        REGPULLDN  = 0x09,
-                        REGINTMASK = 0x13,
-                        REGSNSHI   = 0x16,
-                        REGSNSLO   = 0x17,
-                        REGINTSRC  = 0x19,
-                        REGINPDIS  = 0x01,
-                        REGOPENDRN = 0x0B,
-                        REGLEDDRV  = 0x21,
-                        REGCLOCK   = 0x1E,
-                        REGMISC    = 0x1F,
-                        REGRESET   = 0x7D}
+    // ---- High level functions ----
 
-    static BANK_B = {   REGDATA    = 0x10,
-                        REGDIR     = 0x0E,
-                        REGPULLUP  = 0x06,
-                        REGPULLDN  = 0x08,
-                        REGINTMASK = 0x12,
-                        REGSNSHI   = 0x14,
-                        REGSNSLO   = 0x15,
-                        REGINTSRC  = 0x18,
-                        REGINPDIS  = 0x00,
-                        REGOPENDRN = 0x0A,
-                        REGLEDDRV  = 0x20,
-                        REGCLOCK   = 0x1E,
-                        REGMISC    = 0x1F,
-                        REGRESET   = 0x7D}
 
-    constructor(i2c, address, int_pin){
-        base.constructor(i2c, address, int_pin);
-        _callbacks.resize(16,null);
-        reset();
-        clearAllIrqs();
-    }
-    
-    //Write registers to default values
+    // Write registers to default values
     function reset(){
         writeReg(BANK_A.REGDIR, 0xFF);
         writeReg(BANK_A.REGDATA, 0xFF);
@@ -301,11 +318,19 @@ class SX1509 extends SX150x {
 }
 
 //------------------------------------------------------------------------------
-const LED_OUT = 1000001;
+// This is a convenience class that simplifies the configuration of a IO Expander GPIO port.
+// You can use it in a similar manner to hardware.pin with two main differences:
+// 1. There is a new pin type: LED_OUT, for controlling LED brightness (basically PWM_OUT with "breathing")
+// 2. The pin events will include the pin state as the one parameter to the callback
+//
 class ExpGPIO {
     _expander = null;  //Instance of an Expander class
     _gpio     = null;  //Pin number of this GPIO pin
     _mode     = null;  //The mode configured for this pin
+    
+    // This definition augments the pin configuration constants as defined in:
+    // http://electricimp.com/docs/api/hardware/pin/configure/
+    static LED_OUT = 1000001;
     
     constructor(expander, gpio) {
         _expander = expander;
@@ -328,7 +353,7 @@ class ExpGPIO {
             }
             
             return this;
-        } else if (mode == LED_OUT) {
+        } else if (mode == ExpGPIO.LED_OUT) {
             // Param1 is the initial intensity, Param2 is unused.
             _expander.setPullUp(_gpio, 0);
             _expander.setInputBuffer(_gpio, 0);
@@ -400,6 +425,11 @@ class ExpGPIO {
 }
 
 //------------------------------------------------------------------------------
+// This class combined three LED pins into a single RGB LED class. It attempts to synchronise
+// the changes to the LEDs so the colour change appears uniform. This works for static colours 
+// and for blinking but not for breathing (blinking with fading). The clocks for the different
+// LED pins go out of sync in the hardware when fading in and out. 
+//
 class RGBLED {
     
     _expander = null;
@@ -409,12 +439,13 @@ class RGBLED {
     
     constructor(expander, gpioRed, gpioGreen, gpioBlue) {
         _expander = expander;
-        ledR = ExpGPIO(_expander, gpioRed).configure(LED_OUT);
-        ledG = ExpGPIO(_expander, gpioGreen).configure(LED_OUT);
-        ledB = ExpGPIO(_expander, gpioBlue).configure(LED_OUT);
+        ledR = ExpGPIO(_expander, gpioRed).configure(ExpGPIO.LED_OUT);
+        ledG = ExpGPIO(_expander, gpioGreen).configure(ExpGPIO.LED_OUT);
+        ledB = ExpGPIO(_expander, gpioBlue).configure(ExpGPIO.LED_OUT);
     }
     
     function set(r, g, b, fade=false) {
+        // Turn the LEDs on but blinking off
         ledR.blink(0, 0, r.tointeger(), 0, fade);
         ledG.blink(0, 0, g.tointeger(), 0, fade);
         ledB.blink(0, 0, b.tointeger(), 0, fade);
@@ -431,6 +462,11 @@ class RGBLED {
 }
 
 //------------------------------------------------------------------------------
+// This class controls the ADJD-S311-CR999 RGB light sensor. You can configure all capacitors and 
+// integration slots to one number or you can pass in an array for each into the initialise() method. 
+// From there you can either read values or poll the sensor. If you want to know the general brightness
+// look at the forth sensor reading (clear).
+//
 enum CAP_COLOUR { RED, GREEN, BLUE, CLEAR };
 class RGBSensor {
 
@@ -442,12 +478,12 @@ class RGBSensor {
     _poll_interval = null;
     _poll_timer = null;
     
-    // Capacitors - Lower number = higher sensitivity
+    // Capacitors - Lower number = more sensitivity
     static MIN_CAP_COUNT = 0x0; // Min capacitor count
     static MAX_CAP_COUNT = 0xF; // Max capacitor count
     static CAP_ADDRESSES = [0x06, 0x07, 0x08, 0x09];
     
-    // Integration slots - Higher number = higher sensitivity
+    // Integration slots - Higher number = more sensitivity
     static MIN_INTEGRATION_SLOTS = 0x000;   // Min integration slots
     static MAX_INTEGRATION_SLOTS = 0xfff;   // Max integration slots
     static INT_ADDRESSES = [0x0a, 0x0c, 0x0e, 0x10];
@@ -459,12 +495,12 @@ class RGBSensor {
     static COL_HI_ADDRESSES   = [0x41, 0x43, 0x45, 0x47];
          
         
-    constructor(i2c, address, expander, gpioSleep, callback) {
+    constructor(i2c, address, expander, gpioSleep) {
         _i2c  = i2c;
-        _addr = address;  //8-bit address
+        _addr = address;  
         _expander = expander;
         _sleep = ExpGPIO(_expander, gpioSleep).configure(DIGITAL_OUT, 0);
-        _poll_callback = callback;
+        initialise();
     }
     
     function wake() { 
@@ -564,7 +600,7 @@ class RGBSensor {
             _poll_interval = interval;
             if (_poll_timer) imp.cancelwakeup(_poll_timer);
         } else if (_poll_interval == null || _poll_callback == null) {
-            server.error("You have to start RGBSensor::poll() with an interval and callback")
+            server.error(format(BAD_TIMER_ERR, RGBSensor::poll()))
         }
         _poll_timer = imp.wakeup(_poll_interval, poll.bindenv(this));
         
@@ -581,6 +617,12 @@ class RGBSensor {
 }
 
 //------------------------------------------------------------------------------
+// This class controls the SA56004ED temperature sensor in the Hannah rev2 design. If it is not
+// detected, it will throw an error and you can fire up the alternate TempSensor_rev3 class instead.
+// The methods are the same although the SA56004ED emulates the temperature alerts in firmware (by 
+// polling) that the TMP112 can do in hardware. The temperature readings are not very accurate so
+// some calibration in the application layer might be required.
+//
 class TempSensor_rev2 {
 
     _i2c  = null;
@@ -616,12 +658,12 @@ class TempSensor_rev2 {
     
     constructor(i2c, address, expander, gpioAlert) {
         _i2c  = i2c;
-        _addr = address;  //8-bit address
+        _addr = address;  
         _expander = expander;
         
         local id = _i2c.read(_addr, REG_RMID, 1);
         if (!id || id[0] != 0xA1) {
-            server.error(format("The device at I2C address 0x%02x is not a SA5004X temperature sensor.", _addr))
+            server.error(format(WRONG_DEVICE_ERR, _addr, "SA5004X temperature sensor"))
             _disabled = true;
         } else {
             // Clear the config and the status register
@@ -630,14 +672,14 @@ class TempSensor_rev2 {
     }
     
     function poll(interval = null, callback = null) {
-        if (_disabled) return server.error(format(NO_DEVICE, _addr));
+        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
         
         if (interval && callback) {
             _poll_interval = interval;
             _poll_callback = callback;
             if (_poll_timer) imp.cancelwakeup(_poll_timer);
         } else if (!_poll_interval || !_poll_callback) {
-            server.error("You have to start TempSensor_rev2::poll() with an interval and callback")
+            server.error(format(BAD_TIMER_ERR, "TempSensor_rev2::poll()"))
             return false;
         }
         
@@ -662,7 +704,7 @@ class TempSensor_rev2 {
     }
     
     function stop() {
-        if (_disabled) return server.error(format(NO_DEVICE, _addr));
+        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
         
         if (_poll_timer) imp.cancelwakeup(_poll_timer);
         _poll_timer = null;
@@ -677,7 +719,7 @@ class TempSensor_rev2 {
     }
     
     function get() {
-        if (_disabled) return server.error(format(NO_DEVICE, _addr));
+        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
         
         if (!_running) {
             // Configure a single shot reading
@@ -697,7 +739,7 @@ class TempSensor_rev2 {
         local hi = _i2c.read(_addr, REG_LTHB, 1)[0];
         local lo = _i2c.read(_addr, REG_LTLB, 1)[0];
         local temp = (hi << 8) | (lo & 0xFF);
-        return int2deg(temp);
+        return int2deg(temp, 0.125, 11);
 
     }
     
@@ -707,30 +749,12 @@ class TempSensor_rev2 {
         else if (status == 0x40) return 1;
         else return 0;
     }
-    
-    
-    function deg2sp(temp) {
-        local mat = math.abs(temp.tointeger());
-        local hi = (temp < 0 ? 0x80 : 0x00) | (mat & 0x7F);
-        local lo = ((8.0 * (math.fabs(temp) - mat)).tointeger() << 5) & 0xE0;
-        return format("%c%c", hi, lo);
-    }
-    
-    function deg2int(temp) {
-        temp = (temp * 8.0).tointeger();
-        if (temp < 0) temp = -((~temp & 0x3FF) + 1);
-        return (temp << 5) & 0xFFE0;
-    }
-    
-    function int2deg(temp) {
-        temp = temp >> 5;
-        if (temp & 0x400) temp = -((~temp & 0x3FF) + 1);
-        return temp * 0.125;
-    }
-    
 }
 
 //------------------------------------------------------------------------------
+// This class controls the TMP112 temperature sensor in the Hannah rev3 design. If it is not
+// detected, it will throw an error and you can fire up the alternate TempSensor_rev2 class instead.
+//
 class TempSensor_rev3 {
 
     _i2c  = null;
@@ -745,22 +769,21 @@ class TempSensor_rev3 {
     _running = false;
     _disabled = false;
     
-    static TEMP_REG 	 = "\x00";
-	static CONF_REG 	 = "\x01";
-	static T_LOW_REG	 = "\x02";
-	static T_HIGH_REG	 = "\x03";
-	static RESET_VAL 	 = "\x06"; // Send this value on general-call address (0x00) to reset device
-	static DEG_PER_COUNT = 0.0625; // ADC resolution in degrees C
+    static TEMP_REG      = "\x00";
+    static CONF_REG      = "\x01";
+    static T_LOW_REG     = "\x02";
+    static T_HIGH_REG    = "\x03";
+    static RESET_VAL     = "\x06"; // Send this value on general-call address (0x00) to reset device
     
     
     constructor(i2c, address, expander, gpioAlert) {
         _i2c  = i2c;
-        _addr = address;  //8-bit address
+        _addr = address;  
         _expander = expander;
         
         local id = _i2c.read(_addr, TEMP_REG, 1);
         if (id == null) {
-            server.error(format("The device at I2C address 0x%02x is not a TMP112 temperature sensor.", _addr))
+            server.error(format(WRONG_DEVICE_ERR, _addr, "TMP112 temperature sensor"))
             _disabled = true;
         } else {
             // Turn the temperature reading off for now
@@ -777,14 +800,14 @@ class TempSensor_rev3 {
     }
     
     function poll(interval = null, callback = null) {
-        if (_disabled) return server.error(format(NO_DEVICE, _addr));
+        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
         
         if (interval && callback) {
             _poll_interval = interval;
             _poll_callback = callback;
             if (_poll_timer) imp.cancelwakeup(_poll_timer);
         } else if (!_poll_interval || !_poll_callback) {
-            server.error("You have to start TempSensor_rev2::poll() with an interval and callback")
+            server.error(format(BAD_TIMER_ERR, "TempSensor_rev2::poll()"))
             return false;
         }
         
@@ -798,14 +821,14 @@ class TempSensor_rev3 {
     }
     
     function alert(lo, hi, callback = null) {
-        if (_disabled) return server.error(format(NO_DEVICE, _addr));
+        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
         
         callback = callback ? callback : _poll_callback;
         stop();
         _alert_callback = callback;
     
-        local tlo = deg2int(lo);
-        local thi = deg2int(hi);
+        local tlo = deg2int(lo, 0.0625, 12);
+        local thi = deg2int(hi, 0.0625, 12);
         _i2c.write(_addr, T_LOW_REG + format("%c%c", (tlo >> 8) & 0xFF, (tlo & 0xFF)));
         _i2c.write(_addr, T_HIGH_REG + format("%c%c", (thi >> 8) & 0xFF, (thi & 0xFF)));
         _i2c.write(_addr, CONF_REG + "\x62\x80"); // Run continuously
@@ -815,7 +838,7 @@ class TempSensor_rev3 {
     }
     
     function stop() {
-        if (_disabled) return server.error(format(NO_DEVICE, _addr));
+        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
         
         if (_poll_timer) imp.cancelwakeup(_poll_timer);
         _poll_timer = null;
@@ -831,11 +854,11 @@ class TempSensor_rev3 {
     }
     
     function get() {
-        if (_disabled) return server.error(format(NO_DEVICE, _addr));
+        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
         
         if (!_running) {
             local conf = _i2c.read(_addr, CONF_REG, 2);
-        	_i2c.write(_addr, CONF_REG + format("%c%c", conf[0] | 0x80, conf[1]));
+            _i2c.write(_addr, CONF_REG + format("%c%c", conf[0] | 0x80, conf[1]));
         
             // Wait for conversion to be finished
             while ((_i2c.read(_addr, CONF_REG, 1)[0] & 0x80) == 0x80);
@@ -844,24 +867,16 @@ class TempSensor_rev3 {
         // Get 12-bit signed temperature value in 0.0625C steps
         local result = _i2c.read(_addr, TEMP_REG, 2);
         local temp = (result[0] << 8) + result[1];
-        return int2deg(temp);
-    }
-    
-    function deg2int(temp) {
-        temp = (temp * 16.0).tointeger();
-        if (temp < 0) temp = -((~temp & 0x7FF) + 1);
-        return (temp << 4) & 0xFFF0;
-    }
-    
-    function int2deg(temp) {
-        temp = temp >> 4;
-        if (temp & 0x800) temp = -((~temp & 0x7FF) + 1);
-        return temp * DEG_PER_COUNT;
+        return int2deg(temp, 0.0625, 12);
     }
     
 }
 
 //------------------------------------------------------------------------------
+// THis class reads and normalises data from the potentiometer (dial) on the Hannah. By default
+// it will return data in the range of 0.0 to 1.0 but it can be reconfigured to any range as 
+// floats or integers. It will only report events when the value changes.
+// 
 class Potentiometer {
     
     _expander = null;
@@ -888,7 +903,7 @@ class Potentiometer {
             _poll_callback = callback;
             if (_poll_timer) imp.cancelwakeup(_poll_timer);
         } else if (!_poll_interval || !_poll_callback) {
-            server.error("You have to start TempSensor_rev2::poll() with an interval and callback")
+            server.error(format(BAD_TIMER_ERR, "TempSensor_rev2::poll()"))
             return false;
         }
         
@@ -933,15 +948,19 @@ class Potentiometer {
     
     
     // Gets the current value, rounded to three decimal places
-	function get () {
+    function get () {
         local f = 0.0 + _min + (_pinRead.read() * (_max - _min) / 65535.0);
-		if (_integer_only) return f.tointeger();
+        if (_integer_only) return f.tointeger();
         else               return format("%0.03f", f).tofloat();
-	}
+    }
     
 }
 
 //------------------------------------------------------------------------------
+// This class controls the PWM servos on the imp. There are further GPIO pins on the IO expander
+// that can be used for PWM control but this class and the ExpGPIO class would need to be extended 
+// to support this configuration.
+//
 class Servo {
     
     _expander = null;
@@ -974,6 +993,13 @@ class Servo {
 }
 
 //------------------------------------------------------------------------------
+// This class controls the LIS331DL accelerometer on the Hannah rev2. The alert functionality
+// of this device is limited to "click" detection, so we emulate it with a simple call to poll.
+// If you want movement detection, use the Hannah rev3 accelerometer instead. The values returned
+// are floats between -1.0 and +1.0 and represent a range of 2g. This can be adjusted but this function is
+// not provided. This devices measures acceleration only. So in a static state (not moving) the only 
+// acceleration it can measure is gravity (so you can tell which way is up).
+// 
 class Accelerometer_rev2 {
     
     _i2c = null;
@@ -986,22 +1012,22 @@ class Accelerometer_rev2 {
     _disabled = false;
     
     static CTRL_REG1     = "\x20";
-	static CTRL_REG2     = "\x21";
-	static CTRL_REG3     = "\x22";
-	static DATA_X        = "\x29";
-	static DATA_Y        = "\x2B";
-	static DATA_Z        = "\x2D";
+    static CTRL_REG2     = "\x21";
+    static CTRL_REG3     = "\x22";
+    static DATA_X        = "\x29";
+    static DATA_Y        = "\x2B";
+    static DATA_Z        = "\x2D";
     static DATA_ALL      = "\xA8";
     static WHO_AM_I      = "\x0F";
     
     constructor(i2c, addr, expander, gpioInterrupt)
     {
         _i2c  = i2c;
-        _addr = addr;  //8-bit address
+        _addr = addr;  
         _expander = expander;
         local id = _i2c.read(_addr, WHO_AM_I, 1);
         if (!id || id[0] != 0x3B) {
-            server.error(format("The device at I2C address 0x%02x is not a LIS331DL accelerometer.", _addr))
+            server.error(format(WRONG_DEVICE_ERR, _addr, "LIS331DL accelerometer"))
             _disabled = true;
         } else {
             _gpioInterrupt = ExpGPIO(_expander, gpioInterrupt).configure(DIGITAL_IN, _callbackHandler.bindenv(this));
@@ -1013,7 +1039,7 @@ class Accelerometer_rev2 {
     }
     
     function get() {
-        if (_disabled) return server.error(format(NO_DEVICE, _addr));
+        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
         
         local data = _i2c.read(_addr, DATA_ALL, 6);
         local x = 0, y = 0, z = 0;
@@ -1035,15 +1061,15 @@ class Accelerometer_rev2 {
     }
     
     function poll(interval = null, callback = null) {
-        if (_disabled) return server.error(format(NO_DEVICE, _addr));
+        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
         if (interval && callback) {
             _poll_interval = interval;
             _poll_callback = callback;
             if (_poll_timer) imp.cancelwakeup(_poll_timer);
-        	_i2c.write(_addr, CTRL_REG1 + "\xC7");		// Turn on the sensor, enable X, Y, and Z, ODR = 100 Hz
-    		_i2c.write(_addr, CTRL_REG2 + "\x00");		// High-pass filter disabled            
+            _i2c.write(_addr, CTRL_REG1 + "\xC7");      // Turn on the sensor, enable X, Y, and Z, ODR = 100 Hz
+            _i2c.write(_addr, CTRL_REG2 + "\x00");      // High-pass filter disabled            
         } else if (!_poll_interval || !_poll_callback) {
-            server.error("You have to start Accelerometer_rev2::poll() with an interval and callback")
+            server.error(format(BAD_TIMER_ERR, "Accelerometer_rev2::poll()"))
             return false;
         }
         
@@ -1058,17 +1084,22 @@ class Accelerometer_rev2 {
     }
     
     function stop() {
-        if (_disabled) return server.error(format(NO_DEVICE, _addr)); 
+        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr)); 
         if (_poll_timer) imp.cancelwakeup(_poll_timer);
         _poll_timer = null;
         _poll_interval = null;
         _poll_callback = null;
-        _i2c.write(_addr, CTRL_REG1 + "\x00");		// Turn off the sensor
+        _i2c.write(_addr, CTRL_REG1 + "\x00");      // Turn off the sensor
     }
     
 }
 
 //------------------------------------------------------------------------------
+// This class controls the LIS3DH accelerometer on the Hannah rev3. The default functionality of 
+// the "alert" method is movement detection. Other hardware detection techniques are available (such
+// as free-fall and click detection) are available but not provided. The methods and results are the
+// same as the accelerometer on the Hannah rev2.
+// 
 class Accelerometer_rev3 {
     
     _i2c = null;
@@ -1083,43 +1114,43 @@ class Accelerometer_rev3 {
     _running = false;
     
     static CTRL_REG1     = "\x20";
-	static CTRL_REG2     = "\x21";
-	static CTRL_REG3     = "\x22";
-	static CTRL_REG4     = "\x23";
-	static CTRL_REG5     = "\x24";
-	static CTRL_REG6     = "\x25";
-	static DATA_X_L      = "\x28";
-	static DATA_X_H      = "\x29";
-	static DATA_Y_L      = "\x2A";
-	static DATA_Y_H      = "\x2B";
-	static DATA_Z_L      = "\x2C";
-	static DATA_Z_H      = "\x2D";
+    static CTRL_REG2     = "\x21";
+    static CTRL_REG3     = "\x22";
+    static CTRL_REG4     = "\x23";
+    static CTRL_REG5     = "\x24";
+    static CTRL_REG6     = "\x25";
+    static DATA_X_L      = "\x28";
+    static DATA_X_H      = "\x29";
+    static DATA_Y_L      = "\x2A";
+    static DATA_Y_H      = "\x2B";
+    static DATA_Z_L      = "\x2C";
+    static DATA_Z_H      = "\x2D";
     static DATA_ALL      = "\xA8";
-	static INT1_CFG      = "\x30";
-	static INT1_SRC      = "\x31";
-	static INT1_THS      = "\x32";
-	static INT1_DURATION = "\x33";
-	static TAP_CFG       = "\x38";
-	static TAP_SRC       = "\x39";
-	static TAP_THS       = "\x3A";
-	static TIME_LIMIT    = "\x3B";
-	static TIME_LATENCY  = "\x3C";
-	static TIME_WINDOW   = "\x3D";
-	static WHO_AM_I      = "\x0F";
+    static INT1_CFG      = "\x30";
+    static INT1_SRC      = "\x31";
+    static INT1_THS      = "\x32";
+    static INT1_DURATION = "\x33";
+    static TAP_CFG       = "\x38";
+    static TAP_SRC       = "\x39";
+    static TAP_THS       = "\x3A";
+    static TIME_LIMIT    = "\x3B";
+    static TIME_LATENCY  = "\x3C";
+    static TIME_WINDOW   = "\x3D";
+    static WHO_AM_I      = "\x0F";
     
     constructor(i2c, addr, expander, gpioInterrupt)
     {
         _i2c  = i2c;
-        _addr = addr;  //8-bit address
+        _addr = addr;  
         _expander = expander;
         
         local id = _i2c.read(_addr, WHO_AM_I, 1);
         if (!id || id[0] != 0x33) {
-            server.error(format("The device at I2C address 0x%02x is not a LIS3DH accelerometer.", _addr))
+            server.error(format(WRONG_DEVICE_ERR, _addr, "LIS3DH accelerometer"))
             _disabled = true;
         } else {
             _gpioInterrupt = ExpGPIO(_expander, gpioInterrupt).configure(DIGITAL_IN, interruptHandler.bindenv(this));
-            _i2c.write(_addr, CTRL_REG1 + "\x00");    	// Turn off the sensor
+            _i2c.write(_addr, CTRL_REG1 + "\x00");      // Turn off the sensor
         }
     }
     
@@ -1131,33 +1162,33 @@ class Accelerometer_rev3 {
     }
     
     function alert(callback = null) {
-        if (_disabled) return server.error(format(NO_DEVICE, _addr));
+        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
         
         _alert_callback = callback;
         _running = true;
 
-    	// Setup the accelerometer for sleep-polling
-		_i2c.write(_addr, CTRL_REG1 + "\xA7");		// Turn on the sensor, enable X, Y, and Z, ODR = 100 Hz
-		_i2c.write(_addr, CTRL_REG2 + "\x00");		// High-pass filter disabled
-		_i2c.write(_addr, CTRL_REG3 + "\x40");		// Interrupt driven to INT1 pad
-		_i2c.write(_addr, CTRL_REG4 + "\x00");		// FS = 2g
-		_i2c.write(_addr, CTRL_REG5 + "\x00");		// Interrupt latched
-		_i2c.write(_addr, CTRL_REG6 + "\x00");  		// Interrupt Active High
-		_i2c.write(_addr, INT1_THS + "\x10");			// Set movement threshold = ? mg
-		_i2c.write(_addr, INT1_DURATION + "\x00");	// Duration not relevant
-		_i2c.write(_addr, INT1_CFG + "\x6A");			// Configure intertia detection axis/axes - all three. Plus 6D.
-		_i2c.read(_addr, INT1_SRC, 1);          		// Clear any interrupts
+        // Setup the accelerometer for sleep-polling
+        _i2c.write(_addr, CTRL_REG1 + "\xA7");      // Turn on the sensor, enable X, Y, and Z, ODR = 100 Hz
+        _i2c.write(_addr, CTRL_REG2 + "\x00");      // High-pass filter disabled
+        _i2c.write(_addr, CTRL_REG3 + "\x40");      // Interrupt driven to INT1 pad
+        _i2c.write(_addr, CTRL_REG4 + "\x00");      // FS = 2g
+        _i2c.write(_addr, CTRL_REG5 + "\x00");      // Interrupt latched
+        _i2c.write(_addr, CTRL_REG6 + "\x00");      // Interrupt Active High
+        _i2c.write(_addr, INT1_THS + "\x10");       // Set movement threshold = ? mg
+        _i2c.write(_addr, INT1_DURATION + "\x00");  // Duration not relevant
+        _i2c.write(_addr, INT1_CFG + "\x6A");       // Configure intertia detection axis/axes - all three. Plus 6D.
+        _i2c.read(_addr, INT1_SRC, 1);              // Clear any interrupts
 
     }
     
     function poll(interval = null, callback = null) {
-        if (_disabled) return server.error(format(NO_DEVICE, _addr));
+        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
         if (interval && callback) {
             _poll_interval = interval;
             _poll_callback = callback;
             if (_poll_timer) imp.cancelwakeup(_poll_timer);
         } else if (!_poll_interval || !_poll_callback) {
-            server.error("You have to start Accelerometer_rev3::poll() with an interval and callback")
+            server.error(format(BAD_TIMER_ERR, "Accelerometer_rev3::poll()"))
             return false;
         }
         
@@ -1167,29 +1198,29 @@ class Accelerometer_rev3 {
     }
     
     function stop() {
-        if (_disabled) return server.error(format(NO_DEVICE, _addr)); 
+        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr)); 
         if (_poll_timer) imp.cancelwakeup(_poll_timer);
         _poll_timer = null;
         _poll_interval = null;
         _poll_callback = null;
         _alert_callback = null;
         _running = false;
-        _i2c.write(_addr, CTRL_REG1 + "\x00");		// Turn off the sensor
+        _i2c.write(_addr, CTRL_REG1 + "\x00");      // Turn off the sensor
     }
     
     function get() {
-        if (_disabled) return server.error(format(NO_DEVICE, _addr));
+        if (_disabled) return server.error(format(NO_DEVICE_ERR, _addr));
 
         // Configure settings of the accelerometer
         if (!_running) {
-			_i2c.write(_addr, CTRL_REG1 + "\x47");  // Turn on the sensor, enable X, Y, and Z, ODR = 50 Hz
-			_i2c.write(_addr, CTRL_REG2 + "\x00");  // High-pass filter disabled
-			_i2c.write(_addr, CTRL_REG3 + "\x40");  // Interrupt driven to INT1 pad
-			_i2c.write(_addr, CTRL_REG4 + "\x00");  // FS = 2g
-			_i2c.write(_addr, CTRL_REG5 + "\x00");  // Interrupt Not latched
-			_i2c.write(_addr, CTRL_REG6 + "\x00");  // Interrupt Active High (not actually used)
-			_i2c.read(_addr, INT1_SRC, 1);          // Clear any interrupts
-		}
+            _i2c.write(_addr, CTRL_REG1 + "\x47");  // Turn on the sensor, enable X, Y, and Z, ODR = 50 Hz
+            _i2c.write(_addr, CTRL_REG2 + "\x00");  // High-pass filter disabled
+            _i2c.write(_addr, CTRL_REG3 + "\x40");  // Interrupt driven to INT1 pad
+            _i2c.write(_addr, CTRL_REG4 + "\x00");  // FS = 2g
+            _i2c.write(_addr, CTRL_REG5 + "\x00");  // Interrupt Not latched
+            _i2c.write(_addr, CTRL_REG6 + "\x00");  // Interrupt Active High (not actually used)
+            _i2c.read(_addr, INT1_SRC, 1);          // Clear any interrupts
+        }
         
         local data = _i2c.read(_addr, DATA_ALL, 6);
         local x = 0, y = 0, z = 0;
@@ -1216,6 +1247,10 @@ class Accelerometer_rev3 {
 }
 
 //------------------------------------------------------------------------------
+// This class maps all the classes above into a representation of the Hannah collection of devices.
+// It is presented to demonstrate how you can put everything together but it is not really providing
+// any value. Feel free to replace it in your own projects. 
+//
 class Hannah {
     
     i2c = null;
@@ -1261,16 +1296,16 @@ class Hannah {
         // Hall switch on IO pin 2
         hall = ExpGPIO(ioexp, 2).configure(DIGITAL_IN_PULLUP, call_callback("on_hall_changed"));
         
-        // Accelerometer
+        // RGB Light Sensor on i2c port 0xE8 with the sleep pin on IO pin 9
+        light = RGBSensor(i2c, 0xE8, ioexp, 9);
+        light.poll(1, call_callback("on_light_changed"));
+
+        // Accelerometer on i2c port 0x38 or 0x30 with alert in pin on IO pin 3
         acc = Accelerometer_rev2(i2c, 0x38, ioexp, 3);
         if (acc._disabled) acc = Accelerometer_rev3(i2c, 0x30, ioexp, 3);
         acc.alert(call_callback("on_acc_changed"));
         
-        // RGB Light Sensor on i2c port 0xE8/0x74 with the sleep pin on IO pin 9
-        light = RGBSensor(i2c, 0xE8, ioexp, 9, call_callback("on_light_changed"));
-        light.poll(1, call_callback("on_light_changed"));
-
-        // Temperature Sensor on i2c port 0x98/0x4C with the alert pin on IO pin 4
+        // Temperature Sensor on i2c port 0x98 or 0x92 with the alert pin on IO pin 4
         temp = TempSensor_rev2(i2c, 0x98, ioexp, 4);
         if (temp._disabled) temp = TempSensor_rev3(i2c, 0x92, ioexp, 4);
         temp.poll(1, call_callback("on_temp_changed"));
@@ -1304,8 +1339,32 @@ class Hannah {
 }
 
 
+//------------------------------------------------------------------------------
+// deg2int and int2deg convert floating point values of temperature into the integer representation
+// (and vice versa) used by the two temperature sensors above. 
+// 
+function deg2int(temp, stepsize = 0.125, left_align_bits = 11) {
+    temp = (temp / stepsize.tofloat()).tointeger();
+    local mask1 = (0xFFFF << (16 - left_align_bits)) & 0xFFFF;
+    local mask2 = mask1 >> (16 - left_align_bits + 1);
+    if (temp < 0) temp = -((~temp & mask2) + 1);
+    return (temp << (16 - left_align_bits)) & mask1;
+}
+
+function int2deg(temp, stepsize = 0.125, left_align_bits = 11) {
+    temp = temp >> (16 - left_align_bits);
+    local mask1 = (1 << (left_align_bits - 1));
+    local mask2 = 0xFFFF >> (16 - left_align_bits + 1);
+    if (temp & mask1) temp = -((~temp & mask2) + 1);
+    return temp.tofloat() * stepsize.tofloat();
+}
+
+
 //==============================================================================
-// Everything below here is sample application code.
+// Everything below here is sample application code. 
+// Mostly this logs values and status changes to server.log() but changes in temperature (above and below 
+// the provided thresholds) are displayed as LED colours. Some of the functions are muted as they are 
+// very noisy.
 //
 hannah <- Hannah();
 hannah.led.blink(0, 20, 0, true);
