@@ -70,6 +70,30 @@ IO13    GPIO     Spare
 IO14    GPIO     Spare
 IO15    GPIO     Spare
 
+
+------ [ Hardware data sheets ] ------
+
+Hannah rev2
+http://electricimp.com/docs/hardware/resources/reference-designs/hannah/
+
+SX1509BULTRT - IO Expander
+http://electricimp.com/docs/attachments/hardware/datasheets/s1509bultrt.pdf
+
+ADJD-S311-CR999 - RGB light sensor
+http://electricimp.com/docs/attachments/hardware/datasheets/adjd-s311-cr999.pdf
+
+LIS331DLTR - 3-Axis accelerometer
+http://electricimp.com/docs/attachments/hardware/datasheets/lis331dl.pdf
+
+LIS3DH - 3-Axis accelerometer
+http://www.st.com/web/en/resource/technical/document/datasheet/CD00274221.pdf
+
+SA56004ED - Temperature sensor
+http://electricimp.com/docs/attachments/hardware/datasheets/sa56004ed.pdf
+
+TMP112 - Temperature sensor
+http://www.ti.com/lit/ds/symlink/tmp112.pdf
+
 */
 
 const ERR_NO_DEVICE = "The device at I2C address 0x%02x is disabled.";
