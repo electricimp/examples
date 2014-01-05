@@ -110,7 +110,8 @@ class thermistor {
 /* RUNTIME BEGINS HERE -------------------------------------------------------*/
 
 // Register with imp server
-imp.configure("TempBug",[],[]);
+//imp.configure is deprecated and will throw errors
+//imp.configure("TempBug",[],[]);
 
 // Configure Pins
 // pin 8 is driven high to turn off temp monitor (saves power) or low to read
