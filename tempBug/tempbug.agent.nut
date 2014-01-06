@@ -26,8 +26,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
  
 /* GLOBALS and CONSTANTS -----------------------------------------------------*/
 
-const XIVELY_API_KEY = "ADD YOUR API KEY HERE";
-const XIVELY_FEED_ID = "ADD YOUR FEED ID HERE";
+const XIVELY_API_KEY = "YOUR API KEY HERE";
+const XIVELY_FEED_ID = "YOUR FEED ID HERE";
+const XIVELYCHANNEL = "temperature";
 Xively <- {};  // this makes a 'namespace'
 
 /* CLASS AND GLOBAL FUNCTION DEFINITIONS -------------------------------------*/
@@ -143,13 +144,17 @@ class Xively.Channel {
     }
 }
 
-/* REGISTER DEVICE CALLBACKS  ------------------------------------------------*/
-
-device.on("temp", function(datapoint) {
-	server.log("Got new temp data: "+datapoint+" degrees");
-    xivelyChannel.Set(datapoint);
+function postToXively(data,id) {
+    xivelyChannel <- Xively.Channel(XIVELYCHANNEL+id);
+    xivelyChannel.Set(data);
     xivelyFeed <- Xively.Feed(XIVELY_FEED_ID, [xivelyChannel]);
     xivelyClient.Put(xivelyFeed);
+}
+
+/* REGISTER DEVICE CALLBACKS  ------------------------------------------------*/
+
+device.on("data", function(datapoint) {
+    postToXively(datapoint.temp, datapoint.id);
 });
 
 /* REGISTER HTTP HANDLER -----------------------------------------------------*/
