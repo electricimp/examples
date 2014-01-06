@@ -148,7 +148,8 @@ function postToXively(data,id) {
     xivelyChannel <- Xively.Channel(XIVELYCHANNEL+id);
     xivelyChannel.Set(data);
     xivelyFeed <- Xively.Feed(XIVELY_FEED_ID, [xivelyChannel]);
-    xivelyClient.Put(xivelyFeed);
+    local returncode = xivelyClient.Put(xivelyFeed);
+    server.log("Posted to Xively: "+data+", got return code: "+resp.statuscode+", msg: "+resp.body);
 }
 
 /* REGISTER DEVICE CALLBACKS  ------------------------------------------------*/
