@@ -882,7 +882,7 @@ class waterSchedule {
         }
         
         /* Schedule this function (this.run) to re-run at midnight nightly to refresh the schedule */
-        local refreshHandle = imp.wakeup(secondsTil(this.refreshtime), function() { this.run(); }.bindenv(this));
+        local refreshHandle = imp.wakeup(secondsTil(this.refreshtime)+60, function() { this.run(); }.bindenv(this));
         this.scheduledEvents.push(refreshHandle);
         
         foreach(waterevent in this.schedule) {
