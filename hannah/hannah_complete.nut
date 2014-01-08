@@ -1038,6 +1038,9 @@ class Servo {
     _expander = null;
     _gpioEnable = null;
     _pinWrite = null;
+    _last_write = 0.0;
+    _min = 0.0;
+    _max = 1.0;
     
     // Constructor requires the IO expander class, the pin number for the enable line,
     // and the hardware pin for PWM output. The period and duty cycle are both optional.
@@ -1045,6 +1048,7 @@ class Servo {
         _expander = expander;
         _pinWrite = pinWrite;
         _pinWrite.configure(PWM_OUT, period, dutycycle);
+        _last_write = dutycycle;
         if (gpioEnable != null) {
             _gpioEnable = ExpGPIO(_expander, gpioEnable).configure(DIGITAL_OUT, 1);
         }
@@ -1052,17 +1056,34 @@ class Servo {
 
     // Enable or disable the potentiometer
     function setenabled(enable = true) {
-        if (_gpioEnable) _gpioEnable.write(enable ? 0 : 1);
+        if (_gpioEnable) _gpioEnable.write(enable ? 1 : 0);
     }
     
     // Get the enabled status
     function enabled() {
-        return _gpioEnable ? (_gpioEnable.read() == 0) : false;
+        return _gpioEnable ? (_gpioEnable.read() == 1) : false;
     }
     
-    // Read and write the PWM pin
-    function read() { return _pinWrite.read() }
-    function write(val) { return _pinWrite.write(val) }
+    // Sets the minimum and maximum of the output scale. Both should be between 0.0 and 1.0.
+    function scale(min, max) {
+        _min = min;
+        _max = max;
+    }
+    
+    // Write the duty cycle to the PWM pin. For PWM the rage is 0.0 to 1.0 but for servos its usually a much
+    // smaller range and over powering the servo may damage it. Use the scale() function to automatically
+    // map the range.
+    function read() {
+        return format("%0.03f", _last_write).tofloat();
+    }
+    function write(val) {
+        if (val <= 0.0) val = 0.0;
+        else if (val >= 1.0) val = 1.0;
+        _last_write = val.tofloat();
+
+        local f = 0.0 + _min + (_last_write.tofloat() * (_max - _min));
+        return _pinWrite.write(f);
+    }
     
 }
 
@@ -1454,8 +1475,10 @@ function int2deg(temp, stepsize = 0.125, left_align_bits = 11) {
 hannah <- Hannah();
 hannah.led.blink(0, 20, 0, true);
 hannah.light.initialise([7, 7, 7, 5], 0x30);
-hannah.pot.scale(0, 100, true);
+hannah.pot.scale(0.0, 1.0, false);
 hannah.temp.alert(29, 31);
+hannah.srv1.scale(0.04, 0.11); // This is a good range for the SM-S4303R
+hannah.srv1.write(0.50); // Stop
 
 hannah.on_temp_changed = function(state) {
     server.log(format("Temperature has changed to: %0.02f", state))
@@ -1465,6 +1488,7 @@ hannah.on_temp_changed = function(state) {
 }
 hannah.on_pot_changed = function(state) {
     server.log("Pot has changed to: " + state)
+    hannah.srv1.write(state);
 }
 hannah.on_btn1_changed = function(state) {
     server.log("Button 1 is triggered: " + (state ? "up" : "down"));
