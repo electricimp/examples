@@ -109,9 +109,6 @@ class thermistor {
 
 /* RUNTIME BEGINS HERE -------------------------------------------------------*/
 
-// Register with imp server
-imp.configure("TempBug",[],[]);
-
 // Configure Pins
 // pin 8 is driven high to turn off temp monitor (saves power) or low to read
 therm_en_l <- hardware.pin8;
@@ -119,19 +116,19 @@ therm_en_l.configure(DIGITAL_OUT);
 therm_en_l.write(1); 
 // pin 9 is the middle of the voltage divider formed by the NTC - read the analog voltage to determine temperature
 temp_sns <- hardware.pin9;
+// instantiate sensor classes
 
 // instantiate our thermistor class
 myThermistor <- thermistor(temp_sns, b_therm, t0_therm, r_therm, 10, false);
 
-// enable the temperature sensor
 therm_en_l.write(0);
-// wait 5 ms to let things settle
-imp.sleep(0.005);
-// read the temperature and send it to the agent
-agent.send("temp",format("%.2f",myThermistor.read_c()));
-// Prefer Fahrenheit? Use the line below instead of the one above.
-//agent.send("temp",format("%.2f",myThermistor.read_f()));
-// disable the temperature sensor again to save power
+imp.sleep(0.001);
+local id = hardware.getdeviceid();
+local datapoint = {
+    "id" : id,
+    "temp" : format("%.2f",myThermistor.read_f())
+}
+agent.send("data",datapoint);
 therm_en_l.write(1);
 
 //Sleep for 15 minutes and 1 second, minus the time past the 0:15
