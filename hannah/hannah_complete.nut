@@ -1478,7 +1478,9 @@ hannah.light.initialise([7, 7, 7, 5], 0x30);
 hannah.pot.scale(0.0, 1.0, false);
 hannah.temp.alert(29, 31);
 hannah.srv1.scale(0.04, 0.11); // This is a good range for the SM-S4303R
-hannah.srv1.write(0.50); // Stop
+hannah.srv2.scale(0.026, 0.103); // This is a good range for the A0090 Micro Servo
+hannah.srv1.write(hannah.pot.read());
+hannah.srv2.write(hannah.pot.read());
 
 hannah.on_temp_changed = function(state) {
     server.log(format("Temperature has changed to: %0.02f", state))
@@ -1489,6 +1491,7 @@ hannah.on_temp_changed = function(state) {
 hannah.on_pot_changed = function(state) {
     server.log("Pot has changed to: " + state)
     hannah.srv1.write(state);
+    hannah.srv2.write(state);
 }
 hannah.on_btn1_changed = function(state) {
     server.log("Button 1 is triggered: " + (state ? "up" : "down"));
