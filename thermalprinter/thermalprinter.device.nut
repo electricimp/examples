@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 // Uses CSN-A2-T thermal receipt printer from Adafruit
 // Imp sends serial commands to the printer on UART57
 
+/* FUNCTION AND CLASS DEFINITIONS -------------------------------------------*/
+
 // Lots of ASCII to be used, so we'll define the relevant non-printables here 
 const LF    = 0x0A;
 const HT    = 0x09; // Horizontal TAB
@@ -31,12 +33,6 @@ const FF    = 0x0C; // NP form feed; new page
 // chunk size for downloading image data buffers from the agent
 // equal to one paper width
 const CHUNK_SIZE = 384;
-
-// register with the imp service
-imp.configure("Thermal Printer", [], []);
-
-// printer needs a moment of warmup time on power-on
-imp.sleep(0.5);
 
 class printer {
     /* Print Commands
@@ -360,22 +356,7 @@ class printer {
 
 }
 
-// Actual execution picks up here
-// instatiate the printer object at global scope
-myPrinter <- printer(hardware.uart57, 19200);
-
-/*
-function ei() {
-    myPrinter.setJustify("center");
-    myPrinter.setBold(true);
-    myPrinter.print("electric imp");
-    myPrinter.feed(1);
-    myPrinter.reset();
-}
-
-imp.wakeup(0.5, ei);
-// once this callback is done, we've printed the logo and "electric imp" and reset the printer
-*/
+/* AGENT CALLBACKS ----------------------------------------------------------*/
 
 // Register some hooks for the agent to call, allowing the agent to push actions to the device
 // the most obvious: print a buffer of data
@@ -388,18 +369,6 @@ agent.on("print", function(buffer) {
 agent.on("image", function(image) {
     printImgBuffer(image.data);
 });
-
-// load chunks of an image as pulled from agent
-/*
-agent.on("imgData", function(buffer) {
-    myPrinter.printImgBuffer(buffer);
-    myPrinter.loadedDataLength += buffer.len();
-    server.log("Loaded "+myPrinter.loadedDataLength+" bytes");
-    // wait a moment - can't use imp.wakeup here due to a bug that causes variables to be freed prematurely
-    imp.sleep(0.01);
-    myPrinter.pull();
-});
-*/
 
 // allow the agent to load a buffer without printing
 agent.on("load", function(buffer) {
@@ -454,3 +423,11 @@ agent.on("doubleWidth", function(value) {
 agent.on("deleteLine", function(value) {
     myPrinter.setDeleteLine(value);
 });
+
+/* RUNTIME BEGINS HERE ------------------------------------------------------*/
+
+// printer needs a moment of warmup time on power-on
+imp.sleep(0.5);
+
+// instatiate the printer object at global scope
+myPrinter <- printer(hardware.uart57, 19200);

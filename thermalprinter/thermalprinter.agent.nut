@@ -54,7 +54,7 @@ imageLine <- 0
 // print the electric imp logo! 
 function printLogo() {
     //First, download it from the electric imp server
-    local reqURL = "http://demo2.electricimp.com/printer/ei_logo_tinyprinter.bmp";
+    local reqURL = "http://electricimp.com/docs/attachments/images/examples/resources/ei_logo_tinyprinter.bmp";
     // Note: bitmaps should be 384 pixels wide
     // if you don't pre-size your image properly, the printer will just mangle it
     // also note that the header-reading below is specific to a classic "BM" bitmap, with

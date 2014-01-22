@@ -1,4 +1,4 @@
-/*
+<!--
 Copyright (C) 2013 electric imp, inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
@@ -15,7 +15,7 @@ INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PA
 AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+-->
 <!DOCTYPE html>
 <html lang="en">
 <html>
@@ -27,7 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 	    <meta name="description" content="">
 	    <meta name="author" content="">
 	    <!-- Note that this page requires bootstrap (http://twitter.github.com/bootstrap/) -->
-		<link href="../bootstrap/css/bootstrap.min.css" rel="stylesheet">
+		<link href="http://netdna.bootstrapcdn.com/bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet">
 		<style>
 			#typer {
 				height:40px;
@@ -53,7 +53,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 				<h2>Electric Imp Printer</h2>
 
 				<!-- Picture of the imp printer goes here -->
-				<img src="./imPrinter.jpg" width=300 height=265 alt="the imPrinter">
+				<img src="http://electricimp.com/docs/attachments/images/examples/resources/imPrinter.jpg" width=300 height=265 alt="the imPrinter">
 
 				<!-- print success / failure indicator goes here -->
 				<span id="printSuccess" style="padding-top: 20px; display: none;"><div class="alert alert-success"><h4>Success!</h4> Your message was printed</div></span>
@@ -85,7 +85,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 			</div>
 		</div>
 
-		<script src="../bootstrap/js/bootstrap.js"></script>
+		<script src="http://netdna.bootstrapcdn.com/bootstrap/2.3.2/js/bootstrap.min.js"></script>
 		<script> 
 			// this nice little table holds all of the data we pass to the
 			// electric imp agent when we ask it to print
@@ -99,8 +99,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 				text: "",
 			}
 
-			// this is where you put your agent URL. You can find your URL under
-			// "device settings" in the electric imp IDE
+			// this is where you put your agent URL. 
 			impURL = "http://agent.electricimp.com/YOUR_UNIQUE_URL";
 
 			// this takes the text from the form, prepares it, makes JSON of the
