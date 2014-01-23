@@ -52,7 +52,9 @@ function sample() {
 // poll and log data every 0.5 seconds
 function poll() {
   imp.wakeup(0.5, poll);
-  server.log(sample());
+  local moistureContent = sample() * 100.0;
+  server.log(format("%0.2f", moistureContent) + "% moisture");
 }
-// start the poll function
+
+/ start the poll function
 poll();
