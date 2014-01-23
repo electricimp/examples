@@ -94,7 +94,6 @@ if ((hardware.wakereason() == WAKEREASON_PIN1) || (hardware.wakereason() == WAKE
 }
 
 // not a shallow wake; fire up the radio and let's cook a turkey
-imp.configure("Turkey Probe",[],[]);
 imp.setpowersave(true); // save juice, as this application is not latency-critical
 
 wake.configure(DIGITAL_IN, btnPressed);
