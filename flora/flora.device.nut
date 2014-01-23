@@ -17,57 +17,42 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-// water level sensor
-server.log("Flora booted");
+// create and configure pin variables
+level_sensor_en_high <- hardware.pin9;
+level_sensor <- hardware.pin1;
 
-local out1 = OutputPort("Water level");
-imp.configure("Water level sensor", [], [out1]);
+level_sensor_en_high.configure(DIGITAL_OUT);
+level_sensor.configure(PULSE_COUNTER, 0.01);
 
-// moar battery life
-// imp.setpowersave(true);
-
-local enable = hardware.pin9;
-local counter = hardware.pin1;
-
-enable.configure(DIGITAL_OUT);
-enable.write(1);
-
-counter.configure(PULSE_COUNTER, 0.01);
-
-local prev = -1.0;
+// disable level sensor
+level_sensor_en_high.write(0);
 
 function sample() {
     local count;
     local level;
 
     // turn on oscillator, sample, turn off
-    enable.write(1);
-    count = counter.read();
-    enable.write(0);
+    level_sensor_en_high.write(1);
+    count = level_sensor.read();
+    level_sensor_en_high.write(0);
     
     // work out level
-    if (count > 5000) level=0;
-    else {
-        // see http://www.xuru.org/rt/PowR.asp#CopyPaste
-        level = math.pow(count/3035.162425, -1.1815893306620);
-        if (level<0.0) level=0.0;
-    }
-
-    // convert to a zero to one type thing
-    level=level/10.0;
-    if (level>1.0) level=1.0;
+    if (count > 5000) return 0.0;
     
-    //level = 4.0*level;
+    // see http://www.xuru.org/rt/PowR.asp#CopyPaste
+    level = math.pow(count / 3035.162425, -1.1815893306620) / 10.0;
 
-    if (math.fabs(level - prev) > 0.005) {
-        server.show(format("%.2f",level)); 
-        //server.log(format("%.2f",level));        
-        out1.set(level);
-        prev = level;
-    }
-
-    // changed this to every second
-    imp.wakeup(0.05, sample); 
+    // bound level between 0.0 and 1.0    
+    if (level < 0.0) return 0.0;
+    if (level > 1.0) return 1.0;
+    
+    return level;
 }
 
-sample();
+// poll and log data every 0.5 seconds
+function poll() {
+  imp.wakeup(0.5, poll);
+  server.log(sample());
+}
+// start the poll function
+poll();
