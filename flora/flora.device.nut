@@ -56,5 +56,5 @@ function poll() {
   server.log(format("%0.2f", moistureContent) + "% moisture");
 }
 
-/ start the poll function
+// start the poll function
 poll();
