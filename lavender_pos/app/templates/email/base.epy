@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{{ subject }}</title>
+
+        <style type="text/css">
+            #outlook a { padding:0; }
+            body { width:100% !important; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; margin:0; padding:0; } 
+            .ExternalClass { width:100%; }
+            .ExternalClass, .ExternalClass p, .ExternalClass span, .ExternalClass font, .ExternalClass td, .ExternalClass div { line-height:100%; }
+            #backgroundTable { margin:0; padding:0; width:100% !important; line-height:100% !important; }
+            img { outline:none; text-decoration:none; -ms-interpolation-mode:bicubic; } 
+            a img { border:none; } 
+            .image_fix { display:block; }
+            p { margin:1em 0; }
+            h1, h2, h3, h4, h5, h6 { color:#333 !important; }
+            h1 a, h2 a, h3 a, h4 a, h5 a, h6 a { color:blue !important;}
+            h1 a:active, h2 a:active,  h3 a:active, h4 a:active, h5 a:active, h6 a:active { color:#0069D6 !important; }
+            h1 a:visited, h2 a:visited,  h3 a:visited, h4 a:visited, h5 a:visited, h6 a:visited { color:#0069D6 !important; }
+            table td { border-collapse:collapse; }
+            table { border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt; }
+            a { color:#0069D6; }
+
+            @media only screen and (max-device-width:480px) {
+                a[href^="tel"], a[href^="sms"] {
+                    text-decoration:none;
+                    color:blue;
+                    pointer-events:none;
+                    cursor:default;
+                }
+
+                .mobile_link a[href^="tel"], .mobile_link a[href^="sms"] {
+                    text-decoration:default;
+                    color:orange !important;
+                    pointer-events:auto;
+                    cursor:default;
+                }
+            }
+
+            @media only screen and (min-device-width:768px) and (max-device-width:1024px) {
+                a[href^="tel"], a[href^="sms"] {
+                    text-decoration:none;
+                    color:blue;
+                    pointer-events:none;
+                    cursor:default;
+                }
+
+                .mobile_link a[href^="tel"], .mobile_link a[href^="sms"] {
+                    text-decoration:default;
+                    color:orange !important;
+                    pointer-events:auto;
+                    cursor:default;
+                }
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio:2) {
+            /* Put your iPhone 4g styles in here */ 
+            }
+
+            /* Android targeting */
+            @media only screen and (-webkit-device-pixel-ratio:.75) {
+            /* Put CSS for low density (ldpi) Android layouts in here */
+            }
+            @media only screen and (-webkit-device-pixel-ratio:1) {
+            /* Put CSS for medium density (mdpi) Android layouts in here */
+            } 
+            @media only screen and (-webkit-device-pixel-ratio:1.5) {
+            /* Put CSS for high density (hdpi) Android layouts in here */
+            }
+            /* end Android targeting */
+
+
+            #backgroundTable { height:100% !important; margin:0; padding:0; width:100% !important; }
+            body, #backgroundTable { background-color:#FAFAFA; }
+            #templateContainer { border:1px solid #DDDDDD; margin-top:25px; }
+
+            h1, .h1 { color:#333; display:block; color:#333; font:34px Georgia,Cambria,"Times New Roman",Times,Serif; font-weight:bold; line-height:100%; margin-top:0; margin-right:0; margin-bottom:10px; margin-left:0; text-align:left; }
+            h2, .h2 { color:#333; display:block; color:#333; font:30px Georgia,Cambria,"Times New Roman",Times,Serif; font-weight:bold; line-height:100%; margin-top:0; margin-right:0; margin-bottom:10px; margin-left:0; text-align:left; }
+            h3, .h3 { color:#333; display:block; color:#333; font:26px Georgia,Cambria,"Times New Roman",Times,Serif; font-weight:bold; line-height:100%; margin-top:0; margin-right:0; margin-bottom:10px; margin-left:0; text-align:left; }
+            h4, .h4 { color:#333; display:block; color:#333; font:22px Georgia,Cambria,"Times New Roman",Times,Serif; font-weight:bold; line-height:100%; margin-top:0; margin-right:0; margin-bottom:10px; margin-left:0; text-align:left; }
+
+            #templateHeader { background-color:#FFFFFF; border-bottom:0; }
+            .headerContent { color:#333; color:#333; font:34px Georgia,Cambria,"Times New Roman",Times,Serif; font-weight:bold; line-height:100%; padding:0; text-align:center; vertical-align:middle; }
+            .headerContent a:link, .headerContent a:visited, .headerContent a .yshortcuts { color:#0069D6; font-weight:normal; text-decoration:underline; }
+
+            #templateContainer, .bodyContent { background-color:#FFFFFF; }
+
+            .bodyContent { color:#333; font:14px/1.4 Georgia,Cambria,"Times New Roman",Times,Serif; line-height:150%; text-align:left; padding-top:0px; padding-bottom:0px; }
+            .bodyContent a:link, .bodyContent a:visited, .bodyContent a .yshortcuts { color:#0069D6; font-weight:normal; text-decoration:underline; }
+            .bodyContent img { display:inline; height:auto; }
+
+            #templateFooter { background-color:#FFFFFF; border-top:0; }
+            .footerContent { color:#333; font:14px/1.4 Georgia,Cambria,"Times New Roman",Times,Serif; line-height:125%; text-align:left; padding-top:0px; }
+            .footerContent img { display:inline; }
+            .footerContent #copyright { border:0px; text-align:center; }
+            .footerContent #footerSeparator { border:0px; text-align:center; }
+        </style>
+    </head>
+    <body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0" style="width:100% !important; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; margin-top:0; margin-right:0; margin-bottom:0; margin-left:0; padding-top:0; padding-right:0; padding-bottom:0; padding-left:0; background-color:#FAFAFA;" bgcolor="#FAFAFA">
+        <center>
+            <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" style="width:100% !important; line-height:100% !important; border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt; height:100% !important; margin-top:0; margin-right:0; margin-bottom:0; margin-left:0; padding-top:0; padding-right:0; padding-bottom:0; padding-left:0; background-color:#FAFAFA;" bgcolor="#FAFAFA">
+                <tr>
+                    <td align="center" valign="top" style="border-collapse:collapse;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="620" style="border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt; margin-top:25px; border-top-color:#dddddd; border-right-color:#dddddd; border-bottom-color:#dddddd; border-left-color:#dddddd; border-top-style:solid; border-right-style:solid; border-bottom-style:solid; border-left-style:solid; border-top-width:1px; border-right-width:1px; border-bottom-width:1px; border-left-width:1px; background-color:#FFFFFF;" bgcolor="#FFFFFF">
+                            <tr>
+                                <td align="center" valign="top" style="border-collapse:collapse;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt; border-bottom-width:0; background-color:#FFFFFF;" bgcolor="#FFFFFF">
+                                        <tr>
+                                            <td style="border-collapse:collapse; color:#333; font:34px Georgia,Cambria,'Times New Roman',Times,Serif; font-weight:bold; line-height:100%; text-align:center; vertical-align:middle; padding-top:25px; padding-right:0; padding-bottom:0; padding-left:0;" align="center" valign="middle">
+                                                <img src="https://legitteams.com/resources/images/header_email.png" alt="Logo" style="outline:none; text-decoration:none; -ms-interpolation-mode:bicubic;" /> <br />
+                                                <img src="https://legitteams.com/resources/images/separator_email.png" alt="Separator" style="outline:none; text-decoration:none; -ms-interpolation-mode:bicubic;" />
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center" valign="top" style="border-collapse:collapse;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+                                        <tr>
+                                            <td valign="top" style="border-collapse:collapse; color:#333; font:14px/1.4 Georgia,Cambria,'Times New Roman',Times,Serif; line-height:150%; text-align:left; padding-top:0px; padding-bottom:0px; background-color:#FFFFFF;" align="left" bgcolor="#FFFFFF">
+                                                <table border="0" cellpadding="20" cellspacing="0" width="100%" style="border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+                                                    <tr>
+                                                        <td valign="top" style="padding:0 25px 0 25px; border-collapse:collapse;">
+                                                            <div>
+                                                                {{ body }}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center" valign="top" style="border-collapse:collapse;">
+                                    <table border="0" cellpadding="10" cellspacing="0" width="600" style="border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt; border-top-width:0; background-color:#FFFFFF;" bgcolor="#FFFFFF">
+                                        <tr>
+                                            <td valign="top" style="border-collapse:collapse; color:#333; font:14px/1.4 Georgia,Cambria,'Times New Roman',Times,Serif; line-height:125%; text-align:left; padding-top:0px; padding-bottom:20px;" align="left">
+                                                <table border="0" cellpadding="10" cellspacing="0" width="100%" style="border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+                                                    <tr>
+                                                        <td colspan="2" valign="middle" style="border-collapse:collapse; text-align:center; border-top-width:0px; border-right-width:0px; border-bottom-width:0px; border-left-width:0px;" align="center">
+                                                            <img src="https://legitteams.com/resources/images/separator_email.png" alt="Separator" style="outline:none; text-decoration:none; -ms-interpolation-mode:bicubic; display:inline;" />
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="2" valign="middle" style="border-collapse:collapse; text-align:center; border-top-width:0px; border-right-width:0px; border-bottom-width:0px; border-left-width:0px; font:14px/1.4 Georgia,Cambria,'Times New Roman',Times,Serif !important;" align="center">
+                                                               Copyright &copy; Legit Teams LLC, 2012
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                        <br />
+                    </td>
+                </tr>
+            </table>
+        </center>
+    
+        <style type="text/css">
+            body { width:100% !important; -webkit-text-size-adjust:100% !important; -ms-text-size-adjust:100% !important; margin:0 !important; padding:0 !important; }
+            .ExternalClass { width:100% !important; }
+            .ExternalClass { line-height:100% !important; }
+            #backgroundTable { margin:0 !important; padding:0 !important; width:100% !important; line-height:100% !important; }
+            img { outline:none !important; text-decoration:none !important; -ms-interpolation-mode:bicubic !important; }
+            #backgroundTable { height:100% !important; margin:0 !important; padding:0 !important; width:100% !important; }
+            body { background-color:#FAFAFA !important; }
+            #backgroundTable { background-color:#FAFAFA !important; }
+        </style>
+    </body>
+</html>
+

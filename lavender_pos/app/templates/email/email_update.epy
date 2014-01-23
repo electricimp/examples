@@ -1,0 +1,28 @@
+{% extends 'emails/base.epy' %}
+
+{% block subject %}
+Legit Teams E-mail Update
+{% endblock %}
+
+{% block body %}
+<p>Dear {{ user.first_name }} {{ user.last_name }},</p>
+
+<p>
+    You recently updated your e-mail on <a href="https://legitteams.com">Legit Teams</a>
+    {% if user.email %}
+        from {{ user.email }}
+    {% endif %}
+    to {{ new_email }}. In order to complete this transition, please confirm your e-mail by visiting the link below. Once finished, all future e-mails will be sent to your updated address.
+</p>
+
+<p><a href="{{ confirm_email_url }}/{{ user.username }}/{{ confirmation_code }}">Confirm E-mail</a></p>
+
+<p>Thank you for using our service and take care.</p>
+
+<p>If you happen to receive this message in error, please ignore it.</p>
+
+<p>
+Best regards,<br />
+Legit Teams LLC,
+</p>
+{% endblock %}

@@ -1,0 +1,16 @@
+Flask==0.9
+Flask-Bcrypt==0.5.2
+Flask-Login==0.2.5
+Flask-SQLAlchemy==0.16
+Flask-Script==0.5.3
+Flask-WTF==0.8.4
+Jinja2==2.7
+MarkupSafe==0.18
+SQLAlchemy==0.8.0
+WTForms==1.0.4
+Werkzeug==0.9.1
+paramiko==1.11.0
+py-bcrypt==0.3
+pycrypto==2.6
+requests==1.2.3
+wsgiref==0.1.2

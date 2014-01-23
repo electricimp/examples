@@ -1,0 +1,64 @@
+{% extends "base.epy" %}
+
+{% block content %}
+    <img src={{ img_url }} class="barcode" alt="barcode" />
+    <div class="purchase-confirmation-modal" style="display: none;">
+        <form action="{{ url_for('purchase') }}" method="post">
+          {% for field in purchase_form %}
+            {{ field() }}
+          {% endfor %}
+          You are about to get charged $<span id="amount">10</span> from <span id="company">Electric Imp</span>! Is that okay?
+          <br />
+          <br />
+          <button class="button float-right" id="cancel-button">No</button>
+          <button type="submit" class="button float-right">Yes</button>
+      </form>
+    </div>
+{% endblock %}
+{% block js %}
+    <script type="text/javascript">
+        (function(window, document, undefined) {
+
+            var getStatus = function() {
+                $.ajax({
+                    type: 'POST',
+                    url: '/api/web/polling-check-scan',
+                    data: JSON.stringify({
+                        barcode: {{ barcode }}
+                    }),
+                    contentType: 'application/json;charset=UTF-8',
+                    success: function(result) {
+                        result = JSON.parse(result);
+                        console.log(result);
+                        if(result.status === 0) {
+                            setTimeout(getStatus, 500);
+                        } else if(result.status === 1) {
+                          $('img.barcode').hide();
+                          $('.purchase-confirmation-modal #amount').html(result.amount);
+                          $('.purchase-confirmation-modal #company').html(result.company);
+                          $('div.purchase-confirmation-modal').show();
+                        }
+                    }
+                });
+            }
+
+            getStatus();
+
+            $('#cancel-button').on('click', function(e) {
+              e.preventDefault();
+              $.ajax({
+                  type: 'POST',
+                  url: '/api/web/cancel-purchase',
+                  data: JSON.stringify({
+                      barcode: {{ barcode }}
+                  }),
+                  contentType: 'application/json;charset=UTF-8',
+                  success: function(result) {
+                    window.location = 'http://' + window.location.href.split('/')[2] + '/dashboard';
+                  }
+              });
+            });
+
+        })(this, this.document);
+    </script>
+{% endblock %}
