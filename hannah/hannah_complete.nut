@@ -244,7 +244,7 @@ class SX1509 {
 
     // configure which callback should be called for each pin transition
     function setCallback(gpio, _callback) {
-        _callbacks.insert(gpio, _callback);
+        _callbacks[gpio] = _callback;
         
         // Initialize the interrupt Pin
         hardware.pin1.configure(DIGITAL_IN_PULLUP, fire_callback.bindenv(this));
