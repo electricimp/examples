@@ -77,19 +77,19 @@ Hannah rev2
 http://electricimp.com/docs/hardware/resources/reference-designs/hannah/
 
 SX1509BULTRT - IO Expander
-http://electricimp.com/docs/attachments/hardware/datasheets/s1509bultrt.pdf
+http://www.semtech.com/images/datasheet/sx150x_789.pdf
 
 ADJD-S311-CR999 - RGB light sensor
-http://electricimp.com/docs/attachments/hardware/datasheets/adjd-s311-cr999.pdf
+http://media.digikey.com/pdf/Data%20Sheets/Avago%20PDFs/ADJD-S311-CR999.pdf
 
 LIS331DLTR - 3-Axis accelerometer
-http://electricimp.com/docs/attachments/hardware/datasheets/lis331dl.pdf
+http://www.st.com/web/en/resource/technical/document/datasheet/CD00172345.pdf
 
 LIS3DH - 3-Axis accelerometer
 http://www.st.com/web/en/resource/technical/document/datasheet/CD00274221.pdf
 
 SA56004ED - Temperature sensor
-http://electricimp.com/docs/attachments/hardware/datasheets/sa56004ed.pdf
+http://www.nxp.com/documents/data_sheet/SA56004X.pdf
 
 TMP112 - Temperature sensor
 http://www.ti.com/lit/ds/symlink/tmp112.pdf
