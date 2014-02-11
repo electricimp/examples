@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang='en'>
+    <head>
+        <meta charset='utf-8'>
+        <meta name='viewport' content='user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1'>
+        <meta name='apple-mobile-web-app-capable' content='yes'>
+        <title>Holiday Lights</title>
+        <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js'></script>
+        <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/jquery-url-parser/2.3.1/purl.min.js'></script>
+        <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js'></script>
+		<script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/datejs/1.0/date.min.js'></script>
+		<script type='text/javascript' src='https://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js'></script>
+		<script type='text/javascript' src='http://anthonyterrien.com/js/jquery.knob.js'></script>
+		<script type='text/javascript' src='assets/minicolors/jquery.minicolors.min.js'></script>
+		<script type='text/javascript' src='https://cdn.firebase.com/v0/firebase.js'></script>
+        <script type='text/javascript' src='assets/js/lights.js'></script>
+        <link rel="stylesheet" href='assets/css/lights.css'>
+		<link rel="stylesheet" href='https://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css'>
+		<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+		<link rel="stylesheet" href="assets/minicolors/jquery.minicolors.css" />
+
+		<link rel="apple-touch-icon" href="assets/img/imp.png" />
+    </head>
+    <body>
+		<div class='container-fluid center'>
+			<h1 class="title"><u>Holiday Lights</u></h1>
+			<div class="well center">
+				<a href="#" id="status" class="btn active btn-danger"><i class="icon-white icon-thumbs-down"></i> Offline</a>
+			</div>
+			<div class="well center">
+				<div style="width: 100%; text-align: left; margin-left: 17%;">
+					<div style="margin-top: 0px;"><img src="http://wpmu.org/wp-content/uploads/2012/12/christmas-orig.png" class="img-circle" style="height: 50px; width: 50px;"><button id="xmas" class="btn btn-large btn-link">Christmas</button></div>
+					<div style="margin-top: 0px;"><img src="https://cdn1.iconfinder.com/data/icons/yooicons_set09_halloween/256/pumpkin.png" class="img-circle" style="height: 50px; width: 50px;"><button id="halloween" class="btn btn-large btn-link">Halloween</button></div>
+					<div style="margin-top: 0px;"><img src="http://icongal.com/gallery/image/253240/states_united_flag_us_usa_ia_england_english_bulgaria_flag.png" class="img-circle" style="height: 50px; width: 50px;"><button id="usa" class="btn btn-large btn-link">4th of July</button></div>
+					<div style="margin-top: 0px;"><img src="http://www.gettyicons.com/free-icons/101/international-holidays/png/256/hanukkah_256.png" class="img-circle" style="height: 50px; width: 50px;"><button id="hanukkah" class="btn btn-large btn-link">Hanukkah</button></div>
+					<div style="margin-top: 0px;"><img src="http://www.fmwconcepts.com/imagemagick/kaleidoscopic/images/zelda3_kaleidoscopic_random_180_yes_b5_e2_s0_n1.jpg" class="img-circle" style="height: 50px; width: 50px;"><button id="random" class="btn btn-large btn-link">Random</button></div>
+					<div style="margin-top: 0px;"><img src="http://www.finerminds.com/wp-content/blogs.dir/33/files/2012/07/Bright-Light.jpg" class="img-circle" style="height: 50px; width: 50px;"><button id="white" class="btn btn-large btn-link">White</button></div>
+					<div style="margin-top: 0px;"><img src="http://www.rainbowpatchwork.com.au/images/product/f/fabrics-tone-on-tone-black-branock-and-patek-solids-black-20-256px-256px.jpg" class="img-circle" style="height: 50px; width: 50px;"><button id="black" class="btn btn-large btn-link">Off</button></div>
+				</div>
+			</div>
+			<div class="well center">
+				<div style="width: 100%; text-align: left; margin-left: 17%;">
+					<input type="text" value="5" class="speed" id="speed" data-cursor=true data-thickness=.5 data-fgColor="#222222"><br/>
+					<div id="colorpicker"></div>
+				</div>
+			</div>
+			<div class="well well-small">
+				<div class="scheduleLights">
+					<h3>Lights turn on at:</h3>
+					<select id="turnon" name="turnon">
+					  <option value='skip' selected>Don't turn on automatically</option>
+					  <option disabled></option>
+					  <option value='0'>midnight</option>
+					  <option value='1'>1am</option>
+					  <option value='2'>2am</option>
+					  <option value='3'>3am</option>
+					  <option value='4'>4am</option>
+					  <option value='5'>5am</option>
+					  <option value='6'>6am</option>
+					  <option value='7'>7am</option>
+					  <option value='8'>8am</option>
+					  <option value='9'>9am</option>
+					  <option value='10'>10am</option>
+					  <option value='11'>11am</option>
+					  <option value='12'>noon</option>
+					  <option value='13'>1pm</option>
+					  <option value='14'>2pm</option>
+					  <option value='15'>3pm</option>
+					  <option value='16'>4pm</option>
+					  <option value='17'>5pm</option>
+					  <option value='18'>6pm</option>
+					  <option value='19'>7pm</option>
+					  <option value='20'>8pm</option>
+					  <option value='21'>9pm</option>
+					  <option value='22'>10pm</option>
+					  <option value='23'>11pm</option>
+					  <option disabled></option>
+					  <option value='sunrise-1hr'>sunrise - 1 hour</option>
+					  <option value='sunrise-30mn'>sunrise - 30min</option>
+					  <option value='sunrise'>sunrise</option>
+					  <option value='sunrise+30mn'>sunrise + 30min</option>
+					  <option value='sunrise+1hr'>sunrise + 1 hour</option>
+					  <option disabled></option>
+					  <option value='sunset-1hr'>sunset - 1 hour</option>
+					  <option value='sunset-30mn'>sunset - 30min</option>
+					  <option value='sunset'>sunset</option>
+					  <option value='sunset+30mn'>sunset + 30min</option>
+					  <option value='sunset+1hr'>sunset + 1 hour</option>
+					</select>
+					<h3>Lights turn off at:</h3>
+					<select id='turnoff' name='turnoff'>
+						<option value='skip' selected>Don't turn off automatically</option>
+						<option disabled></option>
+						<option value='0'>midnight</option>
+						<option value='1'>1am</option>
+						<option value='2'>2am</option>
+						<option value='3'>3am</option>
+						<option value='4'>4am</option>
+						<option value='5'>5am</option>
+						<option value='6'>6am</option>
+						<option value='7'>7am</option>
+						<option value='8'>8am</option>
+						<option value='9'>9am</option>
+						<option value='10'>10am</option>
+						<option value='11'>11am</option>
+						<option value='12'>noon</option>
+						<option value='13'>1pm</option>
+						<option value='14'>2pm</option>
+						<option value='15'>3pm</option>
+						<option value='16'>4pm</option>
+						<option value='17'>5pm</option>
+						<option value='18'>6pm</option>
+						<option value='19'>7pm</option>
+						<option value='20'>8pm</option>
+						<option value='21'>9pm</option>
+						<option value='22'>10pm</option>
+						<option value='23'>11pm</option>
+						<option disabled></option>
+						<option value='sunrise-1hr'>sunrise - 1 hour</option>
+						<option value='sunrise-30mn'>sunrise - 30min</option>
+						<option value='sunrise'>sunrise</option>
+						<option value='sunrise+30mn'>sunrise + 30min</option>
+						<option value='sunrise+1hr'>sunrise + 1 hour</option>
+						<option disabled></option>
+						<option value='sunset-1hr'>sunset - 1 hour</option>
+						<option value='sunset-30mn'>sunset - 30min</option>
+						<option value='sunset'>sunset</option>
+						<option value='sunset+30mn'>sunset + 30min</option>
+						<option value='sunset+1hr'>sunset + 1 hour</option>
+						<option disabled></option>
+						<option value='+1hr'>after one hour</option>
+						<option value='+2hr'>after two hours</option>
+						<option value='+3hr'>after three hours</option>
+					</select>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
