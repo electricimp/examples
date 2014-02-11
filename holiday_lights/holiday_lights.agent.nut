@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2013 Electric Imp
+Copyright (c) 2014 Electric Imp
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -67,12 +67,12 @@ class Firebase {
 
 
     // ........................................................................
-	function set_path(_path) {
-		if (!_path) {
-			_path = "agents/" + agentid;
-		}
+    function set_path(_path) {
+        if (!_path) {
+            _path = "agents/" + agentid;
+        }
         url = "https://" + database + ".firebaseIO.com/" + _path + ".json?auth=" + authkey;
-	}
+    }
 
 
     // ........................................................................
@@ -426,7 +426,7 @@ imp.wakeup(1, get_default_values)
 
 
 // -----------------------------------------------------------------------------
-fb <- Firebase("devices", "LLfj2iAIHqwwy4mrsci8JprdU6U31HgXDbVEiz7A");
+fb <- Firebase("devices", "APIKEY");
 
 // When the device sends an update, send it on to Firebase
 device.on("update", function(data) {
@@ -452,7 +452,13 @@ device.on("status", function (status) {
 http.onrequest(function(req, res) {
     res.header("Access-Control-Allow-Origin", "*")
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    res.send(200, "OK");
+    if (req.path == "/") {
+        res.header("Location", "http://devious-dorris.gopagoda.com/lights?agent=" + http.agenturl())
+        res.send(307, "Redirecting ...");
+        return;
+    } else {
+        res.send(200, "OK");
+    }
     
     try {
         switch (req.path) {
@@ -475,4 +481,3 @@ http.onrequest(function(req, res) {
 
 
 server.log("Agent ready! URL = " + http.agenturl())
-

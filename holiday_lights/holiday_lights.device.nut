@@ -354,7 +354,6 @@ function regular_update() {
 
 
 // ----------------------------------------------------------------------------
-imp.configure("Quirky LED lights", [], []);
 imp.enableblinkup(true);
 c <- colorEffects(48);
 regular_update();
