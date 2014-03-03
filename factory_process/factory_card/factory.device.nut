@@ -1,4 +1,5 @@
 
+if (imp.getssid() == "") return; // Don't run the factory code while offline
 
 passed <- run_some_tests();
 server.bless(passed, function(success) {
