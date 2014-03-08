@@ -36,14 +36,13 @@ For this example:
 - the webhooks will then be notified of the blessing event and take further actions
 ========================================================================================== */
 
+if (imp.getssid() == "") return; // Don't run the factory code while offline
+
 const SSID = "yourSSID";
 const PASSWORD = "yourWifiPW";
 const FIXTURE_MAC = "themacofthefixture";
 const THROTTLE_TIME = 10;
 const SUCCESS_TIMEOUT = 20;
-
-imp.configure("Factory Blinkup", [], []);
-server.show("");
 
 throttle_protection <- false;
 finished <- false;

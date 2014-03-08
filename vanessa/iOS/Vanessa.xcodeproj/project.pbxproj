@@ -1,0 +1,504 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		9C3B7C1F1858CFF600016EAD /* UIImage+Alpha.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C3B7C1A1858CFF600016EAD /* UIImage+Alpha.m */; };
+		9C3B7C201858CFF600016EAD /* UIImage+Resize.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C3B7C1C1858CFF600016EAD /* UIImage+Resize.m */; };
+		9C3B7C211858CFF600016EAD /* UIImage+RoundedCorner.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C3B7C1E1858CFF600016EAD /* UIImage+RoundedCorner.m */; };
+		9C3B7C2318590F4000016EAD /* lena.png in Resources */ = {isa = PBXBuildFile; fileRef = 9C3B7C2218590F4000016EAD /* lena.png */; };
+		9C820002185261770075A1AC /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C820001185261770075A1AC /* AppDelegate.m */; };
+		9C820005185261770075A1AC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9C820003185261770075A1AC /* Main.storyboard */; };
+		9C820008185261770075A1AC /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C820007185261770075A1AC /* ViewController.m */; };
+		9C82000A185261770075A1AC /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9C820009185261770075A1AC /* Images.xcassets */; };
+		9C820011185261770075A1AC /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C820010185261770075A1AC /* XCTest.framework */; };
+		9C820012185261770075A1AC /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C82FFF1185261770075A1AC /* Foundation.framework */; };
+		9C820013185261770075A1AC /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C82FFF5185261770075A1AC /* UIKit.framework */; };
+		9C82001B185261770075A1AC /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9C820019185261770075A1AC /* InfoPlist.strings */; };
+		9C82001D185261770075A1AC /* VanessaTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C82001C185261770075A1AC /* VanessaTests.m */; };
+		9C82FFF2185261770075A1AC /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C82FFF1185261770075A1AC /* Foundation.framework */; };
+		9C82FFF4185261770075A1AC /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C82FFF3185261770075A1AC /* CoreGraphics.framework */; };
+		9C82FFF6185261770075A1AC /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C82FFF5185261770075A1AC /* UIKit.framework */; };
+		9C82FFFC185261770075A1AC /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9C82FFFA185261770075A1AC /* InfoPlist.strings */; };
+		9C82FFFE185261770075A1AC /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C82FFFD185261770075A1AC /* main.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		9C820014185261770075A1AC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9C82FFE6185261760075A1AC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9C82FFED185261770075A1AC;
+			remoteInfo = Vanessa;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		9C3B7C191858CFF600016EAD /* UIImage+Alpha.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+Alpha.h"; sourceTree = "<group>"; };
+		9C3B7C1A1858CFF600016EAD /* UIImage+Alpha.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+Alpha.m"; sourceTree = "<group>"; };
+		9C3B7C1B1858CFF600016EAD /* UIImage+Resize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+Resize.h"; sourceTree = "<group>"; };
+		9C3B7C1C1858CFF600016EAD /* UIImage+Resize.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+Resize.m"; sourceTree = "<group>"; };
+		9C3B7C1D1858CFF600016EAD /* UIImage+RoundedCorner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+RoundedCorner.h"; sourceTree = "<group>"; };
+		9C3B7C1E1858CFF600016EAD /* UIImage+RoundedCorner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+RoundedCorner.m"; sourceTree = "<group>"; };
+		9C3B7C2218590F4000016EAD /* lena.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = lena.png; sourceTree = "<group>"; };
+		9C820000185261770075A1AC /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		9C820001185261770075A1AC /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		9C820004185261770075A1AC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		9C820006185261770075A1AC /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		9C820007185261770075A1AC /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		9C820009185261770075A1AC /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		9C82000F185261770075A1AC /* VanessaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VanessaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		9C820010185261770075A1AC /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		9C820018185261770075A1AC /* VanessaTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "VanessaTests-Info.plist"; sourceTree = "<group>"; };
+		9C82001A185261770075A1AC /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		9C82001C185261770075A1AC /* VanessaTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VanessaTests.m; sourceTree = "<group>"; };
+		9C82FFEE185261770075A1AC /* Vanessa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Vanessa.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9C82FFF1185261770075A1AC /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		9C82FFF3185261770075A1AC /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		9C82FFF5185261770075A1AC /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		9C82FFF9185261770075A1AC /* Vanessa-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Vanessa-Info.plist"; sourceTree = "<group>"; };
+		9C82FFFB185261770075A1AC /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		9C82FFFD185261770075A1AC /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		9C82FFFF185261770075A1AC /* Vanessa-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Vanessa-Prefix.pch"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		9C82000C185261770075A1AC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9C820011185261770075A1AC /* XCTest.framework in Frameworks */,
+				9C820013185261770075A1AC /* UIKit.framework in Frameworks */,
+				9C820012185261770075A1AC /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9C82FFEB185261770075A1AC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9C82FFF4185261770075A1AC /* CoreGraphics.framework in Frameworks */,
+				9C82FFF6185261770075A1AC /* UIKit.framework in Frameworks */,
+				9C82FFF2185261770075A1AC /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		9C820016185261770075A1AC /* VanessaTests */ = {
+			isa = PBXGroup;
+			children = (
+				9C82001C185261770075A1AC /* VanessaTests.m */,
+				9C820017185261770075A1AC /* Supporting Files */,
+			);
+			path = VanessaTests;
+			sourceTree = "<group>";
+		};
+		9C820017185261770075A1AC /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				9C820018185261770075A1AC /* VanessaTests-Info.plist */,
+				9C820019185261770075A1AC /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		9C82FFE5185261760075A1AC = {
+			isa = PBXGroup;
+			children = (
+				9C82FFF7185261770075A1AC /* Vanessa */,
+				9C820016185261770075A1AC /* VanessaTests */,
+				9C82FFF0185261770075A1AC /* Frameworks */,
+				9C82FFEF185261770075A1AC /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		9C82FFEF185261770075A1AC /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9C82FFEE185261770075A1AC /* Vanessa.app */,
+				9C82000F185261770075A1AC /* VanessaTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		9C82FFF0185261770075A1AC /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				9C82FFF1185261770075A1AC /* Foundation.framework */,
+				9C82FFF3185261770075A1AC /* CoreGraphics.framework */,
+				9C82FFF5185261770075A1AC /* UIKit.framework */,
+				9C820010185261770075A1AC /* XCTest.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		9C82FFF7185261770075A1AC /* Vanessa */ = {
+			isa = PBXGroup;
+			children = (
+				9C820000185261770075A1AC /* AppDelegate.h */,
+				9C820001185261770075A1AC /* AppDelegate.m */,
+				9C820003185261770075A1AC /* Main.storyboard */,
+				9C820006185261770075A1AC /* ViewController.h */,
+				9C820007185261770075A1AC /* ViewController.m */,
+				9C820009185261770075A1AC /* Images.xcassets */,
+				9C82FFF8185261770075A1AC /* Supporting Files */,
+			);
+			path = Vanessa;
+			sourceTree = "<group>";
+		};
+		9C82FFF8185261770075A1AC /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				9C3B7C2218590F4000016EAD /* lena.png */,
+				9C3B7C191858CFF600016EAD /* UIImage+Alpha.h */,
+				9C3B7C1A1858CFF600016EAD /* UIImage+Alpha.m */,
+				9C3B7C1B1858CFF600016EAD /* UIImage+Resize.h */,
+				9C3B7C1C1858CFF600016EAD /* UIImage+Resize.m */,
+				9C3B7C1D1858CFF600016EAD /* UIImage+RoundedCorner.h */,
+				9C3B7C1E1858CFF600016EAD /* UIImage+RoundedCorner.m */,
+				9C82FFF9185261770075A1AC /* Vanessa-Info.plist */,
+				9C82FFFA185261770075A1AC /* InfoPlist.strings */,
+				9C82FFFD185261770075A1AC /* main.m */,
+				9C82FFFF185261770075A1AC /* Vanessa-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		9C82000E185261770075A1AC /* VanessaTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9C820023185261770075A1AC /* Build configuration list for PBXNativeTarget "VanessaTests" */;
+			buildPhases = (
+				9C82000B185261770075A1AC /* Sources */,
+				9C82000C185261770075A1AC /* Frameworks */,
+				9C82000D185261770075A1AC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9C820015185261770075A1AC /* PBXTargetDependency */,
+			);
+			name = VanessaTests;
+			productName = VanessaTests;
+			productReference = 9C82000F185261770075A1AC /* VanessaTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		9C82FFED185261770075A1AC /* Vanessa */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9C820020185261770075A1AC /* Build configuration list for PBXNativeTarget "Vanessa" */;
+			buildPhases = (
+				9C82FFEA185261770075A1AC /* Sources */,
+				9C82FFEB185261770075A1AC /* Frameworks */,
+				9C82FFEC185261770075A1AC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Vanessa;
+			productName = Vanessa;
+			productReference = 9C82FFEE185261770075A1AC /* Vanessa.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		9C82FFE6185261760075A1AC /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0500;
+				ORGANIZATIONNAME = "Electric Imp";
+				TargetAttributes = {
+					9C82000E185261770075A1AC = {
+						TestTargetID = 9C82FFED185261770075A1AC;
+					};
+				};
+			};
+			buildConfigurationList = 9C82FFE9185261760075A1AC /* Build configuration list for PBXProject "Vanessa" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 9C82FFE5185261760075A1AC;
+			productRefGroup = 9C82FFEF185261770075A1AC /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				9C82FFED185261770075A1AC /* Vanessa */,
+				9C82000E185261770075A1AC /* VanessaTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		9C82000D185261770075A1AC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9C82001B185261770075A1AC /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9C82FFEC185261770075A1AC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9C82000A185261770075A1AC /* Images.xcassets in Resources */,
+				9C82FFFC185261770075A1AC /* InfoPlist.strings in Resources */,
+				9C820005185261770075A1AC /* Main.storyboard in Resources */,
+				9C3B7C2318590F4000016EAD /* lena.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9C82000B185261770075A1AC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9C82001D185261770075A1AC /* VanessaTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9C82FFEA185261770075A1AC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9C3B7C1F1858CFF600016EAD /* UIImage+Alpha.m in Sources */,
+				9C820008185261770075A1AC /* ViewController.m in Sources */,
+				9C820002185261770075A1AC /* AppDelegate.m in Sources */,
+				9C82FFFE185261770075A1AC /* main.m in Sources */,
+				9C3B7C211858CFF600016EAD /* UIImage+RoundedCorner.m in Sources */,
+				9C3B7C201858CFF600016EAD /* UIImage+Resize.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		9C820015185261770075A1AC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9C82FFED185261770075A1AC /* Vanessa */;
+			targetProxy = 9C820014185261770075A1AC /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		9C820003185261770075A1AC /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				9C820004185261770075A1AC /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		9C820019185261770075A1AC /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				9C82001A185261770075A1AC /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		9C82FFFA185261770075A1AC /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				9C82FFFB185261770075A1AC /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		9C82001E185261770075A1AC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
+				ONLY_ACTIVE_ARCH = NO;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		9C82001F185261770075A1AC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		9C820021185261770075A1AC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Vanessa/Vanessa-Prefix.pch";
+				INFOPLIST_FILE = "Vanessa/Vanessa-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		9C820022185261770075A1AC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Vanessa/Vanessa-Prefix.pch";
+				INFOPLIST_FILE = "Vanessa/Vanessa-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		9C820024185261770075A1AC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Vanessa.app/Vanessa";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Vanessa/Vanessa-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "VanessaTests/VanessaTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Debug;
+		};
+		9C820025185261770075A1AC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Vanessa.app/Vanessa";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Vanessa/Vanessa-Prefix.pch";
+				INFOPLIST_FILE = "VanessaTests/VanessaTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		9C820020185261770075A1AC /* Build configuration list for PBXNativeTarget "Vanessa" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9C820021185261770075A1AC /* Debug */,
+				9C820022185261770075A1AC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9C820023185261770075A1AC /* Build configuration list for PBXNativeTarget "VanessaTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9C820024185261770075A1AC /* Debug */,
+				9C820025185261770075A1AC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9C82FFE9185261760075A1AC /* Build configuration list for PBXProject "Vanessa" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9C82001E185261770075A1AC /* Debug */,
+				9C82001F185261770075A1AC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 9C82FFE6185261760075A1AC /* Project object */;
+}

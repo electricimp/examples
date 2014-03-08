@@ -31,8 +31,9 @@ THE SOFTWARE.
 // Created: October, 2013
 //
 // =============================================================================
-class timer {
+class Timer {
 
+    self = null;
     cancelled = false;
     paused = false;
     running = false;
@@ -40,80 +41,82 @@ class timer {
     interval = 0;
     params = null;
     send_self = false;
-    static timers = [];
+    alarm_timer = null;
 
     // -------------------------------------------------------------------------
     constructor(_params = null, _send_self = false) {
         params = _params;
         send_self = _send_self;
-        timers.push(this); // Prevents scoping death
+        self = this;
     }
 
     // -------------------------------------------------------------------------
-    function _cleanup() {
-        foreach (k,v in timers) {
-            if (v == this) return timers.remove(k);
-        }
-    }
-    
-    // -------------------------------------------------------------------------
     function update(_params) {
         params = _params;
-        return this;
+        return self;
     }
 
     // -------------------------------------------------------------------------
     function set(_duration, _callback) {
-        assert(running == false);
         callback = _callback;
         running = true;
-        imp.wakeup(_duration, alarm.bindenv(this))
-        return this;
+        cancelled = false;
+        paused = false;
+        if (alarm_timer) imp.cancelwakeup(alarm_timer);
+        if (_duration == 0) {
+            alarm();
+        } else {
+            alarm_timer = imp.wakeup(_duration, alarm.bindenv(self))
+        }
+        return self;
     }
 
     // -------------------------------------------------------------------------
     function repeat(_interval, _callback) {
-        assert(running == false);
         interval = _interval;
         return set(_interval, _callback);
     }
 
     // -------------------------------------------------------------------------
     function cancel() {
+        if (alarm_timer) imp.cancelwakeup(alarm_timer);
+        alarm_timer = null;
         cancelled = true;
-        return this;
+        running = false;
+        callback = null;
+        return self;
     }
 
     // -------------------------------------------------------------------------
     function pause() {
         paused = true;
-        return this;
+        return self;
     }
 
     // -------------------------------------------------------------------------
     function unpause() {
         paused = false;
-        return this;
+        return self;
     }
 
     // -------------------------------------------------------------------------
     function alarm() {
         if (interval > 0 && !cancelled) {
-            imp.wakeup(interval, alarm.bindenv(this))
+            alarm_timer = imp.wakeup(interval, alarm.bindenv(self))
         } else {
             running = false;
-            _cleanup();
+            alarm_timer = null;
         }
 
         if (callback && !cancelled && !paused) {
             if (!send_self && params == null) {
                 callback();
             } else if (send_self && params == null) {
-                callback(this);
+                callback(self);
             } else if (!send_self && params != null) {
                 callback(params);
             } else  if (send_self && params != null) {
-                callback(this, params);
+                callback(self, params);
             }
         }
     }
@@ -122,11 +125,12 @@ class timer {
 
 
 
+
 /*............./[ Samples ]\..................
-t <- timer().set(10, function() {
+t <- Timer().set(10, function() {
      // Do something in 10 seconds
 });
-t <- timer().repeat(10, function() {
+t <- Timer().repeat(10, function() {
      // Do something every 10 seconds
 });
 t.cancel();
