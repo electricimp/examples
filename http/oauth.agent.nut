@@ -170,18 +170,17 @@ class OAuthClient
     
     
     // .........................................................................
-    function authorise(context) {
+    function authorise(context, credentials) {
         if (context.req.path == _token_path) {
             return true;
         } else if (context.req.path == _login_path) {
             return true;
-        } else if (context.authtype == "Basic" && "user" in _auth && "pass" in _auth && "expires" in _auth) {
-            if (context.user == _auth.user && context.pass == _auth.pass && _auth.expires > time()) {
+        } else if (credentials.authtype == "Basic" && "user" in _auth && "pass" in _auth && "expires" in _auth) {
+            if (credentials.user == _auth.user && credentials.pass == _auth.pass && _auth.expires > time()) {
                 return true;
             }
-        } else if (context.authtype == "Bearer" && "pass" in _auth && "expires" in _auth) {
-            if (context.pass == _auth.pass && _auth.expires > time()) {
-                context.user <- _auth.user;
+        } else if (credentials.authtype == "Bearer" && "pass" in _auth && "expires" in _auth) {
+            if (credentials.pass == _auth.pass && _auth.expires > time()) {
                 return true;
             }
         }
@@ -247,7 +246,9 @@ class OAuthClient
             local headers = {};
             local body = oauth_verifier ? ("oauth_verifier=" + oauth_verifier) : "";
             local post = _post(url, headers, body, "POST", {oauth_token=oauth_token});
+            local id = context.pause();
             post.sendasync(function(res) {
+                local context = Context.unpause(id);
                 if (res.statuscode == 200) {
                     local response = http.urldecode(res.body);
                     if ("oauth_token" in response) {
@@ -268,9 +269,6 @@ class OAuthClient
                     context.send(401, "Access denied");
                 }
             }.bindenv(this));
-            
-            // Prevent the http handler from assuming we have a problem.
-            context.sent = true;
         }
     }
     

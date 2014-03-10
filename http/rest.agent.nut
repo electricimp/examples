@@ -49,42 +49,14 @@ class REST
         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     }
     
-    // .........................................................................
-    // This should come from the context bind not the class
-    function header(key, value) {
-        return res.header(key, value);
-    }
-    
-    // .........................................................................
-    // This should come from the context bind not the class
-    function send(code, message = null) {
-        if (message == null && typeof code == "integer") {
-            // Empty result code
-            res.send(code, "");
-        } else if (message == null && typeof code == "string") {
-            // No result code, assume 200
-            res.send(200, code);
-        } else if (message == null && (typeof code == "table" || typeof code == "array")) {
-            // No result code, assume 200 ... and encode a json object
-            res.header("Content-Type", "application/json");
-            res.send(200, http.jsonencode(code));
-        } else {
-            // Normal result
-            res.send(code, message);
-        }
-        sent = true;
-    }
-    
     
     // -------------------------[ PRIVATE FUNCTIONS ]---------------------------
     
     // .........................................................................
     function _onrequest(req, res) {
+        
         // Setup the context for the callbacks
-        local context = {req = req, res = res, sent = false};
-        context.isbrowser <- (("accept" in req.headers) && (req.headers.accept.find("text/html") != null));
-        context.header <- header.bindenv(context);
-        context.send <- send.bindenv(context);
+        local context = Context(req, res);
         try {
 
             // Immediately reject insecure connections
@@ -104,8 +76,11 @@ class REST
 
             // Are we authorised
             if ("authorise" in _handlers) {
-                _parse_authorisation(context);
-                if (!_handlers.authorise(context)) {
+                local credentials = _parse_authorisation(context);
+                if (_handlers.authorise(context, credentials)) {
+                    // The application accepted the user credentials. No need to keep anything but the user name.
+                    context.user = credentials.user;
+                } else {
                     // The application rejected the user credentials
                     if ("unauthorised" in _handlers) {
                         _handlers.unauthorised(context);
@@ -114,10 +89,6 @@ class REST
                         context.send(401, "Unauthorized");
                     }
                     return;
-                } else {
-                    // The application accepted the user credentials. No need to keep anything but the user name.
-                    if ("pass" in context) delete context.pass;
-                    if ("authtype" in context) delete context.authtype;
                 }
             }
 
@@ -125,14 +96,14 @@ class REST
             local handler = null;
             if (handler = _handler_match(req)) {
                 // We have an handler match
-                context.path <- handler.path;
-                context.matches <- handler.matches;
+                context.path = handler.path;
+                context.matches = handler.matches;
                 handler.callback(context);
             } else if ("catchall" in _handlers) {
                 // We have a catchall handler
                 local handler = _extract_parts(_handlers.catchall, req.path.tolower())
-                context.path <- handler.path;
-                context.matches <- handler.matches;
+                context.path = handler.path;
+                context.matches = handler.matches;
                 handler.callback(context);
             } else {
                 // We have no handler
@@ -224,7 +195,6 @@ class REST
 
     // .........................................................................
     function _parse_authorisation(context) {
-        context.authtype <- "None";
         if ("authorization" in context.req.headers) {
             local auth = split(context.req.headers.authorization, " ");
             if (auth.len() == 2 && auth[0] == "Basic") {
@@ -232,19 +202,17 @@ class REST
                 local creds = http.base64decode(auth[1]).tostring();
                 creds = split(creds, ":"); 
                 if (creds.len() == 2) {
-                    context.authtype <- "Basic";
-                    context.user <- creds[0];
-                    context.pass <- creds[1];
+                    return { authtype = "Basic", user = creds[0], pass = creds[1] };
                 }
             } else if (auth.len() == 2 && auth[0] == "Bearer") {
                 // The bearer is just the password
                 if (auth[1].len() > 0) {
-                    context.authtype <- "Bearer";
-                    context.user <- "";
-                    context.pass <- auth[1];
+                    return { authtype = "Bearer", user = "", pass = auth[1] };
                 }
             }
         }
+        
+        return { authtype = "None", user = "", pass = "" };
     }
     
     
@@ -304,6 +272,81 @@ class REST
             }
         }
         return false;
+    }
+    
+}
+
+
+// -----------------------------------------------------------------------------
+class Context {
+    req = null;
+    res = null;
+    sent = false;
+    id = null;
+    time = null;
+    user = null;
+    path = null;
+    matches = null;
+    static _contexts = {};
+
+    constructor(_req, _res) {
+        req = _req;
+        res = _res;
+        sent = false;
+        id = math.rand();
+        time = date();
+    }
+    
+    // .........................................................................
+    function isbrowser() {
+        return (("accept" in req.headers) && (req.headers.accept.find("text/html") != null));
+    }
+    
+    // .........................................................................
+    function header(key, value) {
+        return res.header(key, value);
+    }
+    
+    // .........................................................................
+    function send(code, message = null) {
+        if (message == null && typeof code == "integer") {
+            // Empty result code
+            res.send(code, "");
+        } else if (message == null && typeof code == "string") {
+            // No result code, assume 200
+            res.send(200, code);
+        } else if (message == null && (typeof code == "table" || typeof code == "array")) {
+            // No result code, assume 200 ... and encode a json object
+            res.header("Content-Type", "application/json");
+            res.send(200, http.jsonencode(code));
+        } else {
+            // Normal result
+            res.send(code, message);
+        }
+        sent = true;
+    }
+    
+    // .........................................................................
+    // Stores the context (request and response) objects for later
+    // This can be called statically, i.e. REST.pause(context);
+    function pause(context = null) {
+        if (context == null) context = this;
+        context.sent = true;
+        Context._contexts[context.id] <- context;
+        return context.id;
+    }
+    
+    // .........................................................................
+    // Restores the context (request and response) objects, previously stored with pause()
+    // This should be called statically, i.e. local context = REST.unpause(id);
+    function unpause(id) {
+        if (id in Context._contexts) {
+            local context = Context._contexts[id];
+            delete Context._contexts[id];
+            return context;
+        } else {
+            return null;
+        }
     }
     
 }
