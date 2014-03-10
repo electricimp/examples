@@ -191,17 +191,18 @@ class OAuthClient
 
     // .........................................................................
     function login(context) {
-        local url = request_token();
-        if (url) {
-            context.header("Location", url);
-            context.send(307, "OAuth")
-        } else {
-            context.send(401, "Access denied")
-        }
+        request_token(function(url) {
+            if (url) {
+                context.header("Location", url);
+                context.send(307, "OAuth")
+            } else {
+                context.send(401, "Access denied")
+            }
+        });
     }
     
     // .........................................................................
-    function request_token() {
+    function request_token(callback) {
         local url = _request_token_url;
         local headers = {};
         local body = "";
@@ -213,26 +214,31 @@ class OAuthClient
         local post = _post(url, headers, body, "POST", {oauth_callback = callbackurl});
         
         // Post the request to the provider
-        local res = post.sendsync();
-        if (res.statuscode == 200) {
-            local response = http.urldecode(res.body);
-            if ("oauth_token" in response && "oauth_token_secret" in response) {
-                oauth_token = response.oauth_token;
-                _auth_secrets[oauth_token] <- response.oauth_token_secret;
-
-                // Discard secrets after 10 minutes
-                imp.wakeup(600, function() {
-                    if (oauth_token in _auth_secrets) {
-                        delete _auth_secrets[oauth_token];
-                    }
-                }.bindenv(this))
+        post.sendasync(function (res) {
+            if (res.statuscode == 200) {
+                local response = http.urldecode(res.body);
+                if ("oauth_token" in response && "oauth_token_secret" in response) {
+                    oauth_token = response.oauth_token;
+                    _auth_secrets[oauth_token] <- response.oauth_token_secret;
+    
+                    // Discard secrets after 10 minutes
+                    imp.wakeup(600, function() {
+                        if (oauth_token in _auth_secrets) {
+                            delete _auth_secrets[oauth_token];
+                        }
+                    }.bindenv(this))
+                }
+            } else {
+                server.log("request_token response " + res.statuscode + ": " + res.body );
             }
-        } else {
-            server.log("request_token response " + res.statuscode + ": " + res.body );
-        }
-        
-        if (oauth_token == null) return null;
-        return _authenticate_url + "?oauth_token=" + oauth_token + "&oauth_callback=" + _urlencode(callbackurl);
+            
+            if (oauth_token != null) {
+                callback(_authenticate_url + "?oauth_token=" + oauth_token + "&oauth_callback=" + _urlencode(callbackurl));
+            } else {
+                callback(null);
+            }
+            
+        });
     }
     
     // .........................................................................
@@ -246,9 +252,7 @@ class OAuthClient
             local headers = {};
             local body = oauth_verifier ? ("oauth_verifier=" + oauth_verifier) : "";
             local post = _post(url, headers, body, "POST", {oauth_token=oauth_token});
-            local id = context.pause();
             post.sendasync(function(res) {
-                local context = Context.unpause(id);
                 if (res.statuscode == 200) {
                     local response = http.urldecode(res.body);
                     if ("oauth_token" in response) {
@@ -273,4 +277,3 @@ class OAuthClient
     }
     
 }
-

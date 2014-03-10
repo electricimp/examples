@@ -1,13 +1,14 @@
 // -----------------------------------------------------------------------------
-class REST
+class Rocky
 {
     _handlers = null;
+    _timeout = 10;
     
     // --------------------[ PUBLIC FUNCTIONS ]---------------------------------
     
     // .........................................................................
     constructor() {
-        _handlers = {};
+        _handlers = { timeout = null, notfound = null, exception = null, authorise = null, unauthorised = null};
         http.onrequest(_onrequest.bindenv(this));
     }
     
@@ -20,9 +21,15 @@ class REST
         _handlers[signature][verb] <- callback;
     }
     
+        // .........................................................................
+    function timeout(callback, timeout = 10) {
+        _handlers.timeout <- callback;
+        _timeout = timeout;
+    }
+    
     // .........................................................................
-    function catchall(callback) {
-        _handlers.catchall <- callback;
+    function notfound(callback) {
+        _handlers.notfound <- callback;
     }
     
     // .........................................................................
@@ -65,7 +72,6 @@ class REST
                 return;
             }      
             
-            
             // Parse the request body back into the body
             try {
                 req.body = _parse_body(req);
@@ -75,35 +81,33 @@ class REST
             }
 
             // Are we authorised
-            if ("authorise" in _handlers) {
+            if (_handlers.authorise) {
                 local credentials = _parse_authorisation(context);
                 if (_handlers.authorise(context, credentials)) {
                     // The application accepted the user credentials. No need to keep anything but the user name.
                     context.user = credentials.user;
                 } else {
                     // The application rejected the user credentials
-                    if ("unauthorised" in _handlers) {
+                    if (_handlers.unauthorised) {
                         _handlers.unauthorised(context);
                     }
-                    if (!context.sent) {
-                        context.send(401, "Unauthorized");
-                    }
+                    context.send(401, "Unauthorized");
                     return;
                 }
             }
 
             // Do we have a handler for this request?
-            local handler = null;
-            if (handler = _handler_match(req)) {
-                // We have an handler match
+            local handler = _handler_match(req);
+            if (!handler && _handlers.notfound) {
+                // No, be we have a not found handler
+                handler = _extract_parts(_handlers.notfound, req.path.tolower())
+            }
+            
+            // If we have a handler, then execute it
+            if (handler) {
                 context.path = handler.path;
                 context.matches = handler.matches;
-                handler.callback(context);
-            } else if ("catchall" in _handlers) {
-                // We have a catchall handler
-                local handler = _extract_parts(_handlers.catchall, req.path.tolower())
-                context.path = handler.path;
-                context.matches = handler.matches;
+                context.set_timeout(_timeout, _handlers.timeout);
                 handler.callback(context);
             } else {
                 // We have no handler
@@ -113,22 +117,14 @@ class REST
         } catch (e) {
             
             // Offload to the provided exception handler if we have one
-            if ("exception" in _handlers) {
+            if (_handlers.exception) {
                 _handlers.exception(context, e);
             } else {
                 server.log("Exception: " + e)
             }
             
             // If we get to here without sending anything, send something.
-            if (!context.sent) {
-                context.send(500, "Unhandled exception")
-            }
-        }
-
-        // If we get to the end and have no response, send something
-        // This can be overriden by manually setting "context.sent = true"
-        if (!context.sent) {
-            context.send(504, "No response");
+            context.send(500, "Unhandled exception")
         }
     }
 
@@ -254,7 +250,7 @@ class REST
         } else {
             // Let's iterate through all handlers and search for a regular expression match
             foreach (_signature,_handler in _handlers) {
-                if (typeof _handler != "function") {
+                if (typeof _handler == "table") {
                     foreach (_verb,_callback in _handler) {
                         if (_verb == verb || _verb == "*") {
                             try {
@@ -287,14 +283,29 @@ class Context {
     user = null;
     path = null;
     matches = null;
+    timer = null;
     static _contexts = {};
 
     constructor(_req, _res) {
         req = _req;
         res = _res;
         sent = false;
-        id = math.rand();
         time = date();
+        
+        // Identify and store the context
+        do {
+            id = math.rand();
+        } while (id in _contexts);
+        _contexts[id] <- this;
+    }
+    
+    // .........................................................................
+    function get(id) {
+        if (id in _contexts) {
+            return _contexts[id];
+        } else {
+            return null;
+        }
     }
     
     // .........................................................................
@@ -309,6 +320,22 @@ class Context {
     
     // .........................................................................
     function send(code, message = null) {
+        // Cancel the timeout
+        if (timer) {
+            imp.cancelwakeup(timer);
+            timer = null;
+        }
+        
+        // Remove the context from the store
+        if (id in _contexts) {
+            delete Context._contexts[id];
+        }
+
+        // Has this context been closed already?
+        if (sent) {
+            return false;
+        } 
+        
         if (message == null && typeof code == "integer") {
             // Empty result code
             res.send(code, "");
@@ -327,26 +354,16 @@ class Context {
     }
     
     // .........................................................................
-    // Stores the context (request and response) objects for later
-    // This can be called statically, i.e. REST.pause(context);
-    function pause(context = null) {
-        if (context == null) context = this;
-        context.sent = true;
-        Context._contexts[context.id] <- context;
-        return context.id;
-    }
-    
-    // .........................................................................
-    // Restores the context (request and response) objects, previously stored with pause()
-    // This should be called statically, i.e. local context = REST.unpause(id);
-    function unpause(id) {
-        if (id in Context._contexts) {
-            local context = Context._contexts[id];
-            delete Context._contexts[id];
-            return context;
-        } else {
-            return null;
-        }
+    function set_timeout(timeout, callback) {
+        // Set the timeout timer
+        if (timer) imp.cancelwakeup(timer);
+        timer = imp.wakeup(timeout, function() {
+            if (callback == null) {
+                send(502, "Timeout");
+            } else {
+                callback(this);
+            }
+        }.bindenv(this))
     }
     
 }
