@@ -21,7 +21,22 @@ class Rocky
         _handlers[signature][verb] <- callback;
     }
     
-        // .........................................................................
+    // .........................................................................
+    function post(signature, callback) {
+        return on("POST", signature, callback);
+    }
+    
+    // .........................................................................
+    function get(signature, callback) {
+        return on("GET", signature, callback);
+    }
+    
+    // .........................................................................
+    function put(signature, callback) {
+        return on("PUT", signature, callback);
+    }
+    
+    // .........................................................................
     function timeout(callback, timeout = 10) {
         _handlers.timeout <- callback;
         _timeout = timeout;
