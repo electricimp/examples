@@ -6,19 +6,22 @@ class Bullwinkle
     _handlers = null;
     _sessions = null;
     _partner  = null;
+    _history  = null;
     _timeout  = 10;
+    _retries  = 1;
 
 
     // .........................................................................
     constructor() {
-        const NAME = "bullwinkle";
+        const BULLWINKLE = "bullwinkle";
         
-        _handlers = { timeout = null, receive = null};
-        _sessions = {};
-        _partner  = (is_agent() ? device : agent);
+        _handlers = { timeout = null, receive = null };
+        _partner  = is_agent() ? device : agent;
+        _sessions = { };
+        _history  = { };
         
         // Incoming message handler
-        _partner.on(NAME, _receive.bindenv(this));
+        _partner.on(BULLWINKLE, _receive.bindenv(this));
     }
     
     
@@ -28,16 +31,10 @@ class Bullwinkle
         // Generate an unique id
         local id = _generate_id();
         
-        // Build the context
-        local context = { type = "send", command = command, params = params, id = id, time = Bullwinkle_Session._timestamp() };
-
         // Create and store the session
-        _sessions[id] <- Bullwinkle_Session(this, context, _timeout);
-        
-        // Send it
-        _partner.send(NAME, context);
-        
-        return _sessions[id];
+        _sessions[id] <- Bullwinkle_Session(this, id, _timeout, _retries);
+
+        return _sessions[id].send("send", command, params);
     }
     
     
@@ -47,16 +44,11 @@ class Bullwinkle
         // Generate an unique id
         local id = _generate_id();
         
-        // Build the context
-        local context = { type = "ping", id = id, time = Bullwinkle_Session._timestamp() };
-
         // Create and store the session
-        _sessions[id] <- Bullwinkle_Session(this, context, _timeout);
+        _sessions[id] <- Bullwinkle_Session(this, id, _timeout, _retries);
         
         // Send it
-        _partner.send(NAME, context);
-
-        return _sessions[id];
+        return _sessions[id].send("ping");
     }
     
     
@@ -86,6 +78,12 @@ class Bullwinkle
     
     
     // .........................................................................
+    function set_retries(retries) {
+        _retries = retries;
+    }
+    
+    
+    // .........................................................................
     function _generate_id() {
         // Generate an unique id
         local id = null;
@@ -93,6 +91,27 @@ class Bullwinkle
             id = math.rand();
         } while (id in _sessions);
         return id;
+    }
+    
+    // .........................................................................
+    function _is_unique(context) {
+        
+        // Clean out old id's from the history
+        local now = time();
+        foreach (id,t in _history) {
+            if (now - t > 100) {
+                delete _history[id];
+            }
+        }
+        
+        // Check the current context for uniqueness
+        local id = context.id;
+        if (id in _history) {
+            return false;
+        } else {
+            _history[id] <- time();
+            return true;
+        }
     }
         
     // .........................................................................
@@ -131,16 +150,16 @@ class Bullwinkle
                 if (!_handlers.receive) {
                     response.type = "nack";
                 }
-                _partner.send(NAME, response);
+                _partner.send(BULLWINKLE, response);
                 
                 // Then handed on to the callback
-                if (context.type == "send" && _handlers.receive) {
+                if (context.type == "send" && _handlers.receive && _is_unique(context)) {
                     try {
                         // Prepare a reply function for shipping a reply back to the sender
                         context.reply <- function (reply) {
                             local response = { type = "reply", id = id, time = Bullwinkle_Session._timestamp() };
                             response.reply <- reply;
-                            _partner.send(NAME, response);
+                            _partner.send(BULLWINKLE, response);
                         }.bindenv(this);
                         
                         // Fire the callback
@@ -149,7 +168,7 @@ class Bullwinkle
                         // An unhandled exception should be sent back to the sender
                         local response = { type = "exception", id = id, time = Bullwinkle_Session._timestamp() };
                         response.exception <- e;
-                        _partner.send(NAME, response);
+                        _partner.send(BULLWINKLE, response);
                     }
                 }
                 break;
@@ -193,14 +212,15 @@ class Bullwinkle_Session
     _timer = null;
     _timeout = null;
     _acked = false;
+    _retries = null;
 
     // .........................................................................
-    constructor(parent, context, timeout = 0) {
+    constructor(parent, id, timeout = 0, retries = 1) {
         _handlers = { ack = null, reply = null, timeout = null, exception = null };
         _parent = parent;
-        _context = context;
         _timeout = timeout;
-        if (_timeout > 0) _set_timer(timeout);
+        _retries = retries;
+        _context = { time = _timestamp(), id = id };
     }
     
     // .........................................................................
@@ -228,16 +248,43 @@ class Bullwinkle_Session
     }
     
     // .........................................................................
+    function send(type = "resend", command = null, params = null) {
+
+        _retries--;
+        
+        if (type != "resend") {
+            _context.type <- type;
+            _context.command <- command;
+            _context.params <- params;
+        }
+        
+        if (_timeout > 0) _set_timer(_timeout);
+        _parent._partner.send(BULLWINKLE, _context);
+        
+        return this;
+    }
+    
+    // .........................................................................
     function _set_timer(timeout) {
         
         // Stop any current timers
         _stop_timer();
         
         // Start a fresh timer
-        _timer = imp.wakeup(_timeout, function() {
+        _timer = imp.wakeup(_timeout, _ontimeout.bindenv(this));
+    }
+        
+    // .........................................................................
+    function _ontimeout() {
             
-            // Close down the timer and session
-            _timer = null;
+        // Close down the timer and session
+        _timer = null;
+        
+        if (!_acked && _retries > 0) {
+            // Retry is required
+            send();
+        } else {
+            // Close off this dead session
             _parent._end_session(_context.id)
             
             // If we are still waiting for an ack, throw a callback
@@ -251,8 +298,7 @@ class Bullwinkle_Session
                     _parent._handlers.timeout(_context);
                 }
             }
-            
-        }.bindenv(this));
+        }
     }
     
     // .........................................................................
@@ -336,50 +382,41 @@ class Bullwinkle_Session
 
 // ==============================[ Sample code ]================================
 
-function var_dump(obj, prefix = null) {
-    local log = "";
-    if (prefix != null) log += prefix + ": ";
-    foreach (k,v in obj) {
-        if (typeof v == "null") v = "(null)";
-        log += (k + " => " + v + ", ");
-    }
-    server.log(log.slice(0, -2))
-}
-
 bull <- Bullwinkle();
 bull.set_timeout(5);
+bull.set_retries(3);
 
 bull.ontimeout(function (context) {
-    var_dump(context, "Global timeout");
+    server.log("Global timeout sending " + context.type);
 })
 
 bull.onreceive(function (context) {
-    var_dump(context, "Receive");
+    server.log("Received " + context.command + ", sending reply.");
     imp.wakeup(1, function() {
         context.reply("Cool!")
     })
 })
 
 function ping() {
-    imp.wakeup(1, ping)
+    imp.wakeup(10, ping)
     bull.ping()
         .onack(function (context) {
-            // server.log(format("Ping took %d ms, %d active sessions, %d bytes of free memory.", 1000 * context.latency, bull._sessions.len()-1, imp.getmemoryfree()))
+            server.log(format("Ping took %d ms, %d bytes of free memory.", 1000 * context.latency, imp.getmemoryfree()))
+        })
+        .ontimeout(function(context) {
+            server.log("Ping timeout");
         });
 }
 ping();
 
 bull.send("command")
-    .onack(function (context) {
-        var_dump(context, "Ack");
-    })
     .onreply(function(context) {
-        var_dump(context, "Reply");
+        server.log("Received reply from command '" + context.command + "': " + context.reply);
     })
     .ontimeout(function(context) {
-        var_dump(context, "Timeout");
+        server.log("Received reply from command '" + context.command + "' after " + context.latency + "s");
     })
     .onexception(function(context) {
-        var_dump(context, "Exception");
+        server.log("Received exception from command '" + context.command + ": " + context.exception);
     })
 
