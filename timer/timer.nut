@@ -32,7 +32,7 @@ THE SOFTWARE.
 // Updated: March, 2014
 //
 // =============================================================================
-class timer {
+class Timer {
 
     self = null;
     cancelled = false;
@@ -258,4 +258,9 @@ t <- Timer().repeat(10, function() {
      // Do something every 10 seconds
 });
 t.cancel();
+
+Timer.tzoffset(-25200);
+Timer().daily("11:00", function() {
+	// Do something every 11am in UTC-7
+});
 ............./[ Samples ]\..................*/
