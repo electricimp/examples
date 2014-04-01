@@ -66,8 +66,8 @@ class Timer {
     }
 
     // -------------------------------------------------------------------------
-    function set(_duration, _callback) {
-        callback = _callback;
+    function set(_duration, _callback = null) {
+        if (_callback) callback = _callback;
         running = true;
         cancelled = false;
         paused = false;
@@ -86,6 +86,11 @@ class Timer {
         return set(_interval, _callback);
     }
 
+    // -------------------------------------------------------------------------
+    function now() {
+        return alarm(true);
+    }
+    
     // -------------------------------------------------------------------------
     function at(_time, _callback) {
         if (typeof _time == "string") {
@@ -144,12 +149,14 @@ class Timer {
     }
 
     // -------------------------------------------------------------------------
-    function alarm() {
-        if (interval > 0 && !cancelled) {
-            alarm_timer = imp.wakeup(interval, alarm.bindenv(self))
-        } else {
-            running = false;
-            alarm_timer = null;
+    function alarm(immediate = false) {
+        if (!immediate) {
+            if (interval > 0 && !cancelled) {
+                alarm_timer = imp.wakeup(interval, alarm.bindenv(self))
+            } else {
+                running = false;
+                alarm_timer = null;
+            }
         }
 
         if (callback && !cancelled && !paused) {
@@ -255,8 +262,8 @@ t <- Timer().set(10, function() {
      // Do something in 10 seconds
 });
 t <- Timer().repeat(10, function() {
-     // Do something every 10 seconds
-});
+     // Do something every 10 seconds plus immediately on execution.
+}).now();
 t.cancel();
 
 Timer.tzoffset(-25200);
