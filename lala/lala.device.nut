@@ -145,6 +145,7 @@ class Recorder {
 
         // signal to the agent that we're ready to upload this new message
         // the agent will call back with a "pull" request, at which point we'll read the buffer out of flash and upload
+        imp.setpowersave(false);
         agent.send("new_audio", {len = recorded_len,sample_width = samplewidth,samplerate = samplerate} );
     }
 }
@@ -550,6 +551,7 @@ function playback_btn_callback() {
 
 // allow the agent to signal that it's got new audio data for us, and prepare for download
 agent.on("new_audio", function(params) {
+    imp.setpowersave(false);
     
     server.log(format("Device: New playback buffer in agent, len: %d bytes", params.data_chunk_size));
     // takes length of the new playback buffer in bytes
@@ -592,7 +594,8 @@ agent.on("push", function(data) {
     
     // see if we're done downloading
     if ((index + 1)*buffer.len() >= playback.getLength()) {
-        // we're done. set the global new message flag
+        // we're done.
+        imp.setpowersave(true);
         new_message = true;
         blink_led(true);
         flash.sleep();
@@ -625,6 +628,7 @@ agent.on("pull", function(buffer_len) {
 
     // if we're done uploading, clean up
     if (recorder.getRecordPtr() >= recorded_len - 1) {
+        imp.setpowersave(true);
         server.log("Device: Done with audio upload, clearing flash");
         flash.eraseRecBlocks();
         flash.sleep();
@@ -636,7 +640,7 @@ agent.on("pull", function(buffer_len) {
 
 /* BEGIN EXECUTION -----------------------------------------------------------*/
 
-imp.setpowersave(false);
+imp.setpowersave(true);
 
 // flash constructor takes pre-configured spi bus and cs_l pin
 flash <- SpiFlash(spi, cs_l, SPI_BLOCKS, PLAYBACK_BLOCKS);
