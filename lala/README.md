@@ -1,13 +1,4 @@
----
-
-layout: devcenter
-categories: hardware
-
-title: Lala
-
-exclude_from_sidebar: yes
----
-## Overview
+## Impee Lala
 Lala is a battery-powered audio recording and playback impee with 4MB onboard SPI flash memory. Lala is designed as a starting point for building an asynchronous message delivery system, like an intercom.
 
 ### Features
