@@ -81,8 +81,6 @@ class thermistor {
 	}
 }
 
-/* REGISTER AGENT CALLBACKS --------------------------------------------------*/
-
 /* RUNTIME BEGINS HERE -------------------------------------------------------*/
 
 // Configure Pins
