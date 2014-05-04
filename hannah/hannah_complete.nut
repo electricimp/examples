@@ -345,8 +345,7 @@ class SX1509 {
     function setFallTime(gpio, value) {
         if (gpio % 8 < 4) return; // Can't do all pins
         writeReg(gpio<12 ? 0x39+(gpio-4)*5 : 0x59+(gpio-12)*5, value)
-    }
-    
+    }   
 }
 
 //------------------------------------------------------------------------------
