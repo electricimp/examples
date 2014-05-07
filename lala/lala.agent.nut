@@ -366,9 +366,6 @@ http.onrequest(function(request, res) {
         local fetch_url = request.body;
         server.log("Agent: requested to fetch a new message from "+fetch_url);
         res.send(200, "OK");
-    } else {
-        // send a generic response to prevent browser hang
-        res.send(200, "OK");
         try {
             fetch(fetch_url);
         } catch (err) {
@@ -376,6 +373,9 @@ http.onrequest(function(request, res) {
             return 1;
         }
         server.log("Agent: done fetching message");
+    } else {
+        // send a generic response to prevent browser hang
+        res.send(200, "OK");
     }
 });
 
