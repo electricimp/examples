@@ -195,36 +195,64 @@ function writeChunkHeaders() {
     return msgblob;
 }
 
+// For big files, fetch in bite-size chunks from a url accessible by the agent
+// Writes big files to the agents memory.
 function fetch(url) {
-    offset <- 0;
     const LUMP = 4096;
-    server.log("Fetching content from "+url);
+    offset <- 0;
+
+    server.log("Fetching content from " + url);
     do {
+        server.log(format("Downloading (%d bytes)",offset)); 
+
         response <- http.get(url, 
             {Range=format("bytes=%u-%u", offset, offset+LUMP-1) }
         ).sendsync();
-        got <- response.body.len();
-        
-        /* Since the response is a string, use string "find" to locate
-        chunk offsets before we convert to a blob
-        */
-        local fmtOffset = response.body.find("fmt ");
-        if (fmtOffset) {
-            parameters.fmtChunkOffset = fmtOffset + offset;
-            server.log("Located format chunk at offset "+parameters.fmtChunkOffset);
+
+        if (offset == 0) {
+            local totalLen = split(response.headers["content-range"], "/")[1].tointeger();
+            wavblob = blob(totalLen);
         }
-        local dataOffset = response.body.find("data");
-        if (dataOffset) {
-            parameters.dataChunkOffset = dataOffset + offset;
-            server.log("Located data chunk at offset "+parameters.dataChunkOffset);
-        }
-        
-        offset += got;
-        addToBlob(response.body);
-        //server.log(format("Downloading (%d bytes)",offset));
-    } while (response.statuscode == 206 && got == LUMP);
+
+        wavblob.writestring(response.body);
+        offset += LUMP;
+    } while (response.statuscode == 206);
     
-    server.log("Done, got "+offset+" bytes total");
+}
+
+// Prepares and sends whatever is currently stored in the global blob to the 
+// device in the proper format
+function sendAudioToDevice() {
+    inParams.fmt_chunk_offset = wavBlobFind("fmt ");
+    
+    if (inParams.fmt_chunk_offset < 0) {
+        server.log("Agent: Failed to find format chunk in new message");
+        return 1;
+    }
+    server.log("Located format chunk at offset "+inParams.fmt_chunk_offset);
+    inParams.data_chunk_offset = wavBlobFind("data");
+    if (inParams.data_chunk_offset < 0) {
+        server.log("Agent: Failed to find data chunk in new message");
+        return 1;
+    }
+    server.log("Located data chunk at offset "+inParams.data_chunk_offset);
+
+    // blob to hold audio data exists at global scope
+    wavblob.seek(0,'b');
+
+    // read in the vital parameters from the file's chunk headers
+    if (getFormatData()) {
+        server.log("Agent: failed to get audio format data for file");
+        return 1;
+    }
+
+    // seek to the beginning of the audio data chunk
+    wavblob.seek(inParams.data_chunk_offset + 4,'b');
+    inParams.data_chunk_size = wavblob.readn('i');
+    server.log(format("Agent: at beginning of audio data chunk, length %d", inParams.data_chunk_size));
+
+    // Notifty the device we have audio waiting, and wait for a pull request to serve up data
+    device.send("new_audio", inParams);
 }
 
 /* AGENT EVENT HANDLERS -----------------------------------------------------*/
@@ -333,35 +361,8 @@ http.onrequest(function(request, res) {
             res.send(400, err);
             return;
         }
-        inParams.fmt_chunk_offset = wavBlobFind("fmt ");
-        if (inParams.fmt_chunk_offset < 0) {
-            server.log("Agent: Failed to find format chunk in new message");
-            return 1;
-        }
-        server.log("Located format chunk at offset "+inParams.fmt_chunk_offset);
-        inParams.data_chunk_offset = wavBlobFind("data");
-        if (inParams.data_chunk_offset < 0) {
-            server.log("Agent: Failed to find data chunk in new message");
-            return 1;
-        }
-        server.log("Located data chunk at offset "+inParams.data_chunk_offset);
 
-        // blob to hold audio data exists at global scope
-        wavblob.seek(0,'b');
-    
-        // read in the vital parameters from the file's chunk headers
-        if (getFormatData()) {
-            server.log("Agent: failed to get audio format data for file");
-            return 1;
-        }
-    
-        // seek to the beginning of the audio data chunk
-        wavblob.seek(inParams.data_chunk_offset + 4,'b');
-        inParams.data_chunk_size = wavblob.readn('i');
-        server.log(format("Agent: at beginning of audio data chunk, length %d", inParams.data_chunk_size));
-
-        // Notifty the device we have audio waiting, and wait for a pull request to serve up data
-        device.send("new_audio", inParams);
+        sendAudioToDevice();
     } else if (request.path == "/fetch" || request.path == "/fetch/") {
         local fetch_url = request.body;
         server.log("Agent: requested to fetch a new message from "+fetch_url);
@@ -369,10 +370,12 @@ http.onrequest(function(request, res) {
         try {
             fetch(fetch_url);
         } catch (err) {
-            server.log("Agent: failed to fetch new message");
+            server.log("Agent: failed to fetch new message " + err);
             return 1;
         }
         server.log("Agent: done fetching message");
+
+        sendAudioToDevice();
     } else {
         // send a generic response to prevent browser hang
         res.send(200, "OK");
