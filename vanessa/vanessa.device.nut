@@ -5,7 +5,7 @@ const IOEXP_ADDR = 0x40; // 8-bit address
 
 /* GLOBAL CLASS AND FUNCTION DEFINITIONS ------------------------------------*/
 
-class spiFlash {
+class SpiFlash {
     // MX25L3206E SPI Flash
     // Clock up to 86 MHz (we go up to 15 MHz)
     // device commands:
@@ -258,12 +258,9 @@ class spiFlash {
     }
 }
 
-class epaper {
-    /*
-     * class to drive Pervasive Displays epaper display
-     * see http://repaper.org
-     */
-
+// class to drive Pervasive Displays epaper display
+// see http://repaper.org
+class Epaper {
     WIDTH           = null;
     HEIGHT          = null;
     PIXELS          = null;
@@ -1116,7 +1113,6 @@ agent.on("params_res", function(res) {
 });
 
 /* RUNTIME BEGINS HERE ------------------------------------------------------*/
-imp.configure("Vanessa Epaper Display",[],[]);
 
 // Vanessa Reference Design Pin configuration
 ioexp_int_l     <- hardware.pin1;   // I/O Expander Alert (Active Low)
