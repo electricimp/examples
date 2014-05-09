@@ -10,6 +10,7 @@ const SAMPLERATE        = 16000; // Hz
 const MAX_RECORD_TIME   = 30.0; // max recorded message length in seconds
 const SPI_BLOCKS        = 64; // number of blocks in our SPI flash
 const PLAYBACK_BLOCKS   = 48; // 3/4 of our flash is for incoming messages
+const MAX_DATA_CHUNK_SIZE = 2880000;
 
 // flag for new message downloaded from the agent
 new_message <- false;
@@ -17,10 +18,12 @@ new_message <- false;
 /* PIN ASSIGNMENT AND CONFIGURATION ------------------------------------------*/
 spi         <- hardware.spi189;
 bat_chk     <- hardware.pin2; // Rev 3.0 and beyond
+//bat_chk     <- hardware.pinA; // Prior to rev 3.0
 dac         <- hardware.pin5;
 btn1        <- hardware.pin6;
 cs_l        <- hardware.pin7;
 mic         <- hardware.pinA; // Rev 3.0 and beyond
+//mic         <- hardware.pin2; // Prior to rev 3.0
 amp_en      <- hardware.pinB;
 mic_en_l    <- hardware.pinC;
 led         <- hardware.pinD;
@@ -239,6 +242,7 @@ class Playback {
         flash.sleep();
         playback_ptr = 0;
         playing = false;
+        server.log("Playback stopped.");
     }
 }
 
@@ -518,10 +522,11 @@ function record_btn_callback() {
     if (!btn1.read()) {
         // button is currently pressed
         if (recorder.isRecording() || playback.isPlaying()) {
-            server.log("Device: operation already in progress");
+            server.log("Can't start recording: operation already in progress");
             return;
         } else {
             led.write(1);
+            server.log("Recording.");
             recorder.start();
         }
     } else {
@@ -529,6 +534,7 @@ function record_btn_callback() {
         if (recorder.isRecording()) {
             led.write(0);
             recorder.stop();
+            server.log("Recording stopped.");
         }
     }
 }
@@ -539,10 +545,16 @@ function playback_btn_callback() {
     if (!btn2.read()) {
         // button pressed
         if (recorder.isRecording() || playback.isPlaying()) {
-            server.log("Device: operation already in progress");
+            server.log("Can't start playback; operation already in progress");
             return;
         } else {
+            if (playback.getLength() < 1) {
+                server.log("No message available for playback.");
+                return;
+            }
             playback.start();
+            server.log("Starting Playback.");
+            blink_led(false);
         }
     }
 }
@@ -560,7 +572,7 @@ agent.on("new_audio", function(params) {
     // allow 3 min for playback buffer (@16kHz -> 2 880 000 bytes)
     // allow 1 min for outgoing buffer (@16kHz -> 960 000 bytes)
     if (params.data_chunk_size > 2880000) {
-        server.error("Device: new audio buffer length too large ("+length+" bytes, max 2880000 bytes)");
+        server.error(format("Device: new audio buffer length too large (%d bytes, max %d bytes)",params.data_chunk_size,MAX_DATA_CHUNK_SIZE));
         return 1;
     }
     // erase the message portion of the SPI flash
@@ -569,9 +581,9 @@ agent.on("new_audio", function(params) {
     flash.erasePlayBlocks();
     playback.setLength(params.data_chunk_size);
     if (params.compression_code == 0x06) {
-        playback.setCompression(NORMALISE | A_LAW_COMPRESS);
+        playback.setCompression(AUDIO | A_LAW_COMPRESS);
     } else {
-        playback.setCompression(NORMALISE);
+        playback.setCompression(AUDIO);
     }
     playback.setSamplerate(params.samplerate);
 
@@ -587,7 +599,7 @@ agent.on("push", function(data) {
     // allows for out-of-order delivery, and helps us place chunks in flash
     local index = data.index;
     local buffer = data.chunk;
-    server.log(format("Got buffer chunk %d from agent, len %d", index, buffer.len()));
+    // server.log(format("Got buffer chunk %d from agent, len %d", index, buffer.len()));
     // stash this chunk away in flash, then pull another from the agent
 
     flash.writeChunk((index*buffer.len()), buffer);
@@ -623,7 +635,7 @@ agent.on("pull", function(buffer_len) {
     // advance the pointer for the next chunk
     recorder.setRecordPtr(record_ptr + buffer_len);
     // send the buffer up to the agent
-    server.log(format("Device: sending chunk %d of %d, len %d",buffer_index, num_buffers, buffer_len));
+    //server.log(format("Device: sending chunk %d of %d, len %d",buffer_index, num_buffers, buffer_len));
     agent.send("push", buffer);
 
     // if we're done uploading, clean up
