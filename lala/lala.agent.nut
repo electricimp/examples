@@ -162,9 +162,7 @@ function parseFmtChunk(buffer) {
         // A-law
         inParams.sample_width = 'b';
     } else {
-        server.log(format("Audio uses unsupported compression code 0x%02x",
-            inParams.compression_code));
-        return 1;
+        throw(format("Audio uses unsupported compression code 0x%02x",inParams.compression_code));
     }
     inParams.channels = buffer.readn('w');
     inParams.samplerate = buffer.readn('i');
@@ -189,7 +187,10 @@ function getAudioParameters(buffer = null) {
         
         inParams.fmt_chunk_offset = buffer.find("fmt ");
         inParams.data_chunk_offset = buffer.find("data");
-
+        
+        if (inParams.fmt_chunk_offset == null || inParams.data_chunk_offset == null) {
+            throw "Unable to locate headers in new message buffer."
+        } 
         server.log("Located format chunk at offset "+inParams.fmt_chunk_offset);
         server.log("Located data chunk at offset "+inParams.data_chunk_offset);
         
@@ -197,7 +198,11 @@ function getAudioParameters(buffer = null) {
         agent_buffer.seek(0,'b');
         agent_buffer.writestring(buffer);
         agent_buffer.seek(inParams.fmt_chunk_offset + 4,'b');
-        parseFmtChunk(agent_buffer);
+        try {
+            parseFmtChunk(agent_buffer);
+        } catch (err) {
+            throw "Error parsing format chunk: "+err;
+        }
         agent_buffer.seek(inParams.data_chunk_offset + 4,'b');
         inParams.data_chunk_size = agent_buffer.readn('i');
         // agent_buffer stream is now in position to start download to device
@@ -226,18 +231,22 @@ function getAudioParameters(buffer = null) {
             }
         } while (response.statuscode == 206);
     
-        if ((fmt_offset == null) || (data_offset == null)) {
+        if (fmt_offset == null || data_offset == null) {
             // we walked the whole file and didn't find the headers
-            server.log("Unable to locate WAV headers on target file at "+fetch_url);
+            local err = "Unable to locate WAV headers on target file at "+fetch_url;
             fetch_url = "";
-            return;
+            throw err;
         }
     
         // download and read what we need from the format chunk
         local fmt_chunk = blob(FMT_CHUNK_LEN);
         fmt_chunk.writestring(http.get(fetch_url, { Range=format("bytes=%u-%u", inParams.fmt_chunk_offset + 4, inParams.fmt_chunk_offset + FMT_CHUNK_LEN) }).sendsync().body);
         fmt_chunk.seek(0,'b');
-        parseFmtChunk(fmt_chunk);
+        try {
+            parseFmtChunk(fmt_chunk);
+        } catch (err) {
+            throw "Error parsing format chunk: "+err;
+        }
     
         // download the size of the data chunk
         local data_chunk_size = blob(4);
