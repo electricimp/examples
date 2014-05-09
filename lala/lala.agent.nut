@@ -33,6 +33,7 @@ inParams <- {
     block_align         = null,
     sig_bits            = null,
 }
+
 // parameters to write to the WAV headers in outbound files
 // these are provided by the device when it records and uploads a message
 outParams <- {
@@ -152,7 +153,6 @@ function resetInParams() {
 //      vital parameters are parsed into inParams
 // Return: None
 function parseFmtChunk(buffer) {
-    buffer.seek(0,'b');
     inParams.fmt_chunk_size = buffer.readn('i');
     inParams.compression_code = buffer.readn('w');
     if (inParams.compression_code == 0x01) {
@@ -178,63 +178,79 @@ function parseFmtChunk(buffer) {
 }
 
 // parse the format chunk header on an inbound wav file 
-// if a URL is provided, will attempt to find a WAV format chunk header at that url and parse it
-// otherwise, will look for a format chunk header in the agent_buffer
-// Input: url (optional, for external resource only)
-// Return: None
-function getAudioParameters(url) {
+function getAudioParameters(buffer = null) {
     resetInParams();
     fetch_offset = 0;
     local fmt_offset = null;
     local data_offset = null;
-    server.log("Searching for headers at" + url);
-    do {
-        server.log(format("Searching (%d bytes)",fetch_offset + CHUNKSIZE)); 
+    
+    if (buffer) {        
+        server.log("Searching for headers in local buffer, len "+buffer.len());
+        
+        inParams.fmt_chunk_offset = buffer.find("fmt ");
+        inParams.data_chunk_offset = buffer.find("data");
 
-        response <- http.get(url, {Range=format("bytes=%u-%u", fetch_offset, fetch_offset + CHUNKSIZE - 1) }).sendsync();
-        fmt_offset = response.body.find("fmt ");
-        if (fmt_offset) {
-            inParams.fmt_chunk_offset = fmt_offset + fetch_offset;
-            server.log("Located format chunk at offset "+inParams.fmt_chunk_offset);
+        server.log("Located format chunk at offset "+inParams.fmt_chunk_offset);
+        server.log("Located data chunk at offset "+inParams.data_chunk_offset);
+        
+        // move the inbound message into the agent buffer as a blob so we can parse the headers
+        agent_buffer.seek(0,'b');
+        agent_buffer.writestring(buffer);
+        agent_buffer.seek(inParams.fmt_chunk_offset + 4,'b');
+        parseFmtChunk(agent_buffer);
+        agent_buffer.seek(inParams.data_chunk_offset + 4,'b');
+        inParams.data_chunk_size = agent_buffer.readn('i');
+        // agent_buffer stream is now in position to start download to device
+    } else {
+        server.log("Searching for headers at" + fetch_url);
+        do {
+            server.log(format("Searching (%d bytes)",fetch_offset + CHUNKSIZE)); 
+    
+            response <- http.get(fetch_url, {Range=format("bytes=%u-%u", fetch_offset, fetch_offset + CHUNKSIZE - 1) }).sendsync();
+            fmt_offset = response.body.find("fmt ");
+            if (fmt_offset) {
+                inParams.fmt_chunk_offset = fmt_offset + fetch_offset;
+                server.log("Located format chunk at offset "+inParams.fmt_chunk_offset);
+            }
+    
+            data_offset = response.body.find("data");
+            if (data_offset) {
+                inParams.data_chunk_offset = data_offset + fetch_offset;
+                server.log("Located data chunk at offset "+inParams.data_chunk_offset);
+            }
+    
+            fetch_offset += CHUNKSIZE;
+            if ((fmt_offset != null) && (data_offset != null)) { 
+                // done getting the vitals on this file; quit looking through it
+                break; 
+            }
+        } while (response.statuscode == 206);
+    
+        if ((fmt_offset == null) || (data_offset == null)) {
+            // we walked the whole file and didn't find the headers
+            server.log("Unable to locate WAV headers on target file at "+fetch_url);
+            fetch_url = "";
+            return;
         }
-
-        data_offset = response.body.find("data");
-        if (data_offset) {
-            inParams.data_chunk_offset = data_offset + fetch_offset;
-            server.log("Located data chunk at offset "+inParams.data_chunk_offset);
-        }
-
-        fetch_offset += CHUNKSIZE;
-        if ((fmt_offset != null) && (data_offset != null)) { 
-            // done getting the vitals on this file; quit looking through it
-            break; 
-        }
-    } while (response.statuscode == 206);
-
-    if ((fmt_offset == null) || (data_offset == null)) {
-        // we walked the whole file and didn't find the headers
-        server.log("Unable to locate WAV headers on target file at "+fetch_url);
-        fetch_url = "";
-        return;
+    
+        // download and read what we need from the format chunk
+        local fmt_chunk = blob(FMT_CHUNK_LEN);
+        fmt_chunk.writestring(http.get(fetch_url, { Range=format("bytes=%u-%u", inParams.fmt_chunk_offset + 4, inParams.fmt_chunk_offset + FMT_CHUNK_LEN) }).sendsync().body);
+        fmt_chunk.seek(0,'b');
+        parseFmtChunk(fmt_chunk);
+    
+        // download the size of the data chunk
+        local data_chunk_size = blob(4);
+        data_chunk_size.writestring(http.get(fetch_url, {Range=format("bytes=%u-%u", inParams.data_chunk_offset + 4, inParams.data_chunk_offset + 8) }).sendsync().body);
+        data_chunk_size.seek(0,'b');
+        inParams.data_chunk_size = data_chunk_size.readn('i');
+    
+        // move the remote pointer to start of the data chunk
+        fetch_offset = inParams.data_chunk_offset + 8;
+    
+        // Next: we send "new_audio" event. Device responds with "pull" event, and we pull from the fetch_url because it is non-null
     }
-
-    // download and read what we need from the format chunk
-    local fmt_chunk = blob(FMT_CHUNK_LEN);
-    fmt_chunk.writestring(http.get(url, { Range=format("bytes=%u-%u", inParams.fmt_chunk_offset + 4, inParams.fmt_chunk_offset + FMT_CHUNK_LEN) }).sendsync().body);
-    parseFmtChunk(fmt_chunk);
-
-    // download the size of the data chunk
-    local data_chunk_size = blob(4);
-    data_chunk_size.writestring(http.get(url, {Range=format("bytes=%u-%u", inParams.data_chunk_offset + 4, inParams.data_chunk_offset + 8) }).sendsync().body);
-    data_chunk_size.seek(0,'b');
-    inParams.data_chunk_size = data_chunk_size.readn('i');
-
-    // move the remote pointer to start of the data chunk
-    fetch_offset = inParams.data_chunk_offset + 8;
-
-    // Next: we send "new_audio" event. Device responds with "pull" event, and we pull from the fetch_url because it is non-null
 }
-
 
 /* DEVICE EVENT HANDLERS -----------------------------------------------------*/
 // hook for the device to start uploading a new message 
@@ -278,7 +294,12 @@ device.on("pull", function(buffer_len) {
     local buffer = blob(buffer_len);
 
     // make a "sequence number" out of our position in the audio data
-    local buffer_index = ((fetch_offset - inParams.data_chunk_offset) / buffer_len) + 1;
+    local buffer_index = 0;
+    if (fetch_url != "") {
+        buffer_index = ((fetch_offset - inParams.data_chunk_offset) / buffer_len) + 1;
+    } else {
+        buffer_index = ((agent_buffer.tell() - inParams.data_chunk_offset) / buffer_len) + 1;
+    }
     server.log("Sending chunk "+buffer_index+" of "+(inParams.data_chunk_size / buffer_len));
     
     // wav data is interlaced
@@ -296,12 +317,18 @@ device.on("pull", function(buffer_len) {
     // the data chunk of a wav file is interlaced; the first sample for each channel, then the second for each, etc...
     // grab only the first channel if this is a multi-channel file
     // sending single-channel files is recommended as the agent's memory is constrained
-    local multichannel_buffer = blob(bytes_to_dl * inParams.channels);
-    multichannel_buffer.writestring(http.get(fetch_url, { Range=format("bytes=%u-%u", fetch_offset, fetch_offset + (bytes_to_dl * inParams.channels)) }).sendsync().body);
-    multichannel_buffer.seek(0,'b');
-    for (local i = 0; i < bytes_to_dl; i += inParams.channels) {
-        buffer.writen(multichannel_buffer.readn(inParams.sample_width), inParams.sample_width);
-    } 
+    if (fetch_url != "") {
+        local multichannel_buffer = blob(bytes_to_dl * inParams.channels);
+        multichannel_buffer.writestring(http.get(fetch_url, { Range=format("bytes=%u-%u", fetch_offset, fetch_offset + (bytes_to_dl * inParams.channels)) }).sendsync().body);
+        multichannel_buffer.seek(0,'b');
+        for (local i = 0; i < bytes_to_dl; i += inParams.channels) {
+            buffer.writen(multichannel_buffer.readn(inParams.sample_width), inParams.sample_width);
+        } 
+    } else {
+        for (local i = 0; i < bytes_to_dl; i += inParams.channels) {
+            buffer.writen(agent_buffer.readn(inParams.sample_width), inParams.sample_width);
+        } 
+    }
 
     // pack up the sequence number and the buffer in a table
     local data = {
@@ -313,7 +340,9 @@ device.on("pull", function(buffer_len) {
     device.send("push", data);
     
     // increment the remote pointer
-    fetch_offset += (bytes_to_dl * inParams.channels);
+    if (fetch_url != "") {
+        fetch_offset += (bytes_to_dl * inParams.channels);
+    }
 });
 
 /* HTTP EVENT HANDLERS ------------------------------------------------------*/
@@ -342,12 +371,22 @@ http.onrequest(function(req, res) {
             server.log("Responding with 204 (no new messages)");
             res.send(204, "No new messages");
         }
+    } else if (req.path == "/newmsg" || req.path == "/newmsg/") {
+        server.log("New Message. WAV buffer length = "+req.body.len()+" bytes");
+        try {
+            getAudioParameters(req.body);
+            device.send("new_audio", inParams);
+            res.send(200, "OK");
+        } catch (err) {
+            res.send(400, err);
+            return;
+        }
     } else if (req.path == "/fetch" || req.path == "/fetch/") {
         fetch_url = req.body;
         server.log("Requested to fetch a new message from "+fetch_url);
         res.send(200, "OK");
         try {
-            getAudioParameters(fetch_url);
+            getAudioParameters();
             device.send("new_audio", inParams); 
             // device then begins download by sending a "pull" event   
         } catch (err) {
