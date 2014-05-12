@@ -581,7 +581,7 @@ agent.on("new_audio", function(params) {
     flash.erasePlayBlocks();
     playback.setLength(params.data_chunk_size);
     if (params.compression_code == 0x06) {
-        playback.setCompression(AUDIO | A_LAW_COMPRESS);
+        playback.setCompression(AUDIO | A_LAW_DECOMPRESS);
     } else {
         playback.setCompression(AUDIO);
     }
