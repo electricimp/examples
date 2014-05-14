@@ -144,7 +144,7 @@ class Recorder {
         recorded_len = record_ptr;
         record_ptr = 0;
         // reconfigure the sampler to free the memory allocated for sampler buffers
-        hardware.sampler.configure(dac, samplerate, [blob(2),blob(2),blob(2)], samplesReady.bindenv(this), sampleroptions);
+        hardware.sampler.configure(mic, samplerate, [blob(2),blob(2),blob(2)], samplesReady.bindenv(this), sampleroptions);
 
         // signal to the agent that we're ready to upload this new message
         // the agent will call back with a "pull" request, at which point we'll read the buffer out of flash and upload
