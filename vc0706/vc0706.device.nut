@@ -80,7 +80,9 @@ class Camera {
     static CMD_640x480                          = "\x56\x00\x31\x05\x04\x01\x00\x19\x00"
     static CMD_SET_MOTION_WINDOWS               = "\x56\x00\x31\x08\x01\x04"
 
-    static READ_BLOCKSIZE                       =  56
+    static READ_BLOCKSIZE                       = 56
+    static UART_FIFO_SIZE                       = 80 // bytes
+    static BUFFER_READ_TIMEOUT                  = 10000000 // 10 second timeout
     
     // set by constructor
     uart = null;
@@ -369,35 +371,6 @@ class Camera {
     }
 
     /**************************************************************************
-     *
-     * Read image data from frame buffer
-     *
-     * Input: size (integer)
-     *          bytes to read via UART
-     *
-     *
-     *************************************************************************/
-    function read_frame_buffer_uart(size) {
-        local num_chunks = math.ceil(size.tofloat()/CHUNK_SIZE).tointeger();
-        agent.send("jpeg_start",size);
-
-        uart.write(CMD_READ_FBUF_UART+format("%c%c%c%c",
-            (size/256),(size%256),0x00,0x00));
-
-        uart.flush();
-        imp.sleep(0.01);
-
-        for(local i = 0; i < num_chunks; i++) {
-            local startingAddress = i*CHUNK_SIZE;
-            local buf = read_buffer_uart(CHUNK_SIZE);
-            agent.send("jpeg_chunk", [startingAddress, buf]);
-        }
-        
-        uart.write(tx_buffer);
-        uart.flush();
-    }
-
-    /**************************************************************************
      * 
      * Read JPEG data from camera via SPI
      * 
@@ -455,8 +428,12 @@ class Camera {
 
         server.log(format("Captured JPEG (%d bytes)",jpegSize));
 
-        read_frame_buffer_spi(jpegSize);
-
+        try {
+            read_frame_buffer_spi(jpegSize);
+        } catch (err) {
+            server.log("Error taking photo: "+err);
+            agent.send("jpeg_end",0);
+        }        
         server.log("Device: done sending image");
 
         resume_capture();
@@ -470,14 +447,12 @@ class Camera {
      *
      *************************************************************************/
     function read_buffer_uart(nBytes) {
-        local rx_buffer = blob(nBytes);
+        local rx_buffer = blob();
 
         local data = uart.read()
-        //server.log(format("Got: 0x%02x",data));
         while ((data >= 0) && (rx_buffer.tell() < nBytes)) {
             rx_buffer.writen(data,'b');
             data = uart.read();
-            //server.log(format("Got: 0x%02x",data));
         }
         return rx_buffer;
     }
