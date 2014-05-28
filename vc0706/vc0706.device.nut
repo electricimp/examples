@@ -1,49 +1,28 @@
-/*
-Copyright (C) 2013 electric imp, inc.
+// Copyright (c) 2013-2014 Electric Imp
+// This file is licensed under the MIT License
+// http://opensource.org/licenses/MIT
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
-and associated documentation files (the "Software"), to deal in the Software without restriction, 
-including without limitation the rights to use, copy, modify, merge, publish, distribute, 
-sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is 
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial 
-portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE 
-AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
-DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-/* Imp firmware for RadioShack Camera Shield
- Shield is Based on VC0706 Camera Module
- http://blog.radioshack.com/2013/01/radioshack-camera-shield-for-arduino-boards/
-
- NOTE: Adafruit's VC0706 camera shield is strapped to boot at 38400 baud,
-       while Radioshack's shield defaults to 115200 baud. 
-
-       Both modules are strapped to boot in SPI Master mode, and require
-       pin 80 on the VC0706 to be pulled to 3.3V in order to enable
-       SPI slave mode, which this class requires in order to read frame
-       buffers via SPI.
- 
- T. Buttner
- 5/10/13
-*/
+// Imp firmware for RadioShack Camera Shield
+// Shield is Based on VC0706 Camera Module
+// http://blog.radioshack.com/2013/01/radioshack-camera-shield-for-arduino-boards/
+//
+// NOTE: Adafruit's VC0706 camera shield is strapped to boot at 38400 baud,
+//       while Radioshack's shield defaults to 115200 baud. 
+//
+//       Both modules are strapped to boot in SPI Master mode, and require
+//       pin 80 on the VC0706 to be pulled to 3.3V in order to enable
+//       SPI slave mode, which this class requires in order to read frame
+//       buffers via SPI.
 
 // size of data chunks to send agent. Large multiple of 8.
 const CHUNK_SIZE = 8192;
 
-// register with imp service
-imp.configure("Radioshack Camera",[],[]);
+// Radioshack shield is strapped for 115200 default baud
+// Adafruit shield is strapped for 38400 default baud
+const UART_BAUD     = 115200;
+const SPI_CLKSPEED  = 4000; // kHz
 
-class camera {
-    // Radioshack shield is strapped for 115200 default baud
-    // Adafruit shield is strapped for 38400 default baud
-    static SPI_CLKSPEED                        =  4000
-
+class Camera {
     /* Because the imp can send multi-byte messages over UART,
      * and building blobs out of individual bytes during runtime
      * is unnecessary, this class stores most frequently-used
@@ -101,31 +80,24 @@ class camera {
     static CMD_640x480                          = "\x56\x00\x31\x05\x04\x01\x00\x19\x00"
     static CMD_SET_MOTION_WINDOWS               = "\x56\x00\x31\x08\x01\x04"
 
-    static READ_BLOCKSIZE                       =  56
+    static READ_BLOCKSIZE                       = 56
+    static UART_FIFO_SIZE                       = 80 // bytes
+    static BUFFER_READ_TIMEOUT                  = 10000000 // 10 second timeout
     
     // set by constructor
-    UART_BAUD = null;
     uart = null;
     spi = null;
     cs_l = null;
     
     /**************************************************************************
      *
-     * Constructor takes in a UART interface, initializes it, and resets the camera
+     * Constructor takes in a pre-configured UART interface and SPI interface, and resets the camera
      *
      *************************************************************************/
-    constructor(uart,baud,spi,cs_l) {
-        this.uart = uart;
-        this.UART_BAUD = baud;
-        // Configure the imp's UART interface for 8 data bits, no parity bits, 1 stop bit,
-        // no flow control
-        this.uart.configure(UART_BAUD, 8, PARITY_NONE, 1, NO_CTSRTS);
-
-        this.spi = spi;
-        // Configure the imp's SPI interface
-        this.spi.configure(CLOCK_IDLE_HIGH, SPI_CLKSPEED);
-        
-        this.cs_l = cs_l;
+    constructor(_uart, _spi, _cs_l) {
+        this.uart = _uart;
+        this.spi = _spi;
+        this.cs_l = _cs_l;
         // the imp's SPI interface does not implicitly include a CS pin
         // configure a GPIO to use as the chip select (active low)
         this.cs_l.configure(DIGITAL_OUT);
@@ -142,7 +114,7 @@ class camera {
     function reset() {
         uart.write(CMD_RESET);
         uart.flush();
-        imp.sleep(0.005);
+        imp.sleep(0.5);
         server.log("Camera Ready.");
     }
 
@@ -228,7 +200,7 @@ class camera {
     /**************************************************************************
      *
      * Write frame buffer control register
-     *
+     *8
      * Input: val (1 byte)
      *              0 -> stop current frame
      *              1 -> stop next frame
@@ -374,6 +346,7 @@ class camera {
     }
 
     function set_size_640x480() {
+        clear_uart();
         uart.write(CMD_640x480);
         uart.flush();
         imp.sleep(0.01);
@@ -394,35 +367,6 @@ class camera {
         uart.write(CMD_SET_MOTION_WINDOWS+format("%c%c%c%c%c%c",
             (addr >> 8), (addr & 0xFF), (data >> 24), (data >> 16),
             (data >> 8), (data & 0xFF)));
-        uart.flush();
-    }
-
-    /**************************************************************************
-     *
-     * Read image data from frame buffer
-     *
-     * Input: size (integer)
-     *          bytes to read via UART
-     *
-     *
-     *************************************************************************/
-    function read_frame_buffer_uart(size) {
-        local num_chunks = math.ceil(size.tofloat()/CHUNK_SIZE).tointeger();
-        agent.send("jpeg_start",size);
-
-        uart.write(CMD_READ_FBUF_UART+format("%c%c%c%c",
-            (size/256),(size%256),0x00,0x00));
-
-        uart.flush();
-        imp.sleep(0.01);
-
-        for(local i = 0; i < num_chunks; i++) {
-            local startingAddress = i*CHUNK_SIZE;
-            local buf = read_buffer_uart(CHUNK_SIZE);
-            agent.send("jpeg_chunk", [startingAddress, buf]);
-        }
-        
-        uart.write(tx_buffer);
         uart.flush();
     }
 
@@ -484,8 +428,12 @@ class camera {
 
         server.log(format("Captured JPEG (%d bytes)",jpegSize));
 
-        read_frame_buffer_spi(jpegSize);
-
+        try {
+            read_frame_buffer_spi(jpegSize);
+        } catch (err) {
+            server.log("Error taking photo: "+err);
+            agent.send("jpeg_end",0);
+        }        
         server.log("Device: done sending image");
 
         resume_capture();
@@ -499,23 +447,13 @@ class camera {
      *
      *************************************************************************/
     function read_buffer_uart(nBytes) {
-        local rx_buffer = blob(nBytes);
+        local rx_buffer = blob();
 
         local data = uart.read()
-        //server.log(format("Got: 0x%02x",data));
         while ((data >= 0) && (rx_buffer.tell() < nBytes)) {
             rx_buffer.writen(data,'b');
             data = uart.read();
-            //server.log(format("Got: 0x%02x",data));
         }
-        /*
-        if (rx_buffer[0] != 0x76) {
-            server.error(format("Device got invalid return message: 0x%02x",rx_buffer[0]));
-        }
-        if (rx_buffer[1] != 0x00) {
-            server.error(format("Message returned with invalid serial number: 0x%02x",rx_buffer[1]));
-        }
-        */
         return rx_buffer;
     }
 
@@ -528,12 +466,20 @@ class camera {
         }
         server.log("UART RX Buffer Cleared.");
     }
-
 }
 
-myCamera <- camera(hardware.uart1289,115200,hardware.spi257,hardware.pin1);
+uart <- hardware.uart1289;
+uart.configure(UART_BAUD, 8, PARITY_NONE, 1, NO_CTSRTS);
+        
+spi <- hardware.spi257;
+spi.configure(CLOCK_IDLE_HIGH, SPI_CLKSPEED);
 
-myCamera.set_size_160x120();
+cs_l <- hardware.pin1;
+cs_l.configure(DIGITAL_OUT);
+        
+myCamera <- Camera(uart, spi, cs_l);
+
+myCamera.set_size_640x480();
 
 agent.on("take_picture", function(val) {
     myCamera.capture_photo();
