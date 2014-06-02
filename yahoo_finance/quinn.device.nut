@@ -35,7 +35,6 @@ hardware.pin2.configure(PWM_OUT, 1.0/pwm_f, 1.0);
 hardware.pin5.configure(PWM_OUT, 1.0/pwm_f, 1.0);
 
 
-imp.configure("Quinn Financier", [], []);
 
 agent.on("update", function(value) {
     if (value.len() != 3) {

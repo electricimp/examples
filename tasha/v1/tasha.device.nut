@@ -1,6 +1,5 @@
 // Adafruit Color TFT
 imp.setpowersave(true);
-imp.configure("Adafruit TFT", [], []);
 
 // Addresses
 const SPLASH = 0x000000;

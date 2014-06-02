@@ -241,7 +241,6 @@ function button_press() {
 }
 
 //------------------------------------------------------------------------------------------------
-imp.configure("Meeting Minder", [], []);
 server.log("Device booted");
 imp.enableblinkup(false);
 

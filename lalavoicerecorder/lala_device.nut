@@ -1145,7 +1145,6 @@ function server_connect(callback = null) {
 		if (callback) callback(SERVER_CONNECTED);
 	} else {
 		server.connect(function(status) {
-			if (status == SERVER_CONNECTED) imp.configure("Lala", [], []);
 			if (callback) callback(status);
 		}, CONNECTION_TIMEOUT);
 	}
@@ -1377,7 +1376,6 @@ server.onunexpecteddisconnect(disconnect_handler);
 
 // Don't automatically reconnect to wifi
 server.setsendtimeoutpolicy(TIMEOUT_POLICY, WAIT_TIL_SENT, 30);
-imp.configure("Lala", [], []);
 
 // Check the initial status of the buttons
 clobber <- (button1.read() == 0 && button2.read() == 0);

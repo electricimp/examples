@@ -1,4 +1,3 @@
-imp.configure("Cloud Serial Cable",[],[]);
 
 BUFFER_SIZE <- 1024;
 buffer <- blob(BUFFER_SIZE);

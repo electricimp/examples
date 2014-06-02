@@ -88,9 +88,7 @@ function setAllOff() {
 }
 
 // Time mm:ss
-imp.configure("Emma All On", [], []);
 
 setAllOn();
 
 // Emergency use only - recover from erroring imp not in planner case
-//imp.configure("Help me", [], []);

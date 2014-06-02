@@ -937,7 +937,6 @@ agent.on("set_timing", function(target) {
 
 /* RUNTIME STARTS HERE ------------------------------------------------------*/
 
-imp.configure("Sana",[],[]);
 imp.enableblinkup(true);
 
 // instantiate sensor classes

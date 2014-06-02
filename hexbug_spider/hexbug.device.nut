@@ -93,6 +93,5 @@ agent.on("straight", straight);
 agent.on("stop", stop);
 agent.on("neutral", neutral);
 
-imp.configure("Hexbug Remote", [], [])
 agent.send("ready", 0);
 heartbeat();

@@ -438,7 +438,6 @@ class nora {
 
 // -----------------------------------------------------------------------------
 // Configure Imp
-imp.configure("Nora v1 Multisensor", [], []);
 
 // Instantiate the nora() class and execute a read.
 n <- nora();

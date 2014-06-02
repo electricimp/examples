@@ -20,7 +20,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
-imp.configure("Printer", [], []);
 server.log("Device: Printer Started");
 
 // Hardware Configuration

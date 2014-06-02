@@ -813,7 +813,6 @@ function connect(callback = null)  {
     } else {
         try {
             server.connect(function(reason) {
-                imp.configure("RFID AS3911", [], []);
                 if (callback) callback();
             }, 30)
         } catch (e) {

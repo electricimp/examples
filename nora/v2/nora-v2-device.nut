@@ -1130,7 +1130,6 @@ function log(msg) {
 // ==================================================================================================================================
 // Setup the environment 
 server.setsendtimeoutpolicy(RETURN_ON_ERROR, WAIT_TIL_SENT, 30);
-imp.configure("Nora v2", [], []);
 
 // Some debug stuff
 // log("Wake reason: " + nora.get_wake_reason());

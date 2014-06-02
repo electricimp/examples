@@ -653,5 +653,4 @@ class emmaBuffer
 //    - Trigger to request the next display buffer (5x a second)
 // ========================================================================================
 
-imp.configure("Emma 8-Char Display", [], []);
 e <- emma();

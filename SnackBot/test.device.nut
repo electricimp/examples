@@ -1,4 +1,3 @@
-imp.configure("SnackBot Test Code", [], []);
 hardware.pin9.configure(DIGITAL_OUT);
 hardware.pin9.write(0);
 

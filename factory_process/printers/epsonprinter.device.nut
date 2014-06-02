@@ -21,7 +21,6 @@ agent.on("print", function(content) {
     server.log("Printing: " + content);
 });
 
-imp.configure("Printer", [], []);
 server.log("Device: Printer Started");
 
 // Hardware Configuration

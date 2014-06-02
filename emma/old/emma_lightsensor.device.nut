@@ -84,7 +84,6 @@ function readAls() {
     imp.wakeup(300, startAls);
 }
 
-imp.configure("Imp Light Sensor", [], []);
 startAls();
 
 //EOF

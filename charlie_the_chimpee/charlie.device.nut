@@ -1128,7 +1128,6 @@ function server_connect(callback = null) {
 		if (callback) callback(SERVER_CONNECTED);
 	} else {
 		server.connect(function(status) {
-			if (status == SERVER_CONNECTED) imp.configure("Lala", [], []);
 			if (callback) callback(status);
 		}, CONNECTION_TIMEOUT);
 	}
@@ -1259,7 +1258,6 @@ function send_and_sleep(step = STEP_INITIAL) {
 // =============================================================================
 
 // Don't automatically reconnect to wifi
-imp.configure("Lala", [], []);
 
 // Do we clobber the memory on boot?
 clobber <- false;

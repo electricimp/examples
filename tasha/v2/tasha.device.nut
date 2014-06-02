@@ -1016,7 +1016,6 @@ class ST7735_LCD {
 // =============================================================================
 
 // We are ready
-imp.configure("Tasha v2", [], []);
 
 // flash constructor. arguments: SPI, Chip Select
 flash <- spiFlash(hardware.spi257, hardware.pin1);

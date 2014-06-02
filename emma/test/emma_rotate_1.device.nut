@@ -78,9 +78,7 @@ function rotate() {
 }
 
 // Time mm:ss
-imp.configure("Emma Rotate-1", [], []);
 
 rotate();
 
 // Emergency use only - recover from erroring imp not in planner case
-//imp.configure("Help me", [], []);

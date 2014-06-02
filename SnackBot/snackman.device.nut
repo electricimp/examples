@@ -1,5 +1,4 @@
 // Snack Dispenser
-imp.configure("Snackman", [], []);
 imp.setpowersave(true);
 
 //Configure Pin

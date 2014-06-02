@@ -6,7 +6,6 @@
  * B -> Pin5 (through a 120Ω resistor)
  */
 
-imp.configure("RGB Led", [], []);
 server.log("Device Started");
 
 red <- hardware.pin1;
