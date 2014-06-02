@@ -224,7 +224,6 @@ btn1.configure(DIGITAL_IN_PULLUP, button1Pressed);
 relay[0].configure(DIGITAL_OUT);  relay[0].write(0);
 relay[1].configure(DIGITAL_OUT);  relay[1].write(0);
 
-imp.configure("Vending Machine", [], []);
 imp.setpowersave(true);
 
 // Enable blinking routine
