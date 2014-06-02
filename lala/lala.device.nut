@@ -105,6 +105,7 @@ class Recorder {
             flash.writeChunk((flash.record_offset + record_ptr), buffer);
             // advance the record pointer
             record_ptr += length;
+            //server.log(format("recording at: %x",flash.record_offset + record_ptr));
         } else {
             server.log("Device: Sampler Buffer Overrun");
         }
@@ -289,7 +290,8 @@ class SpiFlash {
         this.cs_l            = _cs_l;
         this.total_blocks    = _total_blocks;
         this.playback_blocks = _playback_blocks;
-        this.record_offset   = BLOCKSIZE * playback_blocks;
+        this.record_offset   = (BLOCKSIZE + 1) * playback_blocks;
+        server.log(format("Record Offset: %x",record_offset));
         cs_l.write(1);
         cs_l.write(0);
         spi.write(RDID);
@@ -327,6 +329,7 @@ class SpiFlash {
         // followed by 24-bit address
         spi.write(format("%c%c%c", (addr >> 16) & 0xFF, (addr >> 8) & 0xFF, addr & 0xFF));
         spi.write(data);
+        //server.log(format("wrote %d bytes to %x",data.len(),addr));
         cs_l.write(1);
         
         // wait for the status register to show write complete
@@ -631,6 +634,7 @@ agent.on("pull", function(buffer_len) {
     if (bytes_left < buffer_len) {
         buffer_len = bytes_left;
     }
+    server.log(format("reading at %x",flash.record_offset + record_ptr));
     local buffer = flash.read(flash.record_offset + record_ptr, buffer_len);
     // advance the pointer for the next chunk
     recorder.setRecordPtr(record_ptr + buffer_len);
@@ -660,6 +664,7 @@ flash <- SpiFlash(spi, cs_l, SPI_BLOCKS, PLAYBACK_BLOCKS);
 flash.wake();
 // make sure the flash record sectors are clear so that we're ready to record as soon as the user requests
 flash.eraseRecBlocks();
+//flash.chipErase();
 // flash initialized; put it to sleep to save power
 flash.sleep();
 
@@ -671,6 +676,6 @@ btn1.configure(DIGITAL_IN, record_btn_callback);
 btn2.configure(DIGITAL_IN, playback_btn_callback);
 
 // start polling the battery voltage
-checkBattery();
+//checkBattery();
 
 server.log("Device: ready.");
