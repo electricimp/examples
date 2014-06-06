@@ -519,7 +519,7 @@ class RGBLED {
 // This class controls the ADJD-S311-CR999 RGB light sensor. You can configure all capacitors and 
 // integration slots to one number or you can pass in an array for each into the initialise() method. 
 // From there you can either read values or poll the sensor. If you want to know the general brightness
-// look at the forth sensor reading (clear).
+// look at the fourth sensor reading (clear).
 //
 enum CAP_COLOUR { RED, GREEN, BLUE, CLEAR };
 class RGBSensor {
