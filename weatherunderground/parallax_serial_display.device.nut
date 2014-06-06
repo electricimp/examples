@@ -1,26 +1,25 @@
 /*
 Copyright (C) 2013 electric imp, inc.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
-and associated documentation files (the "Software"), to deal in the Software without restriction, 
-including without limitation the rights to use, copy, modify, merge, publish, distribute, 
-sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is 
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+and associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial 
+The above copyright notice and this permission notice shall be included in all copies or substantial
 portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE 
-AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
-DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
+AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 // Basic Example of Serial Communication with the imp
 // Shows input on parallax 16x2 UART display
-// This example includes both an input port for receiving data from the blueprint
-// as well as a hook for an agent to send strings to the device
+// This example includes a hook for an agent to send strings to the device
 
 class parDisplay
 {
@@ -35,7 +34,7 @@ class parDisplay
     CTRL_BLOFF = 0x12;
     // sound tone at concert A (440 Hz)
     CTRL_SNDA = 0xDC;
-    
+
     constructor(port)
     {
         if (port == UART_57) {
@@ -47,27 +46,27 @@ class parDisplay
         } else {
             server.log("Invalid UART port specified.")
         }
-        
+
         // set up the UART that we've selected
         // 9600 baud, 8 data bits, no parity bits, 1 stop bit, no flow control
         serPort.configure(9600, 8, PARITY_NONE, 1, NO_CTSRTS);
-        
+
         // start with cleared screen
         clear();
     }
-    
+
     function clear() {
         serPort.write(CTRL_CLEAR);
     }
-    
+
     function newl() {
         serPort.write(CTRL_NEWL);
     }
-    
+
     function toneA() {
         serPort.write(CTRL_SNDA);
     }
-    
+
     function light(state) {
         if (state == 0) {
             server.log("Light off")
@@ -77,34 +76,11 @@ class parDisplay
             serPort.write(CTRL_BLON);
         }
     }
-    
+
     function print(inputString) {
         serPort.write(inputString);
     }
 }
-
-/* DEPRECATED: USE agent.on()
-// here we create an input port for use on the Blueprint by extending the default InputPort Class
-// for more information on input and output ports, see:
-// http://devwiki.electricimp.com/doku.php?id=example:start
-class displayInput extends InputPort
-{
-    name = "String Input"
-    type = "string"
-    
-    function set(value) {
-        // turn on the backlight
-        display.light(1);
-        // here, we might want to do some input sanitization to get the formatting right
-        // right now, we just send the string along to the device
-        display.print(value);
-        // pause for five seconds before turning the light off
-        imp.sleep(5)
-        // turn off the backlight
-        display.light(0);
-    }
-}
-*/
 
 // instantiate our parallax display class
 display <- local display = parDisplay(UART_57);
@@ -114,7 +90,6 @@ display <- local display = parDisplay(UART_57);
 // first: a string to identify which callback the device should use to handle the event
 // second: data to be used by the event handler (if there is any)
 agent.on("newData", function(value) {
-    // this hook will just do the same thing as our input port
     display.light(1);
     display.print(value);
     imp.sleep(5);
@@ -124,12 +99,3 @@ agent.on("newData", function(value) {
 
 // print to the log to show we're up and running
 server.log("Disp UART: Start");
-// register with the imp service. Takes three arguments:
-// first: text to be displayed in this node on the Blueprint
-// second: an array of input ports (we have one)
-// thrid: an array of output ports (we have none)
-
-/* DEPRECATED: Use agent.on() instead of input ports
-imp.configure("Disp UART", [ displayInput() ], []);
-*/
-imp.configure("Disp UART", [],[]);
