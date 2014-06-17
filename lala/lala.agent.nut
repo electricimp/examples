@@ -58,25 +58,16 @@ function writeChunkHeaders() {
     // RIFF header is 12 bytes, format header is 26 bytes, fact header is 12 bytes, data header is 8 bytes
     local msgblob = blob(58);
     // Chunk ID is "RIFF"
-    msgblob.writen('R','b');
-    msgblob.writen('I','b');
-    msgblob.writen('F','b');
-    msgblob.writen('F','b');
+    msgblob.writestring("RIFF");
     // four bytes for chunk data size (file size - 8)
     msgblob.writen((msgblob.len()+outParams.data_chunk_size - 8), 'i');
     // RIFF type is "WAVE"
-    msgblob.writen('W','b');
-    msgblob.writen('A','b');
-    msgblob.writen('V','b');
-    msgblob.writen('E','b');
+    msgblob.writestring("WAVE");
     // Done with wave file header
 
     // FORMAT CHUNK
     // first four bytes are "fmt "
-    msgblob.writen('f','b');
-    msgblob.writen('m','b');
-    msgblob.writen('t','b');
-    msgblob.writen(' ','b');
+    msgblob.writestring("fmt ");
     // four-byte value here for chunk data size
     msgblob.writen(18,'i');
     // two bytes for compression code
@@ -110,10 +101,7 @@ function writeChunkHeaders() {
 
     // FACT CHUNK
     // first four bytes are "fact"
-    msgblob.writen('f','b');
-    msgblob.writen('a','b');
-    msgblob.writen('c','b');
-    msgblob.writen('t','b');
+    msgblob.writestring("fact");
     // fact chunk data size is 4
     msgblob.writen(4,'i');
     // last four bytes are a vaguely-defined compression data field, currently just number of samples in data chunk
@@ -122,10 +110,7 @@ function writeChunkHeaders() {
 
     // DATA CHUNK
     // first four bytes are "data"
-    msgblob.writen('d','b');
-    msgblob.writen('a','b');
-    msgblob.writen('t','b');
-    msgblob.writen('a','b');
+    msgblob.writestring("data");
     // data chunk length - four bytes
     msgblob.writen(outParams.data_chunk_size, 'i');
     // we return this blob, base-64 encode it, and concatenate with the actual data chunk - we're done 
@@ -157,7 +142,7 @@ function parseFmtChunk(buffer) {
     inParams.compression_code = buffer.readn('w');
     if (inParams.compression_code == 0x01) {
         // 16-bit PCM
-        inParams.width = 'w';
+        inParams.sample_width = 'w';
     } else if (inParams.compression_code == 0x06) {
         // A-law
         inParams.sample_width = 'b';
