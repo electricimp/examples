@@ -300,12 +300,13 @@ device.on("pull", function(buffer_len) {
     // skip channels if there are more than one; we'll always take the first
     local bytes_to_dl = buffer_len;
     local bytes_left = (inParams.data_chunk_size - (fetch_offset - inParams.data_chunk_offset + DATA_HEADER_LEN)) / inParams.channels;
-    if (inParams.sample_width == 'w') {
-        // if we're A-law encoded, it's 1 byte per sample; if we're 16-bit PCM, it's two
-        bytes_left = bytes_left * 2;
-    }
     if (buffer_len > bytes_left) {
         bytes_to_dl = bytes_left;
+    }
+    
+    local bytes_per_sample = 1;
+    if (inParams.sample_width == 'w') {
+        bytes_per_sample = 2;
     }
 
     // the data chunk of a wav file is interlaced; the first sample for each channel, then the second for each, etc...
@@ -315,12 +316,19 @@ device.on("pull", function(buffer_len) {
         local multichannel_buffer = blob(bytes_to_dl * inParams.channels);
         multichannel_buffer.writestring(http.get(fetch_url, { Range=format("bytes=%u-%u", fetch_offset, fetch_offset + (bytes_to_dl * inParams.channels)) }).sendsync().body);
         multichannel_buffer.seek(0,'b');
-        for (local i = 0; i < bytes_to_dl; i += inParams.channels) {
+        for (local i = 0; i < bytes_to_dl; i += bytes_per_sample) {
             buffer.writen(multichannel_buffer.readn(inParams.sample_width), inParams.sample_width);
+            for (local j = 1; j < inParams.channels; j++) {
+                multichannel_buffer.readn(inParams.sample_width);
+            }
         } 
     } else {
-        for (local i = 0; i < bytes_to_dl; i += inParams.channels) {
+        for (local i = 0; i < bytes_to_dl; i += bytes_per_sample) {
             buffer.writen(agent_buffer.readn(inParams.sample_width), inParams.sample_width);
+            // throw away any interleaved channel data, if there is more than one channel
+            for (local j = 1; j < inParams.channels; j++) {
+                local dummy = agent_buffer.readn(inParams.sample_width);
+            }
         } 
     }
 

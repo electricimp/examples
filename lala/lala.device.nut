@@ -605,9 +605,10 @@ agent.on("push", function(data) {
     // server.log(format("Got buffer chunk %d from agent, len %d", index, buffer.len()));
     // stash this chunk away in flash, then pull another from the agent
 
-    flash.writeChunk((index*buffer.len()), buffer);
+    flash.writeChunk((index * buffer.len()), buffer);
     
     // see if we're done downloading
+    //server.log(format("Got %d bytes (%d / %d)",buffer.len(),(index + 1) * buffer.len(),playback.getLength()));
     if ((index + 1)*buffer.len() >= playback.getLength()) {
         // we're done.
         imp.setpowersave(true);
@@ -634,7 +635,7 @@ agent.on("pull", function(buffer_len) {
     if (bytes_left < buffer_len) {
         buffer_len = bytes_left;
     }
-    server.log(format("reading at %x",flash.record_offset + record_ptr));
+
     local buffer = flash.read(flash.record_offset + record_ptr, buffer_len);
     // advance the pointer for the next chunk
     recorder.setRecordPtr(record_ptr + buffer_len);
@@ -664,7 +665,6 @@ flash <- SpiFlash(spi, cs_l, SPI_BLOCKS, PLAYBACK_BLOCKS);
 flash.wake();
 // make sure the flash record sectors are clear so that we're ready to record as soon as the user requests
 flash.eraseRecBlocks();
-//flash.chipErase();
 // flash initialized; put it to sleep to save power
 flash.sleep();
 
@@ -676,6 +676,6 @@ btn1.configure(DIGITAL_IN, record_btn_callback);
 btn2.configure(DIGITAL_IN, playback_btn_callback);
 
 // start polling the battery voltage
-//checkBattery();
+checkBattery();
 
 server.log("Device: ready.");
