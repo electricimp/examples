@@ -5,7 +5,7 @@ const IOEXP_ADDR = 0x40; // 8-bit address
 
 /* GLOBAL CLASS AND FUNCTION DEFINITIONS ------------------------------------*/
 
-class SpiFlash {
+class spiFlash {
     // MX25L3206E SPI Flash
     // Clock up to 86 MHz (we go up to 15 MHz)
     // device commands:
@@ -260,7 +260,7 @@ class SpiFlash {
 
 // class to drive Pervasive Displays epaper display
 // see http://repaper.org
-class Epaper {
+class epaper {
     WIDTH           = null;
     HEIGHT          = null;
     PIXELS          = null;
