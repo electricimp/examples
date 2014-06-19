@@ -1,23 +1,12 @@
-/*
-Copyright (C) 2013 Electric Imp, Inc
- 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files 
-(the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge,
-publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do
-so, subject to the following conditions:
- 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
-FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-*/
+// Nora Reference Design Device Firmware
+// http://electricimp.com/docs/hardware/resources/reference-designs/nora/
+// Copyright (C) 2013-2014 Electric Imp, Inc.
+// This file is licensed under the MIT License
+// http://opensource.org/licenses/MIT
 
 
 // **********************************************************************************************************************************
-class sensor {
+class Sensor {
 
     i2c       = null;
     pin_en_l  = null;
@@ -195,7 +184,7 @@ class sensor {
 
 
 // **********************************************************************************************************************************
-class lis3dh extends sensor {
+class Lis3dh extends Sensor {
     
 	static CTRL_REG1     = "\x20";
 	static CTRL_REG2     = "\x21";
@@ -500,7 +489,7 @@ class lis3dh extends sensor {
 
 
 // **********************************************************************************************************************************
-class hih6131 extends sensor {
+class Hih6131 extends Sensor {
 
     static WAIT = 80; // milliseconds
     
@@ -548,7 +537,7 @@ class hih6131 extends sensor {
 
 
 // **********************************************************************************************************************************
-class mpl115 extends sensor {
+class Mpl115 extends Sensor {
   static WAIT = 80; // milliseconds
 
 	a0 = null;
@@ -668,7 +657,7 @@ class mpl115 extends sensor {
 
 
 // **********************************************************************************************************************************
-class tsl2561 extends sensor {
+class Tsl2561 extends Sensor {
 
     static WAIT = 450;
     static name = "light";
@@ -728,7 +717,7 @@ class tsl2561 extends sensor {
 
 
 // **********************************************************************************************************************************
-class tmp112 extends sensor {
+class Tmp112 extends Sensor {
 
   static WAIT = 35;
 
@@ -967,7 +956,7 @@ class tmp112 extends sensor {
 
 
 // **********************************************************************************************************************************
-class battery extends sensor {
+class Battery extends Sensor {
 
     pin = null;
     name = "battery"
@@ -987,14 +976,13 @@ class battery extends sensor {
 		local r = pin.read() / 65535.0;
 		local v = hardware.voltage() * r;
 		local p = 100.0 * r;
-		callback({volts = v, capacity = p});
+		callback({voltage = v});
     }
-
 }
 
 
 // **********************************************************************************************************************************
-class nora extends sensor {
+class Nora extends Sensor {
 
     name = "nora"
     
@@ -1136,17 +1124,17 @@ server.setsendtimeoutpolicy(RETURN_ON_ERROR, WAIT_TIL_SENT, 30);
 // nora.dump_nv();
 
 // Load up individual sensors
-nora <- nora();
-accel <- lis3dh(hardware.i2c89);
-thermistor <- hih6131(hardware.i2c89, hardware.pin2, hardware.pin5);
-pressure <- mpl115(hardware.i2c89, hardware.pin2, hardware.pin5);
-light <- tsl2561(hardware.i2c89, hardware.pin2, hardware.pin5);
-battery <- battery(hardware.pin7);
-temperature <- tmp112(hardware.i2c89);
+nora        <- Nora();
+accel       <- Lis3dh(hardware.i2c89);
+temphumid   <- Hih6131(hardware.i2c89, hardware.pin2, hardware.pin5);
+pressure    <- Mpl115(hardware.i2c89, hardware.pin2, hardware.pin5);
+light       <- Tsl2561(hardware.i2c89, hardware.pin2, hardware.pin5);
+battery     <- Battery(hardware.pin7);
+temperature <- Tmp112(hardware.i2c89);
 
 // Check if we are waking from an interrupt
-local bootreason = sensor.get_bootreason();
-sensor.set_bootreason();
+local bootreason = Sensor.get_bootreason();
+Sensor.set_bootreason();
 
 if (hardware.wakereason() == WAKEREASON_PIN1) {
     // Send an event to the device

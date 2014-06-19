@@ -1,19 +1,8 @@
-/*
-Copyright (C) 2013 Electric Imp, Inc
- 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files 
-(the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge,
-publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do
-so, subject to the following conditions:
- 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
-FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-*/
+// Nora Reference Design Agent Firmware
+// http://electricimp.com/docs/hardware/resources/reference-designs/nora/
+// Copyright (C) 2013-2014 Electric Imp, Inc.
+// This file is licensed under the MIT License
+// http://opensource.org/licenses/MIT
 
 //----------------------------------------------------------------------
 function remote(dev, method, params=[], callback=null, clear=true) {
@@ -115,7 +104,7 @@ function read_remote_data(dummy = null) {
     })
     */
 
-	// Request nora to read all sensors once a minute, sleeping offline in between, and after 5 readings, come online and present the data
+    // Request nora to read all sensors once a minute, sleeping offline in between, and after 5 readings, come online and present the data
     remote("nora", "read", [60, 5], function (resultset) {
         foreach (resultid,result in resultset) {
             server.log("------------[ Result set " + resultid + " ]------------")
@@ -133,4 +122,3 @@ function read_remote_data(dummy = null) {
 //----------------------------------------------------------------------
 device.on("ready", read_remote_data);
 server.log("Agent started")
-
