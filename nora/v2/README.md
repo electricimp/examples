@@ -7,7 +7,7 @@ This nora (v2) example classes and agent encapsulate most of the functionality o
 | thermistor    | `read`             | returns temperature and humidity
 | pressure      | `read`             | returns the ambient pressure
 | light         | `read`             | returns the ambient light
-| battery       | `read`             | returns the battery voltage and % capacity
+| battery       | `read`             | returns the battery voltage
 | temperature   | `read`             | returns the temperature in celcius
 |               | `thermostat`       | wakes the imp up when the temperature passes through the max or min temperatures provided
 |               | `read_temp`        | reads the temperature without disturbing the thermostat
