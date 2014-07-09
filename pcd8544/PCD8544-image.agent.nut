@@ -24,7 +24,7 @@ server.log("Agent running.");
 
 // Constants
 // Input image *must* be a monochrome .BMP file precisely 84 pixels wide and 48 pixels high
-const IMAGE_URL = "http://www.ginomiglio.com/imp84.bmp";
+const IMAGE_URL = "YOUR_URL/imp84.bmp";
 const LCD_WIDTH = 84;
 const LCD_HEIGHT = 48;
 const LCD_BYTES = 504; // result of (LCD_WIDTH * LCD_HEIGHT) / 8
