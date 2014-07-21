@@ -1,15 +1,12 @@
 ## Waveform Record Class
-Lala is a battery-powered audio recording and playback impee with 4MB onboard SPI flash memory. Lala is designed as a starting point for building an asynchronous message delivery system, like an intercom.
+This this class shows a simple example of how to wrap the [Sampler](http://electricimp.com/docs/api/hardware/sampler/) class to record analog waveforms. 
 
-### Features
+In this example, every buffer is sent directly to the agent as it appears at the samplesReady callback from the sampler. Note that depending on your hardware design, this method of handling samples can cause noise in the resulting waveform, as operating the WiFi transmitter while recording causes significant [power supply load transients](http://electricimp.com/docs/resources/designing_analog_hw).
 
-- 2.65 W Class-D amplifier for audio playback on an external speaker
-- Active anti-aliasing filter on audio input with 8 kHz cutoff; audio input section is designed for 16 kHz sampling
-- Built-in battery monitoring
-- LED available for custom function (defined in device firmware)
-- Two buttons available for custom function
-- Wake on button press for either button
-- 4 MB SPI Flash - at 16 kHz sampling with the imp's built-in A-Law compression, enough space for just over 4 minutes of audio
+The recording can be played directly from the agent by pointing a browser at the agent URL. The agent will finish the recording by writing RIFF WAV headers onto the buffer, then serving it to the browser with the Content-Type header set to audio/x-wav. Most browsers will play the audio direclty in the browser. The audio file can also be downloaded with a generic request:
 
+```
+14:46:3-tom@eevee$ curl https://agent.electricimp.com/<your_agent_ID>  >  demo.wav
+```
 
-For more information and product files, please see the [Lala design page](http://electricimp.com/docs/hardware/resources/reference-designs/lala/) in the Electric Imp Developer Center.
+For more information, please see the Electric Imp Developer Center article on the [Sampler and Fixed-Frequency DAC](http://electricimp.com/docs/resources/sampler_ffd/).
