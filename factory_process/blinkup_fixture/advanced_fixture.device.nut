@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2013 Electric Imp, Inc
+Copyright (C) 2014 Electric Imp, Inc
  
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files 
 (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge,
@@ -20,6 +20,7 @@ Sample application: Factory blinkup fixture (factory imp to imp card)
 Author: Aron
 
 Date: 1st August, 2013
+Updated: 11th August, 2014
 
 This example code is for blessing devices in a factory using a factory blinkup fixture.
 For this example:
@@ -36,11 +37,9 @@ For this example:
 - the webhooks will then be notified of the blessing event and take further actions
 ========================================================================================== */
 
-if (imp.getssid() == "") return; // Don't run the factory code while offline
-
 const SSID = "yourSSID";
 const PASSWORD = "yourWifiPW";
-const FIXTURE_MAC = "themacofthefixture";
+const FIXTURE_MAC = "0c2a690xxxxx";
 const THROTTLE_TIME = 10;
 const SUCCESS_TIMEOUT = 20;
 
@@ -51,6 +50,8 @@ mac <- imp.getmacaddress();
 impeeid <- hardware.getimpeeid();
 
 bless_success <- false;
+
+if (imp.getssid() != SSID) return; // Don't run the factory code if not in the factory
 
 switch (mac) {
     case FIXTURE_MAC:
@@ -92,7 +93,7 @@ switch (mac) {
 
                 // Notify the server of the success and handle the response
                 server.log("Testing timed out with 0.")
-                server.bless(0, function(bless_success) {
+                server.bless(false, function(bless_success) {
                     server.log("Blessing (negative) " + (bless_success ? "PASSED" : "FAILED") + " for impee " + impeeid + " and mac " + mac)
                     agent.send("testresult", {device_id = impeeid, mac = mac, passed = false, success = bless_success})
                 })
@@ -115,9 +116,7 @@ switch (mac) {
                 server.bless(true, function(bless_success) {
                     server.log("Blessing " + (bless_success ? "PASSED" : "FAILED") + " for impee " + impeeid + " and mac " + mac)
                     agent.send("testresult", {device_id = impeeid, mac = mac, passed = true, success = bless_success})
-                    if (bless_success) {
-                        imp.wakeup(10, function() { imp.clearconfiguration(); })
-                    }
+                    if (bless_success) imp.clearconfiguration();
                 })
             }
         });
