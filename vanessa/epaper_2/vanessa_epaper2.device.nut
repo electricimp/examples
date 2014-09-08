@@ -16,6 +16,7 @@ class Epaper {
     HEIGHT          = null;
     PIXELS          = null;
     BYTESPERSCREEN  = null;
+    FRAMEREPEATS    = 2;
     spi             = null;
     epd_cs_l        = null;
     busy            = null;
@@ -231,72 +232,19 @@ class Epaper {
         server.log("Display Powered Down.");
     }
     function drawScreen(screenData) {
-        foreach (line in screenData) {    
-            writeEPD(0x04, 0x00); // set charge pump voltage level
-            writeEPD_raw(0x70, 0x0A)
-            epd_cs_l_write(0);
-            spi_write("\x72");      // line header byte
-            spi_write("\x00");      // null border byte
-            spi_write(line);
-            spi_write("\x00");   
-            epd_cs_l_write(1);
-            writeEPD(0x02, 0x2F); // Output enable  
-        }
-        // local repeat = 2;
-        // local step = 4;
-        // local block = 32;
-        // local total_lines = screenData.len();
-        
-        // for (local repeatct = 0; repeatct < repeat; repeatct++) {
-        //     local block_begin = 0; 
-        //     local block_end = 0;
-            
-        //     while (block_begin < total_lines) {
-        //         block_end = block_end + step;
-        //         block_begin = block_end - block;
-                
-        //         if (block_begin < 0) { block_begin = 0; }
-        //         else if (block_begin >= total_lines) { break; }
-                
-        //         local full_block = ((block_end - block_begin) == block);
-                
-        //         for (local lineno = block_begin; lineno < block_end; lineno++) {
-        //             if (lineno >= total_lines) {
-        //                 break;
-        //             }
-        //             writeEPD(0x04, 0x00); // set charge pump voltage level
-        //             writeEPD_raw(0x70, 0x0A)
-        //             epd_cs_l_write(0);
-        //             spi_write("\x72");      // line header byte
-        //             spi_write("\x00");      // null border byte
-        //             spi_write(screenData[lineno]);
-        //             spi_write("\x00");   
-        //             epd_cs_l_write(1);
-        //             writeEPD(0x02, 0x2F); // Output enable  
-        //         }
-        //     }
-        // }
-    }
-    
-    function fillScreen(val) {
-        local screenData = array(HEIGHT);
-        for (local row = 0; row < HEIGHT; row++) {
-            screenData[row] = blob(((WIDTH * 2) + (HEIGHT * 2)) / 8);
-            for (local i = 0; i < (WIDTH / 8); i++) {
-                screenData[row][i] = val & 0xFF;
-            }
-            for (local j = (WIDTH / 8); j < ((WIDTH / 8) + (HEIGHT / 4)); j++) {
-                if ((j - (WIDTH / 8)) == math.floor(row / 4)) {
-                    screenData[row][j] = (0xC0 >> (2 * (row % 4)));
-                } else {
-                    screenData[row][j] = 0x00;
-                }
-            }
-            for (local k = ((WIDTH / 8) + (HEIGHT / 4)); k < ((WIDTH * 2) + (HEIGHT * 2)) / 8; k++) {
-                screenData[row][k] = val & 0xFF;
+        for (local repeat = 0; repeat < FRAMEREPEATS; repeat++) {   
+            foreach (line in screenData) {    
+                writeEPD(0x04, 0x00); // set charge pump voltage level
+                writeEPD_raw(0x70, 0x0A)
+                epd_cs_l_write(0);
+                spi_write("\x72");      // line header byte
+                spi_write("\x00");      // null border byte
+                spi_write(line);
+                spi_write("\x00");   
+                epd_cs_l_write(1);
+                writeEPD(0x02, 0x2F); // Output enable  
             }
         }
-        drawScreen(screenData);
     }
 }
 
@@ -508,39 +456,39 @@ function chgStatusChanged() {
 
 /* REGISTER AGENT CALLBACKS -------------------------------------------------*/
 
-agent.on("newImgStart", function(data) {
+agent.on("newImg", function(data) {
+    server.log("Drawing new image, memory free = "+imp.getmemoryfree());
     display.start();
     // agent sends the inverted version of the current image first
-    server.log("Drawing current image inverted");
     display.drawScreen(data);
-    // white out the screen second
-    server.log("Drawing all-white screen");
-    display.fillScreen(0xAA);
-    // signal we're ready for the new image data, sent inverted first
+    agent.send("readyForWhite",0);
+});
+
+agent.on("white", function(data) {
+    display.drawScreen(data);
     agent.send("readyForNewImgInv",0);
 });
+
 agent.on("newImgInv", function(data) {
-    server.log("Drawing new image inverted");
     display.drawScreen(data);
     agent.send("readyForNewImgNorm",0);
 });
+
 agent.on("newImgNorm", function(data) {
-    server.log("Drawing new image normal");
     display.drawScreen(data);
     display.stop();
-    server.log("Done Drawing New Image.");
 })
+
 agent.on("clear", function(val) {
     server.log("Force-clearing screen.");
     display.start();
-    display.fillScreen(0xAA);
+    display.white()
     display.stop();
 });
 
 /* RUNTIME BEGINS HERE ------------------------------------------------------*/
 
 server.log(imp.getsoftwareversion());
-server.log(imp.getmemoryfree());
 imp.enableblinkup(true);
 
 // Vanessa Reference Design Pin configuration
@@ -585,9 +533,4 @@ server.log(format("Battery Voltage: %.2f V",chkBat()));
 display <- Epaper(DISPWIDTH, DISPHEIGHT, spi, epd_cs_l, epd_busy, 
     epd_rst_l, epd_pwr_en_l, epd_discharge, epd_border);
 server.log("Config Done.");
-
-display.start();
-display.fillScreen(0xaa);
-display.fillScreen(0xff);
-display.fillScreen(0xaa);
-display.stop();
+server.log(imp.getmemoryfree()+" bytes free");

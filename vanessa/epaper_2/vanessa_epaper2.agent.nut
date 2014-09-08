@@ -124,13 +124,17 @@ function createBlankImg() {
 server.log("Creating a blank image...");
 
 imgData <- {};
-local blank = createBlankImg();
-imgData.curImg      <- blank;
-imgData.curImgInv   <- blank;
-imgData.nxtImg      <- blank;
-imgData.nxtImgInv   <- blank;
+local white = createBlankImg();
+imgData.curImg      <- white;
+imgData.curImgInv   <- white;
+imgData.nxtImg      <- white;
+imgData.nxtImgInv   <- white;
 
 /* DEVICE EVENT HANDLERS ----------------------------------------------------*/
+
+device.on("readyForWhite", function(data) {
+    device.send("white", white);
+});
 
 device.on("readyForNewImgInv", function(data) {
     device.send("newImgInv", imgData.nxtImgInv);
@@ -138,7 +142,6 @@ device.on("readyForNewImgInv", function(data) {
 
 device.on("readyForNewImgNorm", function(data) {
     device.send("newImgNorm", imgData.nxtImg);
-    
     // now move the "next image" data to "current image" in the image data table.
     imgData.curImg = imgData.nxtImg;
     imgData.curImgInv = imgData.nxtImgInv;
@@ -170,8 +173,8 @@ http.onrequest(function(request, res) {
     	imgData.nxtImgInv = newImgData.inverted;
 
     	// send the inverted version of the image currently on the screen to start the display update process
-        server.log("Sending new data to device, len: "+imgData.curImgInv.len());
-        device.send("newImgStart",imgData.curImgInv);
+        server.log("Sending new data to device");
+        device.send("newImg", imgData.curImgInv);
         
     } else if (path == "/clear") {
     	res.send(200, "OK\n");
