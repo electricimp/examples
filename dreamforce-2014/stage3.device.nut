@@ -10,20 +10,20 @@ led <- hardware.pin5;
 // -----------------------------------------------------------------------------
 // CRC calculation function
 function CRC (data, offset = 0) {
-	local LRC = 0x00;
-	for (local i = offset; i < data.len(); i++) {
-		LRC = (LRC + data[i]) & 0xFF;
-	}
-	return ((LRC ^ 0xFF) + 1) & 0xFF;
+    local LRC = 0x00;
+    for (local i = offset; i < data.len(); i++) {
+        LRC = (LRC + data[i]) & 0xFF;
+    }
+    return ((LRC ^ 0xFF) + 1) & 0xFF;
 }
 
 // Blink the LED for a specified duration for a number of times
 function blink(duration=1.0, times=1) {
     local speed = duration.tofloat() / times;
     for (local i = 0; i < times; i++) {
-        led.write(0);
-        imp.sleep(1.0*speed/3.0);
         led.write(1);
+        imp.sleep(1.0*speed/3.0);
+        led.write(0);
         imp.sleep(2.0*speed/3.0);
     }
 }
@@ -162,7 +162,7 @@ agent.on("fire", fire);
 agent.on("result", handle_result)
 
 // Configure the LED to display the result of the last request
-led.configure(DIGITAL_OUT, 1);
+led.configure(DIGITAL_OUT, 0);
 
 // Configure the IR transceiver
 irpwm.configure(PWM_OUT, 1.0 / 38000, 0.5);

@@ -1,112 +1,119 @@
 
 // -----------------------------------------------------------------------------
-const html = @"<HTML>
-                        <HEAD>
-                            <TITLE>Welcome</TITLE>
-                            <STYLE type='text/css'>
-                                /*######## Smart Blue ########*/
-                                .smart-blue {
-                                    margin-left:auto;
-                                    margin-right:auto;
-                                
-                                    max-width: 500px;
-                                    background: #C4EAF7;
-                                    padding: 30px 30px 20px 30px;
-                                    font: 12px Arial, Helvetica, sans-serif;
-                                    color: #C4EAF7;
-                                    border-radius: 5px;
-                                    -webkit-border-radius: 5px;
-                                    -moz-border-radius: 5px;
-                                }
-                                .smart-blue h1 {
-                                    font: 24px 'Trebuchet MS', Arial, Helvetica, sans-serif;
-                                    padding: 20px 0px 20px 40px;
-                                    display: block;
-                                    margin: -30px -30px 10px -30px;
-                                    color: #FFF;
-                                    background: #1084B5;
-                                    text-shadow: 1px 1px 1px #949494;
-                                    border-radius: 5px 5px 0px 0px;
-                                    -webkit-border-radius: 5px 5px 0px 0px;
-                                    -moz-border-radius: 5px 5px 0px 0px;
-                                    border-bottom:1px solid #89AF4C;
-                                
-                                }
-                                .smart-blue h1>span {
-                                    display: block;
-                                    font-size: 11px;
-                                    color: #FFF;
-                                }
-                                
-                                .smart-blue label {
-                                    display: block;
-                                    margin: 0px 0px 5px;
-                                }
-                                .smart-blue label>span {
-                                    float: left;
-                                    margin-top: 10px;
-                                    color: #5E5E5E;
-                                }
-                                .smart-blue input[type='text'], .smart-blue input[type='email'], .smart-blue textarea, .smart-blue select {
-                                    color: #555;
-                                    height: 30px;
-                                    line-height:15px;
-                                    width: 100%;
-                                    padding: 0px 0px 0px 10px;
-                                    margin-top: 2px;
-                                    border: 1px solid #E5E5E5;
-                                    background: #FBFBFB;
-                                    outline: 0;
-                                    -webkit-box-shadow: inset 1px 1px 2px rgba(238, 238, 238, 0.2);
-                                    box-shadow: inset 1px 1px 2px rgba(238, 238, 238, 0.2);
-                                    font: normal 14px/14px Arial, Helvetica, sans-serif;
-                                }
-                                .smart-blue textarea{
-                                    height:100px;
-                                    padding-top: 10px;
-                                }
-                                .smart-blue .button {
-                                    background-color: #1084B5;
-                                    border-radius: 5px;
-                                    -webkit-border-radius: 5px;
-                                    -moz-border-border-radius: 5px;
-                                    border: none;
-                                    padding: 10px 25px 10px 25px;
-                                    color: #FFF;
-                                    text-shadow: 1px 1px 1px #949494;
-                                    margin-top: 20px;
-                                }
-                                .smart-blue .button:hover {
-                                    background-color:#80A24A;
-                                }                                    
-                            </STYLE>
-                        </HEAD>
-                        <BODY>
-                            <form method='post' class='smart-blue'>
-                            <h1>Set Contact Name<span>Please fill <em>all</em> the fields below to change the contact attached to this device.</span></h1>
-                            <p><label><span>First Name :</span><input id='first' type='text' name='first' placeholder='Your First Name'></label>
-                               <label><span>Last Name :</span><input id='last' type='text' name='last' placeholder='Your Last Name'></label>
-                               <label><span>Email :</span><input id='email' type='text' name='email' placeholder='Your Email Address'></label>
-                               <label><span>&nbsp;</span><input type='submit' class='button' name='Send' value='Send'><span>&nbsp;</span><input type='submit' class='button' name='Skip' value='Skip'></label>
-                            </p>
-                            </form>
+function constants() {
+    const html = 
+    @"<HTML>
+        <HEAD>
+            <TITLE>Welcome</TITLE>
+            <STYLE type='text/css'>
+                /*######## Smart Blue ########*/
+                .smart-blue {
+                    margin-left:auto;
+                    margin-right:auto;
+                
+                    max-width: 500px;
+                    background: #C4EAF7;
+                    padding: 30px 30px 20px 30px;
+                    font: 12px Arial, Helvetica, sans-serif;
+                    color: #C4EAF7;
+                    border-radius: 5px;
+                    -webkit-border-radius: 5px;
+                    -moz-border-radius: 5px;
+                }
+                .smart-blue h1 {
+                    font: 24px 'Trebuchet MS', Arial, Helvetica, sans-serif;
+                    padding: 20px 0px 20px 40px;
+                    display: block;
+                    margin: -30px -30px 10px -30px;
+                    color: #FFF;
+                    background: #1084B5;
+                    text-shadow: 1px 1px 1px #949494;
+                    border-radius: 5px 5px 0px 0px;
+                    -webkit-border-radius: 5px 5px 0px 0px;
+                    -moz-border-radius: 5px 5px 0px 0px;
+                    border-bottom:1px solid #89AF4C;
+                
+                }
+                .smart-blue h1>span {
+                    display: block;
+                    font-size: 11px;
+                    color: #FFF;
+                }
+                
+                .smart-blue label {
+                    display: block;
+                    margin: 0px 0px 5px;
+                }
+                .smart-blue label>span {
+                    float: left;
+                    margin-top: 10px;
+                    color: #5E5E5E;
+                }
+                .smart-blue input[type='text'], .smart-blue input[type='email'], .smart-blue textarea, .smart-blue select {
+                    color: #555;
+                    height: 30px;
+                    line-height:15px;
+                    width: 100%;
+                    padding: 0px 0px 0px 10px;
+                    margin-top: 2px;
+                    border: 1px solid #E5E5E5;
+                    background: #FBFBFB;
+                    outline: 0;
+                    -webkit-box-shadow: inset 1px 1px 2px rgba(238, 238, 238, 0.2);
+                    box-shadow: inset 1px 1px 2px rgba(238, 238, 238, 0.2);
+                    font: normal 14px/14px Arial, Helvetica, sans-serif;
+                }
+                .smart-blue textarea{
+                    height:100px;
+                    padding-top: 10px;
+                }
+                .smart-blue .button {
+                    background-color: #1084B5;
+                    border-radius: 5px;
+                    -webkit-border-radius: 5px;
+                    -moz-border-border-radius: 5px;
+                    border: none;
+                    padding: 10px 25px 10px 25px;
+                    color: #FFF;
+                    text-shadow: 1px 1px 1px #949494;
+                    margin-top: 20px;
+                }
+                .smart-blue .button:hover {
+                    background-color:#80A24A;
+                }                                    
+            </STYLE>
+        </HEAD>
+        <BODY>
+            <form method='post' class='smart-blue'>
+            <h1>Set Contact Name<span>Please fill <em>all</em> the fields below to change the contact attached to this device.</span></h1>
+            <p><label><span>First Name :</span><input id='first' type='text' name='first' placeholder='Your First Name'></label>
+               <label><span>Last Name :</span><input id='last' type='text' name='last' placeholder='Your Last Name'></label>
+               <label><span>Email :</span><input id='email' type='text' name='email' placeholder='Your Email Address'></label>
+               <label><span>&nbsp;</span><input type='submit' class='button' name='Send' value='Send'><span>&nbsp;</span><input type='submit' class='button' name='Skip' value='Skip'></label>
+            </p>
+            </form>
 
-                            <SCRIPT>
-                                function getParameterByName(name) {
-                                    var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
-                                    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
-                                }
-                                var err = getParameterByName('error');
-                                if (err) alert('Please try again.');
-                            </SCRIPT>
-                        </BODY>
-                      </HTML>";
+            <SCRIPT>
+                function getParameterByName(name) {
+                    var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+                    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+                }
+                var err = getParameterByName('error');
+                if (err) alert('Please try again.');
+            </SCRIPT>
+        </BODY>
+      </HTML>";
+
+    
+    // These are the URLs to the demo Salesforce page. The data is not secure so don't give away secrets.
+    // const MEETING_PAGE = "https://c.na15.visual.force.com/apex/MeetingPage"; // Requires a login
+    const MEETING_PAGE = "https://electricimp-developer-edition.na15.force.com"; // Doesn't run Comet
+    const MEETING_SERVICE = "https://electricimp-developer-edition.na15.force.com/services/apexrest/MeetingService";
+    const RENAME_CONTACT = "https://electricimp-developer-edition.na15.force.com/services/apexrest/RenameContact";
+    
+}
+
                       
-                      
-// const MEETING_PAGE = "https://c.na15.visual.force.com/apex/MeetingPage"; // Requires a login
-const MEETING_PAGE = "https://electricimp-developer-edition.na15.force.com"; // Doesn't run Comet
-const MEETING_SERVICE = "https://electricimp-developer-edition.na15.force.com/services/apexrest/MeetingService";
-const RENAME_CONTACT = "https://electricimp-developer-edition.na15.force.com/services/apexrest/RenameContact";
 
 // -----------------------------------------------------------------------------
 // The MeetingService API call pairs two agents (using their Salesforce IDs) into a meeting
@@ -130,6 +137,7 @@ function MeetingService(sender, receiver, callback) {
     });
 }
 
+// -----------------------------------------------------------------------------
 // The RenameContact API allows you to attach a contact to this AgentId
 function RenameContact(first, last, email, callback) {
     local url = RENAME_CONTACT;
@@ -162,6 +170,7 @@ function zap(sender, receiver=null) {
     })
 }
 
+// -----------------------------------------------------------------------------
 // Tells the device the meeting pairing succeeded
 function success(sender, receiver) {
     if (sender) server.log(format("You were zapped by %s.", sender));
@@ -169,6 +178,7 @@ function success(sender, receiver) {
     device.send("result", true)
 }
 
+// -----------------------------------------------------------------------------
 // Tells the device the meeting pairing failed
 function fail(sender, receiver) {
     if (sender) server.log(format("%s FAILED to zap you.", sender));
@@ -176,6 +186,7 @@ function fail(sender, receiver) {
     device.send("result", false)
 }
 
+// -----------------------------------------------------------------------------
 // Sends the agentId to the device whenever the device or the agent boots
 function sendid(fire=false) {
     if (fire) {
@@ -188,51 +199,48 @@ function sendid(fire=false) {
 // -----------------------------------------------------------------------------
 // Handles HTTP requests
 function webserver(req, res) {
-    if (req.method == "GET") {
-
-        res.send(200, html);
+    switch (req.method) {
+        case "GET":
+            // This is a request to display the HTML content
+            res.send(200, html);
+            break;
         
-    } else if (req.method == "POST") {
+        case "POST":
+            // This is a posting of form data
+            local form = http.urldecode(req.body);
+            if ("first" in form && "last" in form && "Send" in form && (form.first.len() != 0 || form.last.len() != 0)) {
+                RenameContact(form.first, form.last, form.email, function(result) {
+                    if (result) {
+                        res.header("Location", MEETING_PAGE + "?agentId=" + agentid);
+                        res.send(302, "Success!");
+                    } else {
+                        res.header("Location", http.agenturl() + "?error=true");
+                        res.send(302, "Fail!");
+                    }
+                })
+            } else if ("Skip" in form) {
+                res.header("Location", MEETING_PAGE + "?agentId=" + agentid);
+                res.send(302, "Skipped");
+            } else {
+                res.header("Location", http.agenturl());
+                res.send(302, "Empty");
+            }
+            break;
         
-        local form = http.urldecode(req.body);
-        if ("first" in form && "last" in form && "Send" in form && (form.first.len() != 0 || form.last.len() != 0)) {
-            RenameContact(form.first, form.last, form.email, function(result) {
-                if (result) {
-                    res.header("Location", MEETING_PAGE + "?agentId=" + agentid);
-                    res.send(302, "Success!");
-                } else {
-                    res.header("Location", http.agenturl() + "?error=true");
-                    res.send(302, "Fail!");
-                }
-            })
-        } else if ("Skip" in form) {
-            res.header("Location", MEETING_PAGE + "?agentId=" + agentid);
-            res.send(302, "Skipped");
-        } else {
-            res.header("Location", http.agenturl());
-            res.send(302, "Empty");
-        }
-        
-    } else if (req.method == "PUT") {
-        
-        res.send(200, "Notified");
-        
-        local response = http.urldecode(req.body);
-        if (response.status == "ok") success(null, response.receiver);
-        else fail(null, response.receiver);
-
-    } else {
-        
-        server.log("Unacceptable")
-        res.send(400, "Unacceptable");
+        // Anything else is an error
+        default:
+            server.log("Unacceptable")
+            res.send(400, "Unacceptable");
         
     }
 }
 
 
 // -----------------------------------------------------------------------------
+// Setup the event handlers and the web server
 agentid <- split(http.agenturl(), "/").pop();
 device.on("zap", zap);
 device.on("getid", sendid);
 device.onconnect(sendid);
 http.onrequest(webserver);
+

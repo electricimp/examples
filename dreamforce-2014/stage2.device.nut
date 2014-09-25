@@ -8,22 +8,20 @@ btn2 <- hardware.pin2;
 led <- hardware.pin5;
 
 // -----------------------------------------------------------------------------
-// Handle the stage change for button 1
+// Notify the agent when button 1 changes state
 function btn1_change() {
-    imp.sleep(0.01);
+    imp.sleep(0.01); // Debounce
     agent.send("button1", btn1.read());
-    if (btn1.read()) set_led(true);
 }
 
 
-// Handle the stage change for button 2
+// Notify the agent when button 2 changes state
 function btn2_change() {
-    imp.sleep(0.01);
+    imp.sleep(0.01); // Debounce
     agent.send("button2", btn2.read());
-    if (btn2.read()) set_led(false);
 }
 
-// Notify the agent that the LED has changed
+// Notify the agent when the LED changes state
 function led_change() {
     agent.send("led", led.read());
 }
@@ -38,19 +36,19 @@ function set_led(state) {
 }
 
 // -----------------------------------------------------------------------------
-// Configure button 1 
+// Configure button 1 as an input with an event handler
 btn1.configure(DIGITAL_IN_PULLDOWN, btn1_change);
 
-// Configure button 2 
+// Configure button 2 as an input with an event handler
 btn2.configure(DIGITAL_IN_PULLDOWN, btn2_change);
 
-// Configure the LED pin
-led.configure(DIGITAL_OUT, 1);
+// Configure the LED pin for output
+led.configure(DIGITAL_OUT, 0);
 
-// Configure the LED to respond to agent requests
+// Handle incoming agent requests to change the LED state
 agent.on("led", set_led);
 
-// Initialise the data
+// Initialise the data on the agent
 btn1_change();
 btn2_change();
 led_change();
