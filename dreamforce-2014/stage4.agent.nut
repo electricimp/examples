@@ -1053,7 +1053,7 @@ function constants() {
 
 
                     // Prevent mobiles from dragging the page up or down
-                    // $(document).on('touchmove', function(event){ event.preventDefault(); });
+                    $(document).on('touchmove', function(event){ event.preventDefault(); });
 
                     // Initialise the page by loading all the current data from the agent
                     refresh();
