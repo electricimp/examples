@@ -14,6 +14,19 @@ function btn1_change() {
     imp.sleep(0.01);    
     // Read the button state and if down (value of 1) then
     if (btn1.read()) {  
+        
+        // -----[ Blink using blocking sleep ]-----
+        // Turn the LED on
+        led.write(1);
+        // Wait a half second
+        imp.sleep(0.5);
+        // Turn the LED off again
+        led.write(0); 
+        // Wait a half second
+        imp.sleep(0.5);
+
+
+        // -----[ Blink using non-blocking timer ]-----
         // Turn the LED on
         led.write(1);
         // Wait a half second
