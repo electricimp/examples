@@ -51,7 +51,7 @@ class Song{
         _tempo = tempo;
         
         if (typeof song == "string") {
-            song = split(song, ";, ");
+            song = split(song, ";, \r\n\t");
         }
         _len      = song.len();
         _period   = array(_len);
@@ -120,10 +120,16 @@ function btn2_change() {
                 server.log("Play Happy Birthday");
                 Song(beep, "4D4,8D4,3E4,4D4,4G4,2FS4,@D4,8D4,3E4,4D4,4A4,2G4,@D4,8D4,3D5,4B4,4G4,4FS4,2E4,@C5,8C4,3B4,4G4,4A4,2G4", 0.5).play();
                 
-                // Start at the start again
+                // Restart at the first song next time
                 song_count = 0;
         }
     }
+}
+
+// -----------------------------------------------------------------------------
+function play(song) {
+    server.log("Play song from agent");
+    Song(beep, song).play();
 }
 
 
@@ -139,3 +145,6 @@ ledR.configure(DIGITAL_OUT, 0);
 song_count <- 0;
 btn1.configure(DIGITAL_IN_PULLDOWN, btn1_change);
 btn2.configure(DIGITAL_IN_PULLDOWN, btn2_change);
+
+// -----------------------------------------------------------------------------
+agent.on("play", play);
