@@ -30,82 +30,82 @@ i2c  <- hardware.i2c89;
 // -----------------------------------------------------------------------------
 class TMP1x2 {
     
-	// Register addresses
-	static TEMP_REG 		= 0x00;
-	static CONF_REG 		= 0x01;
+    // Register addresses
+    static TEMP_REG         = 0x00;
+    static CONF_REG         = 0x01;
 
-	// ADC resolution in degrees C
-	static DEG_PER_COUNT 	= 0.0625;
+    // ADC resolution in degrees C
+    static DEG_PER_COUNT    = 0.0625;
 
-	// i2c bus 
-	_i2c	= null;
-	// i2c address
-	_addr 	= null;
+    // i2c bus 
+    _i2c    = null;
+    // i2c address
+    _addr   = null;
 
-	/*
-	 * Class Constructor. Takes two arguments:
-	 * 		i2c: 					Pre-configured I2C Bus
-	 *		addr:  					I2C Slave Address for device. 8-bit address.
-	 */
-	constructor(i2c, addr) {
-		_addr	= addr;
-		_i2c 	= i2c;
-	}
-	
-	// Configures the sensor and requests it start converting
-	function startConversion() {
-		local _conf = _i2c.read(_addr, format("%c",CONF_REG), 2);
-		if (_conf == null) throw "TMP1x2 configuration failed.";
-		
-		local conf = blob(2);
-		conf[0] = _conf[0] | 0x80 | 0x01; // Start conversion and turn on shutdown mode
-		conf[1] = _conf[1] & 0xEF;        // Turn off extended mode
-		_i2c.write(_addr, format("%c%c%c", CONF_REG, conf[0], conf[1]));
-	    
-	}
+    /*
+     * Class Constructor. Takes two arguments:
+     *      i2c:                    Pre-configured I2C Bus
+     *      addr:                   I2C Slave Address for device. 8-bit address.
+     */
+    constructor(i2c, addr) {
+        _addr   = addr;
+        _i2c    = i2c;
+    }
+    
+    // Configures the sensor and requests it start converting
+    function startConversion() {
+        local _conf = _i2c.read(_addr, format("%c",CONF_REG), 2);
+        if (_conf == null) throw "TMP1x2 configuration failed.";
+        
+        local conf = blob(2);
+        conf[0] = _conf[0] | 0x80 | 0x01; // Start conversion and turn on shutdown mode
+        conf[1] = _conf[1] & 0xEF;        // Turn off extended mode
+        _i2c.write(_addr, format("%c%c%c", CONF_REG, conf[0], conf[1]));
+        
+    }
 
-	// Read the temperature from the TMP1x2 Sensor and returns it in celsius
-	function readTempC() {
-	    // Start the conversion
-		startConversion();
-		
-		// Check if the conversion is completed
-		local timeout = 30; // ms
-		local start = hardware.millis();
-		while(true) {
-    		local _conf = _i2c.read(_addr,format("%c", CONF_REG), 2);
-			if (_conf[1] & 0x80) {
-			    // The conversion is finished
-			    break;
-			} else if ((hardware.millis() - start) > timeout) {
-				throw "TMP1x2 timed out waiting for conversion";
-			}
-		} 
-		
-		// Now that the conversion is complete, check the reading
-		local result = _i2c.read(_addr, format("%c", TEMP_REG), 2);
-		if (result == null) throw "TMP1x2 failed to return a temperature reading";
+    // Read the temperature from the TMP1x2 Sensor and returns it in celsius
+    function readTempC() {
+        // Start the conversion
+        startConversion();
+        
+        // Check if the conversion is completed
+        local timeout = 30; // ms
+        local start = hardware.millis();
+        while(true) {
+            local _conf = _i2c.read(_addr,format("%c", CONF_REG), 2);
+            if (_conf[1] & 0x80) {
+                // The conversion is finished
+                break;
+            } else if ((hardware.millis() - start) > timeout) {
+                throw "TMP1x2 timed out waiting for conversion";
+            }
+        } 
+        
+        // Now that the conversion is complete, check the reading
+        local result = _i2c.read(_addr, format("%c", TEMP_REG), 2);
+        if (result == null) throw "TMP1x2 failed to return a temperature reading";
 
         // And convert to a floating point number
-		local mask = 0x0FFF;
-		local sign_mask = 0x0800;
-		local offset = 4;
-		local temp = (result[0] << 8) + result[1];
-		temp = (temp >> offset) & mask;
-		if (temp & sign_mask) {
-		    // Take the two's compliment for negative numbers
-    		temp = ~(temp & mask) + 1;
-    		temp = -1.0 * (temp & mask);
-		}
+        local mask = 0x0FFF;
+        local sign_mask = 0x0800;
+        local offset = 4;
+        local temp = (result[0] << 8) + result[1];
+        temp = (temp >> offset) & mask;
+        if (temp & sign_mask) {
+            // Take the two's compliment for negative numbers
+            temp = ~(temp & mask) + 1;
+            temp = -1.0 * (temp & mask);
+        }
 
-		return temp * DEG_PER_COUNT;
-	}
+        return temp * DEG_PER_COUNT;
+    }
 
 
-	// Read the temperature from the TMP1x2 Sensor and converts to fareinheit
-	function readTempF() {
-		return (readTempC() * 9.0 / 5.0 + 32.0);
-	}
+    // Read the temperature from the TMP1x2 Sensor and converts to fareinheit
+    function readTempF() {
+        return (readTempC() * 9.0 / 5.0 + 32.0);
+    }
 
 
 }
@@ -254,7 +254,7 @@ function send_readings() {
         // Fake it for now by logging the data
         local log = "";
         foreach (reading in nv.readings) {
-            log += format("%0.02f, ", reading);
+            log += format("%0.02f°C, ", reading.temp);
         }
         server.log(nv.readings.len() + " reading(s): " + log.slice(0, -2));
     }
@@ -294,7 +294,7 @@ FAKEIT <- true;         // Instead of sending readings to the agent, just log th
 // Take a reading as we always want to do this
 if (!("nv" in getroottable())) nv <- { "readings": [] };
 temp <- TMP1x2(i2c, 0x90);
-nv.readings.push(temp.readTempC());
+nv.readings.push({"temp": temp.readTempC(), "time": time()});
 
 // -----------------------------------------------------------------------------
 if (hardware.wakereason() == WAKEREASON_TIMER && nv.readings.len() < MAX_READINGS) {
