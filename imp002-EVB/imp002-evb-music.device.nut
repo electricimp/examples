@@ -9,7 +9,7 @@
 8 - 
 9 - 
 A - 
-B - Button 2 [Wire]
+B - 
 C - Beeper [Wire]
 D - Button 1
 E - 
@@ -96,14 +96,9 @@ class Song{
 
 // -----------------------------------------------------------------------------
 function btn1_change() {
-    ledR.write(btn1.read())
-}
-
-// -----------------------------------------------------------------------------
-function btn2_change() {
     imp.sleep(0.02);
-    ledR.write(btn2.read())
-    if (btn2.read()) {
+    ledR.write(btn1.read())
+    if (btn1.read()) {
         switch (song_count++) {
             case 0:
                 // Mario:          
@@ -144,7 +139,6 @@ ledR.configure(DIGITAL_OUT, 0);
 // -----------------------------------------------------------------------------
 song_count <- 0;
 btn1.configure(DIGITAL_IN_PULLDOWN, btn1_change);
-btn2.configure(DIGITAL_IN_PULLDOWN, btn2_change);
 
 // -----------------------------------------------------------------------------
 agent.on("play", play);
