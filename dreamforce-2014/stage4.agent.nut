@@ -257,7 +257,7 @@ class Rocky
     // .........................................................................
     function _handler_match(req) {
         
-        local signature = req.path.tolower();
+        local signature = http.urldecode("val=" + req.path).val;
         local verb = req.method.toupper();
         
         if ((signature in _handlers) && (verb in _handlers[signature])) {
@@ -1142,8 +1142,8 @@ device.ondisconnect(function() {
 // --------------[ Learn ]--------------
 
 // PUT /learn/<key> - learns the code for one key
-webserver.on("PUT", "/learn/([^/]+)", function(context) {
-    learning = http.urldecode("a=" + context.matches[1]).a;
+webserver.on("PUT", "/learn/(.+)", function(context) {
+    learning = context.matches[1];
     device.send("learn", learning);
     context.set_timeout(60, function(context) {
         context.send({error="Timeout waiting for new code"})
@@ -1229,8 +1229,8 @@ webserver.on("GET", "/codes", function(context) {
 });
 
 // GET /code/<key> - returns the code for one key
-webserver.on("GET", "/code/([^/]+)", function(context) {
-    local code = http.urldecode("a=" + context.matches[1]).a;
+webserver.on("GET", "/code/(.+)", function(context) {
+    local code = context.matches[1];
     if (code in codes) {
         context.set_header("Content-type", "application/json");
         context.send(http.jsonencode(codes[code]));
@@ -1240,8 +1240,8 @@ webserver.on("GET", "/code/([^/]+)", function(context) {
 });
 
 // POST /code/<key> - transmits the given key code
-webserver.on("POST", "/code/([^/]+)", function(context) {
-    local code = http.urldecode("a=" + context.matches[1]).a;
+webserver.on("POST", "/code/(.+)", function(context) {
+    local code = context.matches[1];
     if (code in codes) {
         device.send("transmit", code)
         context.send({result="ok"});
@@ -1285,9 +1285,9 @@ webserver.on("DELETE", "/codes", function(context) {
 // --------------[ Buttons ]--------------
 
 // PUT /button/<button>/<key> - configures the given button to the given key code
-webserver.on("PUT", "/button/([12])/([^/]+)", function(context) {
+webserver.on("PUT", "/button/([12])/(.+)", function(context) {
     local button = context.matches[1].tostring();
-    local code = http.urldecode("a=" + context.matches[2]).a;
+    local code = context.matches[2];
     if (code in codes) {
         buttons[button] <- code;
         persist.write("buttons", buttons);
