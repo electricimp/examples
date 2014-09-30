@@ -671,7 +671,7 @@ function constants() {
                             var newgroup = $('<div />', { 'class': 'btn-group btn-group-justified spaced-out button-pair' });
                             for (var j = i; j < i+buttons_per_row; ++j) {
                                 var label = keys[j]; if (!label) continue;
-                                var key = label.replace(/[^a-zA-Z0-9]/, '_').toLowerCase();
+                                var key = label; // label.replace(/[^a-zA-Z0-9]/, '_').toLowerCase();
                                 var newbutton = $('<a/>', { 'class': 'key btn btn-default', 'href': '#', 'id': key, 'label': label, 'click': keyPress });
                                 newbutton.html(label);
                                 newgroup.append(newbutton)
@@ -904,8 +904,8 @@ function constants() {
                                 if (newlabel && newlabel.length > 0) {
                                     resetState();
 
-                                    var fromkey = label.replace(/[^a-zA-Z0-9]/, '_').toLowerCase();
-                                    var tokey = newlabel.replace(/[^a-zA-Z0-9]/, '_').toLowerCase();
+                                    var fromkey = label; // .replace(/[^a-zA-Z0-9]/, '_').toLowerCase();
+                                    var tokey = newlabel; // .replace(/[^a-zA-Z0-9]/, '_').toLowerCase();
                                     
                                     $.ajax({
                                         url: 'key', 
@@ -1142,8 +1142,8 @@ device.ondisconnect(function() {
 // --------------[ Learn ]--------------
 
 // PUT /learn/<key> - learns the code for one key
-webserver.on("PUT", "/learn/([a-zA-Z0-9_]+)", function(context) {
-    learning = context.matches[1];
+webserver.on("PUT", "/learn/([^/]+)", function(context) {
+    learning = http.urldecode("a=" + context.matches[1]).a;
     device.send("learn", learning);
     context.set_timeout(60, function(context) {
         context.send({error="Timeout waiting for new code"})
@@ -1229,8 +1229,8 @@ webserver.on("GET", "/codes", function(context) {
 });
 
 // GET /code/<key> - returns the code for one key
-webserver.on("GET", "/code/([a-zA-Z0-9_]+)", function(context) {
-    local code = context.matches[1];
+webserver.on("GET", "/code/([^/]+)", function(context) {
+    local code = http.urldecode("a=" + context.matches[1]).a;
     if (code in codes) {
         context.set_header("Content-type", "application/json");
         context.send(http.jsonencode(codes[code]));
@@ -1240,8 +1240,8 @@ webserver.on("GET", "/code/([a-zA-Z0-9_]+)", function(context) {
 });
 
 // POST /code/<key> - transmits the given key code
-webserver.on("POST", "/code/([a-zA-Z0-9_]+)", function(context) {
-    local code = context.matches[1];
+webserver.on("POST", "/code/([^/]+)", function(context) {
+    local code = http.urldecode("a=" + context.matches[1]).a;
     if (code in codes) {
         device.send("transmit", code)
         context.send({result="ok"});
@@ -1285,9 +1285,9 @@ webserver.on("DELETE", "/codes", function(context) {
 // --------------[ Buttons ]--------------
 
 // PUT /button/<button>/<key> - configures the given button to the given key code
-webserver.on("PUT", "/button/([12])/([a-zA-Z0-9_]+)", function(context) {
+webserver.on("PUT", "/button/([12])/([^/]+)", function(context) {
     local button = context.matches[1].tostring();
-    local code = context.matches[2];
+    local code = http.urldecode("a=" + context.matches[2]).a;
     if (code in codes) {
         buttons[button] <- code;
         persist.write("buttons", buttons);
