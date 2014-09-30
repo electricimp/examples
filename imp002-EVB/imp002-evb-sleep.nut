@@ -268,11 +268,9 @@ function sleep() {
     // Shut down everything and go back to sleep
     ledR.configure(DIGITAL_OUT, 0);
     if (server.isconnected()) {
-        server.expectonlinein(MAX_READINGS * READING_INTERVAL);
         imp.onidle(function() {
-            imp.deepsleepfor(READING_INTERVAL);
+            server.sleepfor(READING_INTERVAL);
         })
-        
     } else {
         imp.deepsleepfor(READING_INTERVAL);
     }
