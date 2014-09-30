@@ -233,7 +233,7 @@ function ir_newcode(newcode) {
         agent.send("learn", newcode)
     
         // Blink the LED briefly and leave it on at the end
-        blink(0.5, 10, 0);
+        blink(0.5, 10, 1);
     } else {
         server.log(format("Skipped (%d bits): %s", len/2, newcodestr));
     }
@@ -266,7 +266,7 @@ function learn(key) {
     if (learning_timer) imp.cancelwakeup(learning_timer);
     if (key && !learning) {
         ir.enable_rx();
-        blink(0.4, 2, 0);
+        blink(0.4, 2, 1);
     }
     
     if (key) {
@@ -274,12 +274,12 @@ function learn(key) {
         learning_timer = imp.wakeup(60, function() {
             learning = false;
             ir.disable_rx();
-            blink(0.5, 3, 1);
+            blink(0.5, 3, 0);
         })
     } else if (learning) {
         learning = false;
         ir.disable_rx();
-        blink(0.5, 3, 1);
+        blink(0.5, 3, 0);
     }
 }
 
