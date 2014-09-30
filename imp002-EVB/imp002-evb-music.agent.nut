@@ -6,7 +6,14 @@ const html = @"
   <head>
     <meta charset='utf-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <meta name='viewport' content='initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0'>
+    <meta name='apple-mobile-web-app-capable' content='yes'>
+    <meta name='apple-touch-fullscreen' content='yes'>
+    <meta name='apple-mobile-web-app-status-bar-style' content='black'>
+
+    <link rel='icon' href='https://www.coffeecup.com/images/software/icons/web-jukebox.png' type='image/png' />
+    <link rel='apple-touch-icon' href='https://www.coffeecup.com/images/software/icons/web-jukebox.png' type='image/png' />
+
     <title>EVB jukebox</title>
 
     <!-- Bootstrap -->
@@ -33,9 +40,10 @@ const html = @"
         
                     <div class='row'>
                         <div class='col-md-9 btn-group' id='buttons'>
-                            <button type='button' class='btn btn-primary' id='mario'>Mario</button>
-                            <button type='button' class='btn btn-primary' id='march'>Imperial March</button>
-                            <button type='button' class='btn btn-primary' id='birthday'>Happy Birthday</button>
+                            <a type='button' class='btn btn-primary' id='mario'>Mario</a>
+                            <a type='button' class='btn btn-primary' id='march'>Imperial March</a>
+                            <a type='button' class='btn btn-primary' id='birthday'>Happy Birthday</a>
+                            <a type='button' class='btn btn-primary' id='downunder'>Down Under</a>
                         </div>
                         <div class='col-md-3 btn-group' style='width:150px'>
                             <button type='button' class='btn btn-success' id='clear'>Clear</button>
@@ -53,6 +61,7 @@ const html = @"
             $('#mario').click(function()    { $('#song').val('8E5,4E5,8E5,8,8C5,8E5,8,8G5,8,4,8G4') })
             $('#march').click(function()    { $('#song').val('3A4,3A4,3A4,5F4,7C5,3A4,5F4,7C5,2A4,7,3E5,3E5,3E5,5F5,7C5,3GS4,5F4,7C5,3A4,7') })
             $('#birthday').click(function() { $('#song').val('4D4,8D4,3E4,4D4,4G4,2FS4,@D4,8D4,3E4,4D4,4A4,2G4,@D4,8D4,3D5,4B4,4G4,4FS4,2E4,@C5,8C4,3B4,4G4,4A4,2G4') })
+            $('#downunder').click(function(){ $('#song').val('@FS4,@FS4,8FS4,@FS4,@FS4,8A4,8A4,8G4,3FS4,4,@FS4,@A4,8A4,6A4,8E4,8E4,8D4,4D4') })
             $('#clear').click(function()    { $('#song').val('') })
             $('#send').click(function()     {
                 var url = window.location.pathname;
