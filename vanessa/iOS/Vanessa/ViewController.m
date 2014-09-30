@@ -9,6 +9,14 @@
 #import "ViewController.h"
 #import "UIImage+Resize.h"
 
+#define AGENT_ID @"7s_PSI9NXZ7c"
+//#define HEIGHT 240
+//#define WIDTH  400
+//#define HEIGHT 96
+//#define WIDTH  96
+#define HEIGHT 176
+#define WIDTH  264
+
 @interface ViewController ()
 @property (weak, nonatomic) IBOutlet UIButton *Default;
 @property (weak, nonatomic) IBOutlet UIButton *Load;
@@ -68,8 +76,8 @@
 
 - (IBAction)DitherButtonClick:(id)sender
 {
-    NSUInteger width = 264;
-    NSUInteger height = 176;
+    NSUInteger width = WIDTH;
+    NSUInteger height = HEIGHT;
     NSUInteger area = height * width;
     
     // Resize the image
@@ -146,7 +154,7 @@
 - (IBAction)SendButtonClick:(id)sender
 {
 
-    CGSize newSize = CGSizeMake(264, 176);
+    CGSize newSize = CGSizeMake(WIDTH, HEIGHT);
     UIGraphicsBeginImageContextWithOptions(newSize, NO, 1.0);
     [self.imageView.image drawInRect:CGRectMake(0, 0, newSize.width, newSize.height)];
     UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
@@ -195,7 +203,7 @@
     // Send the bitmap file to the agent
     NSLog(@"%lu, %lu, %d", (unsigned long)[data length], sizeof(wif), wif_i);
     NSData *postData = [NSData dataWithBytes:(const void *) wif length:sizeof(wif)];
-    NSString *agenturl = @"https://agent.electricimp.com/<youragent>/WIFimage";
+    NSString *agenturl = [NSString stringWithFormat:@"https://agent.electricimp.com/%@/WIFimage", AGENT_ID];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:agenturl]];
     [request setHTTPMethod:@"POST"];
     [request setHTTPBody:postData];
