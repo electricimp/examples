@@ -16,8 +16,9 @@ class Rocky
     // .........................................................................
     function on(verb, signature, callback) {
         // Register this signature and verb against the callback
+        // Note that signatures ARE caps sensitive and UTF8 compliant. The URLs are decoded before matching which means
+        // that if the URL has an encoded slash in it, it may fail to match a regular expression.
         verb = verb.toupper();
-        signature = signature.tolower();
         if (!(signature in _handlers)) _handlers[signature] <- {};
         _handlers[signature][verb] <- callback;
         return this;
@@ -118,7 +119,7 @@ class Rocky
             local handler = _handler_match(req);
             if (!handler && _handlers.notfound) {
                 // No, be we have a not found handler
-                handler = _extract_parts(_handlers.notfound, req.path.tolower())
+                handler = _extract_parts(_handlers.notfound, req.path)
             }
             
             // If we have a handler, then execute it
@@ -671,7 +672,7 @@ function constants() {
                             var newgroup = $('<div />', { 'class': 'btn-group btn-group-justified spaced-out button-pair' });
                             for (var j = i; j < i+buttons_per_row; ++j) {
                                 var label = keys[j]; if (!label) continue;
-                                var key = label; // label.replace(/[^a-zA-Z0-9]/, '_').toLowerCase();
+                                var key = label; 
                                 var newbutton = $('<a/>', { 'class': 'key btn btn-default', 'href': '#', 'id': key, 'label': label, 'click': keyPress });
                                 newbutton.html(label);
                                 newgroup.append(newbutton)
@@ -904,8 +905,8 @@ function constants() {
                                 if (newlabel && newlabel.length > 0) {
                                     resetState();
 
-                                    var fromkey = label; // .replace(/[^a-zA-Z0-9]/, '_').toLowerCase();
-                                    var tokey = newlabel; // .replace(/[^a-zA-Z0-9]/, '_').toLowerCase();
+                                    var fromkey = label;
+                                    var tokey = newlabel;
                                     
                                     $.ajax({
                                         url: 'key', 
