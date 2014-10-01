@@ -134,7 +134,7 @@ class AnimatedNeoPixels extends WS2812 {
         
         // Clear and draw two pixels, one going in each direction
         clearFrame();
-        writePixel(_pixels-_pixel-1, [0x05,0x00,0x00]);
+        writePixel(_pixels-_pixel-1, [0x00,0x05,0x00]);
         writePixel(_pixel,           [0x30,0x00,0x00]);
         writeFrame();
         
