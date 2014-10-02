@@ -247,19 +247,10 @@ class Connection {
 // -----------------------------------------------------------------------------
 function send_readings() {
     
-    if (!FAKEIT) {
-        // Send the data to the agent
-        agent.send("readings", nv.readings);
-    } else {
-        // Fake it for now by logging the data
-        local log = "";
-        foreach (reading in nv.readings) {
-            log += format("%0.02f°C, ", reading.temp);
-        }
-        server.log(nv.readings.len() + " reading(s): " + log.slice(0, -2));
+    // Send the data to the agent
+    if (agent.send("readings", nv.readings) == 0) {
+        nv.readings = [];
     }
-
-    nv.readings = [];
 }
 
 
@@ -286,7 +277,6 @@ i2c.configure(CLOCK_SPEED_400_KHZ);
 
 READING_INTERVAL <- 60; // Read a new sample every [READING_INTERVAL] seconds.
 MAX_READINGS <- 60;     // When there are [MAX_READINGS] come online and dump the results.
-FAKEIT <- true;         // Instead of sending readings to the agent, just log them.
 
 // -----------------------------------------------------------------------------
 // Take a reading as we always want to do this
@@ -331,4 +321,5 @@ if (hardware.wakereason() == WAKEREASON_TIMER && nv.readings.len() < MAX_READING
         sleep();
     });
 }
+
 
