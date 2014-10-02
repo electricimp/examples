@@ -11,7 +11,6 @@ const html = @"
     <title>TempBug</title>
     <link href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.min.css' rel='stylesheet'>
     <link href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap-theme.css' rel='stylesheet'>
-    <link href='https://cdn.jsdelivr.net/nprogress/0.1.6/css/nprogress.css' rel='stylesheet'>
     <style>
         body {
             margin: 0px 10px;
@@ -37,19 +36,19 @@ const html = @"
     </style>
   </head>
   <body>
-	<div class='container-fluid'>
-		<div class='row'>
-			<div class='col-md-6 col-md-offset-3'>
-			    <h4></h4>
-			</div>
-			
-			<div class='panel panel-primary col-md-6 col-md-offset-3'>
-				<div class='panel-heading'>Temperatures</div>
-				<div id='tempchart' style='width: 100%; height: 380px; margin-bottom: 5px;'></div>
-			</div>
-				
-		</div>
-	</div>
+    <div class='container-fluid'>
+        <div class='row'>
+            <div class='col-md-6 col-md-offset-3'>
+                <h4></h4>
+            </div>
+            
+            <div class='panel panel-primary col-md-6 col-md-offset-3'>
+                <div class='panel-heading'>Temperatures</div>
+                <div id='tempchart' style='width: 100%; height: 380px; margin-bottom: 5px;'></div>
+            </div>
+                
+        </div>
+    </div>
                     
     <div id='alerts'>
     </div>
@@ -68,10 +67,10 @@ const html = @"
                 // .........................................................
                 // Prepare the options for this chart
                 var options = {
-            	    chartArea: {top: 10, width: '90%', height: '70%'},
-            		allValuesSuffix: ' °C',
-            		scaleFormat: '0.0',
-            		numberFormats: '0.0',
+                    chartArea: {top: 10, width: '90%', height: '70%'},
+                    allValuesSuffix: ' °C',
+                    scaleFormat: '0.0',
+                    numberFormats: '0.0',
                     animation: {
                         duration: 1000,
                         easing: 'inAndOut',
@@ -81,7 +80,7 @@ const html = @"
                 // Every time there is new data, redraw the chart
                 var chart = new google.visualization.AnnotationChart($('#tempchart')[0]);
 
-    			// Prepare a data store for the temperature data
+                // Prepare a data store for the temperature data
                 var data = new google.visualization.DataTable();
                 data.addColumn('datetime', 'When');
                 data.addColumn('number', 'Temperature');
@@ -120,6 +119,8 @@ const html = @"
 </html>";
 
 
+// -----------------------------------------------------------------------------
+// Serve up web requests for / (redirect to /view), /view (html) and /data (json)
 http.onrequest(function(req, res) {
     if (req.path == "/") {
         res.header("Location", http.agenturl() + "/view")
@@ -135,10 +136,14 @@ http.onrequest(function(req, res) {
 })
 
 
+// -----------------------------------------------------------------------------
 // Load the old readings
 store <- server.load();
 if (!("readings" in store)) store.readings <- [];
 
+
+// -----------------------------------------------------------------------------
+// Add new readings
 device.on("readings", function(readings) {
 
     // Add the readings into the store
