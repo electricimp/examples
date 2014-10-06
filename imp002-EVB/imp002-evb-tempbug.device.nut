@@ -1,5 +1,15 @@
 /*  
 
+Notes on limitations of this design:
+- If the wifi is running but the agent is offline then we will send the readings 
+  and drop the data. The better way to do this is to send the data and wait for
+  instructions from the agent to delete the data, and only deleting data that is
+  confirmed to be received at the agent.
+- Non-volatile (nv) RAM on the imp will not survive through power outages and is 
+  limited to a total of 4kb of serialised data. A "real" implementation of the 
+  Temp Bug would be better served by external non-volatile flash storage.
+
+
 --------[ Pin mux ]--------
 1 - Wake (button1)
 2 - LED (Red)
@@ -256,6 +266,10 @@ function send_readings() {
 
 // -----------------------------------------------------------------------------
 function sleep() {
+
+    // Cap the number of readins by deleting the oldest
+    while (nv.readings.len() > MAX_SAMPLES) nv.readings.remove(0);
+
     // Shut down everything and go back to sleep
     ledR.configure(DIGITAL_OUT, 0);
     if (server.isconnected()) {
@@ -275,22 +289,28 @@ ledR.configure(PWM_OUT, 0.20, 0.01); // Turn on to indicate activity
 wake.configure(DIGITAL_IN_WAKEUP);
 i2c.configure(CLOCK_SPEED_400_KHZ);
 
-READING_INTERVAL <- 60; // Read a new sample every [READING_INTERVAL] seconds.
-MAX_READINGS <- 60;     // When there are [MAX_READINGS] come online and dump the results.
+READING_INTERVAL <- 6; // Read a new sample every [READING_INTERVAL] seconds.
+READING_SAMPLES <- 10; // When there are [READING_SAMPLES] come online and dump the results.
+MAX_SAMPLES    <- 140; // This is roughly how many readings we can store in 4k of nvram.
 
 // -----------------------------------------------------------------------------
-// Take a reading as we always want to do this
-if (!("nv" in getroottable())) nv <- { "readings": [] };
+// Setup the basic memory and temperature sensor
+if (!("nv" in getroottable())) nv <- { "readings": [], next_connect = time() };
 temp <- TMP1x2(i2c, 0x90);
-nv.readings.push({"temp": temp.readTempC(), "time": time()});
+
+// Take a reading as we always want to do this
+nv.readings.push({"t": temp.readTempC(), "s": time()});
 
 // -----------------------------------------------------------------------------
-if (hardware.wakereason() == WAKEREASON_TIMER && nv.readings.len() < MAX_READINGS) {
+if (hardware.wakereason() == WAKEREASON_TIMER && (time() < nv.next_connect || nv.readings.len() < READING_SAMPLES)) {
     
     // After a timer, go immediately back to sleep
     sleep();
 
 } else {
+
+    // Make sure we don't come online again for another cycle
+    nv.next_connect = time() + (READING_INTERVAL * READING_SAMPLES);
 
     // Now forward the results to the server
     local cm = Connection();
@@ -302,8 +322,9 @@ if (hardware.wakereason() == WAKEREASON_TIMER && nv.readings.len() < MAX_READING
         if (hardware.wakereason() == WAKEREASON_PIN || 
             hardware.wakereason() == WAKEREASON_POWER_ON || 
             hardware.wakereason() == WAKEREASON_NEW_SQUIRREL) {
+                
             // The button was pressed to wake up the imp. Stay online for a while.
-            imp.wakeup(60, sleep);
+            imp.wakeup(30, sleep);
             
             // Capture the button while we are awake and send the imp to sleep if pressed
             btn1.configure(DIGITAL_IN, function() {

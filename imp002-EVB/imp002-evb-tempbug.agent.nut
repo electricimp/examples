@@ -147,16 +147,6 @@ http.onrequest(function(req, res) {
 
 
 // -----------------------------------------------------------------------------
-// Load the old readings
-store <- server.load();
-if ("readings" in store && store.readings.len() > 0) {
-    storereadings <- http.base64decode(store.readings);
-} else {
-    storereadings <- blob();
-}
-
-
-// -----------------------------------------------------------------------------
 // Add new readings
 device.on("readings", function(readings) {
 
@@ -167,9 +157,9 @@ device.on("readings", function(readings) {
     local log = "";
     storereadings.seek(0, 'e')
     foreach (reading in readings) {
-        log += format("%0.02f°C, ", reading.temp);
-        storereadings.writen(reading.time, 'i');
-        storereadings.writen((reading.temp * 10).tointeger(), 's');
+        log += format("%0.02f°C, ", reading.t);
+        storereadings.writen(reading.s, 'i');
+        storereadings.writen((reading.t * 10).tointeger(), 's');
     }
     
     // Trim to the last 8000 readings
@@ -187,3 +177,17 @@ device.on("readings", function(readings) {
 
 })
 
+
+// -----------------------------------------------------------------------------
+// Load the old readings
+// server.save({});
+store <- server.load();
+if ("readings" in store && store.readings.len() > 0) {
+    storereadings <- http.base64decode(store.readings);
+} else {
+    store.readings <- [];
+    storereadings <- blob();
+}
+
+
+server.log("Started");
