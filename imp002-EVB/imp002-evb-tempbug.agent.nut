@@ -102,7 +102,7 @@ const html = @"
                     $.get('data', function(newdata) {
                         for (var i in newdata) {
                             data.addRow([
-                                new Date(newdata[i].time*1000),
+                                new Date(newdata[i].time * 1000),
                                 newdata[i].temp
                                 ]);
                         }
@@ -129,7 +129,17 @@ http.onrequest(function(req, res) {
         res.send(200, html);
     } else if (req.path == "/data") {
         res.header("Content-Type", "application/json")
-        res.send(200, http.jsonencode(store.readings));
+        
+        // Turn the readings blob into an array of tables
+        storereadings.seek(0);
+        local readings = [];
+        while (!storereadings.eos()) {
+            local time = storereadings.readn('i');
+            local temp = storereadings.readn('s') / 10.0;
+            readings.push({time=time, temp=temp});
+        }
+        
+        res.send(200, http.jsonencode(readings));
     } else {
         res.send(404, "Noone here");
     }
@@ -139,28 +149,41 @@ http.onrequest(function(req, res) {
 // -----------------------------------------------------------------------------
 // Load the old readings
 store <- server.load();
-if (!("readings" in store)) store.readings <- [];
+if ("readings" in store && store.readings.len() > 0) {
+    storereadings <- http.base64decode(store.readings);
+} else {
+    storereadings <- blob();
+}
 
 
 // -----------------------------------------------------------------------------
 // Add new readings
 device.on("readings", function(readings) {
 
+    // server.save() doesn't store array's or tables as efficiently as blobs but it doesn't store blobs.
+    // So we are storing our data as a base64 encoded blob.
+    
     // Add the readings into the store
     local log = "";
+    storereadings.seek(0, 'e')
     foreach (reading in readings) {
         log += format("%0.02f°C, ", reading.temp);
-        store.readings.push(reading);
-    }
-    server.log(format("%d new reading(s) out of %d: %s", readings.len(), store.readings.len(), log.slice(0, -2)));
-    
-    // Clean out old readings once we hit the maximum
-    while (store.readings.len() > 10000) {
-        store.readings.remove(0);
+        storereadings.writen(reading.time, 'i');
+        storereadings.writen((reading.temp * 10).tointeger(), 's');
     }
     
-    // Save the store to "disk"
+    // Trim to the last 8000 readings
+    const MAX_READINGS_SIZE = 48000; // 8000 entries * 6 bytes per entry * 4/3 base64 encoding < 64kb
+    if (storereadings.len() > MAX_READINGS_SIZE) {
+        storereadings.seek(-MAX_READINGS_SIZE, 'e')
+        storereadings = storereadings.readblob(MAX_READINGS_SIZE);
+    }
+    
+    // Convert the blob into an encoded string for server.save() to persist
+    store.readings = http.base64encode(storereadings);
     server.save(store);
     
+    server.log(format("%d new reading(s) out of %d total: %s", readings.len(), store.readings.len()/8, log.slice(0, -2)));
+
 })
 
