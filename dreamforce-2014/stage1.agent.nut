@@ -1,0 +1,3 @@
+
+server.log("Hello world");
+
