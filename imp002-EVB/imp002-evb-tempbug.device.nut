@@ -289,9 +289,9 @@ ledR.configure(PWM_OUT, 0.20, 0.01); // Turn on to indicate activity
 wake.configure(DIGITAL_IN_WAKEUP);
 i2c.configure(CLOCK_SPEED_400_KHZ);
 
-READING_INTERVAL <- 6; // Read a new sample every [READING_INTERVAL] seconds.
-READING_SAMPLES <- 10; // When there are [READING_SAMPLES] come online and dump the results.
-MAX_SAMPLES    <- 140; // This is roughly how many readings we can store in 4k of nvram.
+READING_INTERVAL <- 60; // Read a new sample every [READING_INTERVAL] seconds.
+READING_SAMPLES  <- 60; // When there are [READING_SAMPLES] come online and dump the results.
+MAX_SAMPLES     <- 140; // This is roughly how many readings we can store in 4k of nvram.
 
 // -----------------------------------------------------------------------------
 // Setup the basic memory and temperature sensor
