@@ -1,4 +1,3 @@
-
 // -----------------------------------------------------------------------------
 // PIN mux
 irtrx <- hardware.uart1289;
@@ -36,6 +35,8 @@ function set_led(state) {
 }
 
 // -----------------------------------------------------------------------------
+imp.enableblinkup(true);
+
 // Configure button 1 as an input with an event handler
 btn1.configure(DIGITAL_IN_PULLDOWN, btn1_change);
 

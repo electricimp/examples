@@ -1,81 +1,6 @@
 
 
 // -----------------------------------------------------------------------------
-class Poller 
-{
-    
-    _pollers = {};
-    _interrupt = null;
-    _callback = null;
-    _timer = null;
-    _name = null;
-    
-    
-    // .........................................................................
-    constructor(name = "default") {
-        _name = name;
-        if (!(_name in _pollers)) _pollers[_name] <- [];
-    }
-    
-    
-    // .........................................................................
-    // Internal method for repeatedly calling until an interrupt or timeout
-    function _poll() {
-
-        if (_interrupt == true || _timer == null) {
-            _shutdown();
-            _callback();
-        } else {
-            imp.wakeup(0.1, _poll.bindenv(this));
-        }
-    }
-    
-    // .........................................................................
-    // Called after LIMIT seconds with no interrupt
-    function _timeout() {
-        // The timeout has fired, so tell the poller to stop
-        _timer = null;
-    }
-    
-    
-    // .........................................................................
-    // Deregister this poller and stop its timeout timer
-    function _shutdown() {
-        if (_timer) imp.cancelwakeup(_timer);
-        for (local i = 0; i < _pollers[_name].len(); i++) {
-            if (_pollers[_name][i] == this) {
-                _pollers[_name].remove(i);
-                return;
-            }
-        }
-    }
-    
-    // .........................................................................
-    // Request the poller start and provide a callback function too call 
-    // when it is finished
-    function poll(callback, limit=60) {
-
-        // Setup the poll, register the poller.
-        _callback = callback;
-        _timer = imp.wakeup(limit, _timeout.bindenv(this));
-        _pollers[_name].push(this);
-        
-        // Start
-        _poll();
-    }
-    
-    // .........................................................................
-    // Updates ALL pollers to indicate an interrupt event has occured
-    function interrupt() {
-        for (local i = 0; i < _pollers[_name].len(); i++) {
-            _pollers[_name][i]._interrupt = true;
-        }
-    }
-}
-
-
-
-// -----------------------------------------------------------------------------
 function constants() {
     const html = @"
     <!DOCTYPE html>
@@ -128,8 +53,7 @@ function constants() {
                     function poll() {
                         
                         // Poll the agent by posting the current status and waiting for a change
-                        var status = JSON.stringify({ button1: button1, button2: button2, led: led });
-                        $.post('poll', status)
+                        $.get('status')
                         
                             // Handle a success response
                             .done(function(data) {
@@ -201,14 +125,6 @@ function constants() {
 
 
 // -----------------------------------------------------------------------------
-// Responds to the HTTP caller with the button status
-function status(req, res) {
-    res.header("Content-Type", "application/json")
-    res.send(200, http.jsonencode({button1=button1, button2=button2, led=led}))
-}
-    
-    
-// -----------------------------------------------------------------------------
 // Register an HTTP request handler
 http.onrequest(function(req, res) {
     
@@ -226,34 +142,12 @@ http.onrequest(function(req, res) {
             res.send(200, html)
             break;
         
-        // On /status immediately respond with the status (don't poll)
+        // On /status immediately respond with the status
         case "/status":
-            status(req, res);
+            res.header("Content-Type", "application/json")
+            res.send(200, http.jsonencode({button1=button1, button2=button2, led=led}))
             break;
         
-        // On /poll start a poller and wait for a change of status
-        case "/poll":
-            try {
-                // Parse the body. 
-                local remote_status = http.jsondecode(req.body);
-                if (remote_status.button1 == button1 && remote_status.button2 == button2 && remote_status.led == led) {
-                    // Only poll if the state is unchanged compared to what was provided
-                    Poller().poll(function() {
-                        status(req, res);
-                    });
-                } else {
-                    // The status has changed already, so respond immediately
-                    status(req, res);
-                }
-            } catch (e) {
-                // Exception caught, update the status just with a delay
-                server.error(e);
-                imp.wakeup(5, function() {
-                    status(req, res);
-                }.bindenv(this));
-            }
-            break;
-            
         // On /led change the value of the LED (turn it on or off)
         case "/led":
             device.send("led", req.body == "0")
@@ -268,24 +162,20 @@ http.onrequest(function(req, res) {
 
 
 // -----------------------------------------------------------------------------
-// Register button event handlers. If an LED or button state changes then notify any 
-// connected pollers.
+// Register button and led event handlers.
 button1 <- "unknown";
 device.on("button1", function(state) {
     button1 = (state ? "down" : "up");
-    Poller().interrupt();
 })
 
 button2 <- "unknown";
 device.on("button2", function(state) {
     button2 = (state ? "down" : "up");
-    Poller().interrupt();
 })
 
 led <- "unknown";
 device.on("led", function(state) {
     led = (state ? "on" : "off");
-    Poller().interrupt();
 })
 
 

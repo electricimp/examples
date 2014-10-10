@@ -47,6 +47,8 @@ function btn2_change() {
 }
 
 // -----------------------------------------------------------------------------
+imp.enableblinkup(true);
+
 // Configure the LED pin as digital output and initialise its value to 0
 led.configure(DIGITAL_OUT, 0);
 

@@ -118,16 +118,16 @@ function uart_data() {
     }
     
     // Blink the LED once whenever there is a UART event
-    blink(0.15);
+    if (rx.len() > 3) blink(0.15);
 
 }
 
 
 // -----------------------------------------------------------------------------
 // Handle the stage change for button 1
-function btn1_change() {
+function btn_change() {
     imp.sleep(0.01);
-    if (btn1.read()) {
+    if (btn1.read() || btn2.read()) {
         if (nv.agentid) {
             fire();
         } else {
@@ -136,11 +136,6 @@ function btn1_change() {
             agent.send("getid", true);
         }
     }
-}
-
-
-// Handle the stage change for button 2
-function btn2_change() {
 }
 
 
@@ -168,9 +163,7 @@ led.configure(DIGITAL_OUT, 0);
 irpwm.configure(PWM_OUT, 1.0 / 38000, 0.5);
 irtrx.configure(2400, 8, PARITY_NONE, 1, NO_CTSRTS, uart_data);
 
-// Configure button 1 to transmit the agentid
-btn1.configure(DIGITAL_IN_PULLDOWN, btn1_change);
-
-// Configure button 2 to ...
-btn2.configure(DIGITAL_IN_PULLDOWN, btn2_change);
+// Configure both buttons to transmit the agentid
+btn1.configure(DIGITAL_IN_PULLDOWN, btn_change);
+btn2.configure(DIGITAL_IN_PULLDOWN, btn_change);
 
