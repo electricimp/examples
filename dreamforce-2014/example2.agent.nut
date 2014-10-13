@@ -11,24 +11,18 @@ function constants() {
             <META name='viewport' content='width=device-width, initial-scale=1'>
             <TITLE>Electric Imp Demo - Buttons and LED</TITLE>
             <LINK href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.min.css' rel='stylesheet'>
-            <STYLE>
-                .btn:focus {
-                  outline: none;
-                }
-            </STYLE>
         </HEAD>
         <BODY>
-            <DIV class='container text-center'>
-            
+            <DIV class='container text-center' style='width:320px;text-align: center;'>
               <DIV class='page-header'>
-                <H1>Electric Imp Demo</H1>
+                <H1>Electric Imp</H1>
                 <H3>Buttons and LED</H3>
               </DIV>
               
               <DIV>
-                <button id='button-1' class='btn btn-default'>Button 1</button>
-                <button id='button-2' class='btn btn-default'>Button 2</button>
-                <button id='led' class='btn btn-default'>LED</button>
+                <div id='button-1-div' class='well well-sm'>Button 1: Loading</div>
+                <div id='button-2-div' class='well well-sm'>Button 2: Loading</div>
+                <button id='led' class='btn btn-default' style='width:100%' >LED</button>
               </DIV>
               
             </DIV>
@@ -43,10 +37,7 @@ function constants() {
                     $('#led').click(function() {
                         $.post('led', $(this).hasClass('btn-primary') ? '0' : '1');
                     })
-                    $('.btn').click(function() {
-                        $(this).blur();
-                    })
-    
+
                     // -------------------------------------------------------------
                     // Start a poller that never ends
                     var button1 = 'unknown', button2 = 'unknown', led = 'unknown';
@@ -62,13 +53,11 @@ function constants() {
                                 if ('button1' in data) {
                                     button1 = data.button1;
                                     if (button1 == 'up') {
-                                        $('#button-1').removeClass('active');
-                                        $('#button-1').removeAttr('disabled');
+                                        $('div#button-1-div').text('Button 1: Up');
                                     } else if (button1 == 'down') {
-                                        $('#button-1').addClass('active');
-                                        $('#button-1').removeAttr('disabled');
+                                        $('div#button-1-div').text('Button 1: Down');
                                     } else {
-                                        $('#button-1').attr('disabled', 'disabled');
+                                        $('div#button-1-div').text('Button 1: Unknown');
                                     }
                                 }
                                 
@@ -76,16 +65,14 @@ function constants() {
                                 if ('button2' in data) {
                                     button2 = data.button2;
                                     if (button2 == 'up') {
-                                        $('#button-2').removeClass('active');
-                                        $('#button-2').removeAttr('disabled');
+                                        $('div#button-2-div').text('Button 2: Up');
                                     } else if (button2 == 'down') {
-                                        $('#button-2').addClass('active');
-                                        $('#button-2').removeAttr('disabled');
+                                        $('div#button-2-div').text('Button 2: Down');
                                     } else {
-                                        $('#button-2').attr('disabled', 'disabled');
+                                        $('div#button-2-div').text('Button 2: Unknown');
                                     }
                                 }
-                                
+
                                 // Handle the LED state
                                 if ('led' in data) {
                                     led = data.led;
@@ -177,6 +164,5 @@ led <- "unknown";
 device.on("led", function(state) {
     led = (state ? "on" : "off");
 })
-
 
 
