@@ -9,14 +9,6 @@
 #import "ViewController.h"
 #import "UIImage+Resize.h"
 
-#define AGENT_ID @"7s_PSI9NXZ7c"
-//#define HEIGHT 240
-//#define WIDTH  400
-//#define HEIGHT 96
-//#define WIDTH  96
-#define HEIGHT 176
-#define WIDTH  264
-
 @interface ViewController ()
 @property (weak, nonatomic) IBOutlet UIButton *Default;
 @property (weak, nonatomic) IBOutlet UIButton *Load;
@@ -24,6 +16,8 @@
 @property (weak, nonatomic) IBOutlet UIButton *Send;
 @property (weak, nonatomic) IBOutlet UIButton *Dither;
 @property (weak, nonatomic) IBOutlet UIImageView* imageView;
+@property (weak, nonatomic) NSUserDefaults *prefs;
+
 @end
 
 
@@ -35,12 +29,16 @@
 @synthesize Send;
 @synthesize Dither;
 @synthesize imageView;
+@synthesize prefs;
 
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
+
+    // Prepare a pointer to your preferences database
+    prefs = [NSUserDefaults standardUserDefaults];
 }
 
 - (void)didReceiveMemoryWarning
@@ -76,8 +74,8 @@
 
 - (IBAction)DitherButtonClick:(id)sender
 {
-    NSUInteger width = WIDTH;
-    NSUInteger height = HEIGHT;
+    NSUInteger width = [[prefs stringForKey:@"width"] intValue]; if (width == 0) width = 264;
+    NSUInteger height = [[prefs stringForKey:@"height"] intValue]; if (height == 0) height = 176;
     NSUInteger area = height * width;
     
     // Resize the image
@@ -153,6 +151,19 @@
 
 - (IBAction)SendButtonClick:(id)sender
 {
+    NSString *AGENT_ID = [prefs stringForKey:@"agentid"];
+    NSUInteger WIDTH = [[prefs stringForKey:@"width"] intValue]; if (WIDTH == 0) WIDTH = 264;
+    NSUInteger HEIGHT = [[prefs stringForKey:@"height"] intValue]; if (HEIGHT == 0) HEIGHT = 176;
+
+    if ([AGENT_ID length] == 0) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Configuration"
+                                                        message:@"You must configure the agent Id before you can send the image."
+                                                       delegate:nil
+                                              cancelButtonTitle:@"OK"
+                                              otherButtonTitles:nil];
+        [alert show];
+        return;
+    }
 
     CGSize newSize = CGSizeMake(WIDTH, HEIGHT);
     UIGraphicsBeginImageContextWithOptions(newSize, NO, 1.0);

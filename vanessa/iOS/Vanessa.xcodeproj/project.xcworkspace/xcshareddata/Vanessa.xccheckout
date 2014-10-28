@@ -10,29 +10,29 @@
 	<string>Vanessa</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>60FB2FE1-8F50-4FAE-98CE-D12C7DCBD022</key>
+		<key>F1C1946A9EAE776FE46C292161AEC81E18C98D22</key>
 		<string>https://github.com/electricimp/examples.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>vanessa/iOS/Vanessa.xcodeproj/project.xcworkspace</string>
+	<string>vanessa/iOS/Vanessa.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>60FB2FE1-8F50-4FAE-98CE-D12C7DCBD022</key>
+		<key>F1C1946A9EAE776FE46C292161AEC81E18C98D22</key>
 		<string>../../../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
 	<string>https://github.com/electricimp/examples.git</string>
 	<key>IDESourceControlProjectVersion</key>
-	<integer>110</integer>
+	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>60FB2FE1-8F50-4FAE-98CE-D12C7DCBD022</string>
+	<string>F1C1946A9EAE776FE46C292161AEC81E18C98D22</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>60FB2FE1-8F50-4FAE-98CE-D12C7DCBD022</string>
+			<string>F1C1946A9EAE776FE46C292161AEC81E18C98D22</string>
 			<key>IDESourceControlWCCName</key>
 			<string>examples</string>
 		</dict>

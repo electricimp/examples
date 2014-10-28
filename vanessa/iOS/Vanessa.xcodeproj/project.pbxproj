@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9C3A145319FFFF01008C638E /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9C3A145219FFFF01008C638E /* Settings.bundle */; };
 		9C3B7C1F1858CFF600016EAD /* UIImage+Alpha.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C3B7C1A1858CFF600016EAD /* UIImage+Alpha.m */; };
 		9C3B7C201858CFF600016EAD /* UIImage+Resize.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C3B7C1C1858CFF600016EAD /* UIImage+Resize.m */; };
 		9C3B7C211858CFF600016EAD /* UIImage+RoundedCorner.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C3B7C1E1858CFF600016EAD /* UIImage+RoundedCorner.m */; };
@@ -38,6 +39,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		9C3A145219FFFF01008C638E /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		9C3B7C191858CFF600016EAD /* UIImage+Alpha.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+Alpha.h"; sourceTree = "<group>"; };
 		9C3B7C1A1858CFF600016EAD /* UIImage+Alpha.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+Alpha.m"; sourceTree = "<group>"; };
 		9C3B7C1B1858CFF600016EAD /* UIImage+Resize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+Resize.h"; sourceTree = "<group>"; };
@@ -111,6 +113,7 @@
 		9C82FFE5185261760075A1AC = {
 			isa = PBXGroup;
 			children = (
+				9C3A145219FFFF01008C638E /* Settings.bundle */,
 				9C82FFF7185261770075A1AC /* Vanessa */,
 				9C820016185261770075A1AC /* VanessaTests */,
 				9C82FFF0185261770075A1AC /* Frameworks */,
@@ -259,6 +262,7 @@
 			files = (
 				9C82000A185261770075A1AC /* Images.xcassets in Resources */,
 				9C82FFFC185261770075A1AC /* InfoPlist.strings in Resources */,
+				9C3A145319FFFF01008C638E /* Settings.bundle in Resources */,
 				9C820005185261770075A1AC /* Main.storyboard in Resources */,
 				9C3B7C2318590F4000016EAD /* lena.png in Resources */,
 			);
