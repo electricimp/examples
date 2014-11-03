@@ -35,8 +35,8 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	// Do any additional setup after loading the view, typically from a nib.
-
+    // Do any additional setup after loading the view, typically from a nib.
+    
     // Prepare a pointer to your preferences database
     prefs = [NSUserDefaults standardUserDefaults];
 }
@@ -154,7 +154,11 @@
     NSString *AGENT_ID = [prefs stringForKey:@"agentid"];
     NSUInteger WIDTH = [[prefs stringForKey:@"width"] intValue]; if (WIDTH == 0) WIDTH = 264;
     NSUInteger HEIGHT = [[prefs stringForKey:@"height"] intValue]; if (HEIGHT == 0) HEIGHT = 176;
-
+    NSString *TYPE = [prefs stringForKey:@"type"]; if (TYPE.length == 0) TYPE = @"vanessa";
+    NSString *agenturl = nil;
+    uint8_t wif[(WIDTH * WIDTH) / 8 + 4];
+    int wif_i = 0;
+    
     if ([AGENT_ID length] == 0) {
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Configuration"
                                                         message:@"You must configure the agent Id before you can send the image."
@@ -164,57 +168,103 @@
         [alert show];
         return;
     }
-
-    CGSize newSize = CGSizeMake(WIDTH, HEIGHT);
-    UIGraphicsBeginImageContextWithOptions(newSize, NO, 1.0);
-    [self.imageView.image drawInRect:CGRectMake(0, 0, newSize.width, newSize.height)];
-    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
     
-    CGDataProviderRef provider = CGImageGetDataProvider(newImage.CGImage);
-    NSData* data = (id)CFBridgingRelease(CGDataProviderCopyData(provider));
-    const int height = (int) newImage.size.height; // 176
-    const int width = (int) newImage.size.width;   // 264
-    NSLog(@"Image height = %d, width = %d, bytes = %lu", height, width, (unsigned long)data.length);
-
-    // Prepare the bitmap file
-    uint8_t wif[(height * width) / 8 + 4];
-    int wif_i = 0;
-    
-    
-    wif[wif_i++] = (height & 0xFF);
-    wif[wif_i++] = ((height >> 8) & 0xFF);
-    wif[wif_i++] = (width & 0xFF);
-    wif[wif_i++] = ((width >> 8) & 0xFF);
-    
-    uint8_t byte = 0x0;
-    uint8_t bit_i = 0;
-    
-    const uint8_t* bytes = [data bytes];
-    for (int i = 0; i < [data length]; i += 4) {
-        uint8_t r = bytes[i+0];
-        uint8_t g = bytes[i+1];
-        uint8_t b = bytes[i+2];
-        // uint8_t a = bytes[i+3];
+    if ([TYPE isEqualToString:@"vanessa"]) {
         
-        bool bit = ((r + g + b) < 500);
-        byte |= bit << bit_i;
+        CGSize newSize = CGSizeMake(WIDTH, HEIGHT);
+        UIGraphicsBeginImageContextWithOptions(newSize, NO, 1.0);
+        [self.imageView.image drawInRect:CGRectMake(0, 0, newSize.width, newSize.height)];
+        UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
         
-        bit_i++;
-        if (bit_i == 8) {
-            wif[wif_i++] = byte;
+        CGDataProviderRef provider = CGImageGetDataProvider(newImage.CGImage);
+        NSData *data = (id)CFBridgingRelease(CGDataProviderCopyData(provider));
+        NSLog(@"Image height = %lu, width = %lu, bytes = %lu", (unsigned long)HEIGHT, (unsigned long)WIDTH, (unsigned long)data.length);
+        
+        // Prepare the bitmap file
+        wif[wif_i++] = (HEIGHT & 0xFF);
+        wif[wif_i++] = ((HEIGHT >> 8) & 0xFF);
+        wif[wif_i++] = (WIDTH & 0xFF);
+        wif[wif_i++] = ((WIDTH >> 8) & 0xFF);
+        
+        uint8_t byte = 0x0;
+        uint8_t bit_i = 0;
+        
+        const uint8_t* bytes = [data bytes];
+        for (int i = 0; i < [data length]; i += 4) {
+            uint8_t r = bytes[i+0];
+            uint8_t g = bytes[i+1];
+            uint8_t b = bytes[i+2];
+            // uint8_t a = bytes[i+3];
             
-            byte = 0x0;
-            bit_i = 0;
+            bool bit = ((r + g + b) < 500);
+            byte |= bit << bit_i;
+            
+            bit_i++;
+            if (bit_i == 8) {
+                wif[wif_i++] = byte;
+                
+                byte = 0x0;
+                bit_i = 0;
+            }
+            
+            if (wif_i == sizeof(wif)) break;
         }
         
-        if (wif_i == sizeof(wif)) break;
+        // Configure the URL
+        agenturl = [NSString stringWithFormat:@"https://agent.electricimp.com/%@/WIFimage", AGENT_ID];
+        
+    } else if ([TYPE isEqualToString:@"newrelic"]) {
+        
+        CGSize newSize = CGSizeMake(WIDTH, HEIGHT);
+        UIGraphicsBeginImageContextWithOptions(newSize, NO, 1.0);
+        
+        // Rotate 180 degrees around the middle
+        CGContextRef context = UIGraphicsGetCurrentContext();
+        CGContextTranslateCTM( context, 0.5f * newSize.width, 0.5f * newSize.height ) ;
+        CGContextRotateCTM( context, M_PI ) ;
+        
+        [self.imageView.image drawInRect:(CGRect){ { -newSize.width * 0.5f, -newSize.height * 0.5f }, newSize } ] ;
+        UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+        
+        CGDataProviderRef provider = CGImageGetDataProvider(newImage.CGImage);
+        NSData *data = (id)CFBridgingRelease(CGDataProviderCopyData(provider));
+        NSLog(@"Image height = %lu, width = %lu, bytes = %lu", (unsigned long)HEIGHT, (unsigned long)WIDTH, (unsigned long)data.length);
+        
+        // Prepare the bitmap file
+        uint8_t byte = 0x0;
+        uint8_t bit_i = 0;
+        
+        const uint8_t* bytes = [data bytes];
+        for (int i = 0; i < [data length]; i += 4) {
+            uint8_t r = bytes[i+0];
+            uint8_t g = bytes[i+1];
+            uint8_t b = bytes[i+2];
+            // uint8_t a = bytes[i+3];
+            
+            bool bit = ((r + g + b) < 500);
+            byte |= bit << bit_i;
+            
+            if (++bit_i == 8) {
+                wif[wif_i++] = reverseBits(byte);
+                
+                byte = 0x0;
+                bit_i = 0;
+            }
+            
+            if (wif_i == sizeof(wif)) break;
+        }
+        
+        // Configure the URL
+        agenturl = [NSString stringWithFormat:@"https://agent.electricimp.com/%@/image", AGENT_ID];
+        
+    } else {
+        return;
     }
     
-    // Send the bitmap file to the agent
-    NSLog(@"%lu, %lu, %d", (unsigned long)[data length], sizeof(wif), wif_i);
-    NSData *postData = [NSData dataWithBytes:(const void *) wif length:sizeof(wif)];
-    NSString *agenturl = [NSString stringWithFormat:@"https://agent.electricimp.com/%@/WIFimage", AGENT_ID];
+    
+    NSData *postData = [NSData dataWithBytes:(const void *) wif length:wif_i];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:agenturl]];
     [request setHTTPMethod:@"POST"];
     [request setHTTPBody:postData];
@@ -228,7 +278,6 @@
     }
     
 }
-
 
 - (UIImage*)imageWithBytes:(unsigned char*)data size:(CGSize)size
 {
@@ -260,5 +309,19 @@
     
     return image;
 }
+
+uint8_t reverseBits(uint8_t num)
+{
+    uint8_t  NO_OF_BITS = sizeof(num) * 8;
+    uint8_t reverse_num = 0;
+    int i;
+    for (i = 0; i < NO_OF_BITS; i++)
+    {
+        if((num & (1 << i)))
+            reverse_num |= 1 << ((NO_OF_BITS - 1) - i);
+    }
+    return reverse_num;
+}
+
 
 @end

@@ -48,6 +48,26 @@
 			<key>DefaultValue</key>
 			<string>176</string>
 		</dict>
+		<dict>
+			<key>Titles</key>
+			<array>
+				<string>Vanessa</string>
+				<string>NewRelic</string>
+			</array>
+			<key>Values</key>
+			<array>
+				<string>vanessa</string>
+				<string>newrelic</string>
+			</array>
+			<key>Type</key>
+			<string>PSMultiValueSpecifier</string>
+			<key>Title</key>
+			<string>Device Type</string>
+			<key>Key</key>
+			<string>type</string>
+			<key>DefaultValue</key>
+			<string>vanessa</string>
+		</dict>
 	</array>
 	<key>StringsTable</key>
 	<string>Root</string>
