@@ -1,6 +1,8 @@
 Sana
 =======
-The Sana reference design implements an internet-connected universal remote. Sana can learn and replay codes, and the agent code can easily be extended to add and store a new device if its codes are known. The carrier frequency and code timing parameters are configurable. 
+The Sana reference design implements an internet-connected universal remote. Sana can learn and replay codes, and the agent code can easily be extended to add and store a new device if its codes are known. The carrier frequency and code timing parameters are configurable.
+
+On the transmitting side, the Hardware PWM signal (Normally set as Pin11) and the raw SPI data (Normally Pin7 but may be Pin8) need to be ANDed creating an SPI signal modulated with the PWM carrier. On the receive side, the IR is fed into the SPI MISO input (commonly Pin2).
 
 ## Learning Codes
 The code presented here does not store or send codes when they are received. Instead, when a new code is received, the code is simply printed in the device logs. To receive a code, simply point the remote at the IR sensor in the center of the board and press a button. The IR receiver will be triggered automatically. Copy the code string out of the logs for use later. 
