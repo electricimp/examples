@@ -555,6 +555,8 @@ class tmp112 {
  */
 class IR_receiver {
     /* Note that the receive loops runs at about 160 us per iteration */
+    
+    /* The IR Receiver is commonly set to receive via a GPIO input on PIN2 */
 
 	/* Receiver Thresholds in us. Inter-pulse times < THRESH_0 are zeros, 
 	 * while times > THRESH_0 but < THRESH_1 are ones, and times > THRESH_1 
@@ -747,6 +749,10 @@ class IR_transmitter {
 
  	/* The following variables set the timing for the transmitter and can be overridden in the constructor. 
  	 * The timing for the start pulse, marker pulses, and 1/0 time will vary from device to device. */
+ 	 
+ 	/* The IR Transmitter is set to generally use Pin1 for PWM and then either Pin7 or Pin8 for the 
+ 	 * SPI raw data. This then needs to be ANDed to generate modulated SPI data. It should be possible also
+ 	 * to generate the modulated data with Raw SPI by generating a much larger bitrate, but this would eat RAM */
 
  	// Times for start pulse (in microseconds)
 	START_TIME_HIGH 			= 3300.0;
@@ -952,6 +958,7 @@ btn.configure(DIGITAL_IN_PULLUP);
 learn <- IR_receiver(hardware.pin2, 1, "newcode");
 
 // instantiate an IR transmitter
+// Pin1 for PWM and Pin7 for data output
 sender <- IR_transmitter(hardware.spi257, hardware.pin1);
 
 imp.wakeup(1.0, function() {
