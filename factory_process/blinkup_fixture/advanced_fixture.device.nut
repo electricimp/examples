@@ -47,7 +47,7 @@ throttle_protection <- false;
 finished <- false;
 
 mac <- imp.getmacaddress();
-impeeid <- hardware.getimpeeid();
+device_id <- hardware.getdeviceid();
 
 bless_success <- false;
 
@@ -55,7 +55,7 @@ if (imp.getssid() != SSID) return; // Don't run the factory code if not in the f
 
 switch (mac) {
     case FIXTURE_MAC:
-        server.log("This is the factory imp with mac " + mac + " and factory blinkup fixture impee ID " + impeeid + ". It will blinkup to SSID " + SSID);
+        server.log("This is the factory imp with mac " + mac + " and factory blinkup fixture device ID " + device_id + ". It will blinkup to SSID " + SSID);
 
         hardware.pin9.configure(DIGITAL_OUT);
         hardware.pin9.write(0);
@@ -73,7 +73,7 @@ switch (mac) {
                 imp.wakeup(0.2, function() {
                     hardware.pin9.write(0);                    
                     server.factoryblinkup(SSID, PASSWORD, hardware.pin9, BLINKUP_ACTIVEHIGH | BLINKUP_FAST);
-                    agent.send("testresult", {device_id = impeeid, mac = mac, msg = "Starting factory blinkup."})
+                    agent.send("testresult", {device_id = device_id, mac = mac, msg = "Starting factory blinkup."})
                 })
             }
         })
@@ -94,8 +94,8 @@ switch (mac) {
                 // Notify the server of the success and handle the response
                 server.log("Testing timed out with 0.")
                 server.bless(false, function(bless_success) {
-                    server.log("Blessing (negative) " + (bless_success ? "PASSED" : "FAILED") + " for impee " + impeeid + " and mac " + mac)
-                    agent.send("testresult", {device_id = impeeid, mac = mac, passed = false, success = bless_success})
+                    server.log("Blessing (negative) " + (bless_success ? "PASSED" : "FAILED") + " for impee " + device_id + " and mac " + mac)
+                    agent.send("testresult", {device_id = device_id, mac = mac, passed = false, success = bless_success})
                 })
             }
         })
@@ -114,8 +114,8 @@ switch (mac) {
                 // Notify the server of the success and handle the response
                 server.log("Testing passed.")
                 server.bless(true, function(bless_success) {
-                    server.log("Blessing " + (bless_success ? "PASSED" : "FAILED") + " for impee " + impeeid + " and mac " + mac)
-                    agent.send("testresult", {device_id = impeeid, mac = mac, passed = true, success = bless_success})
+                    server.log("Blessing " + (bless_success ? "PASSED" : "FAILED") + " for impee " + device_id + " and mac " + mac)
+                    agent.send("testresult", {device_id = device_id, mac = mac, passed = true, success = bless_success})
                     if (bless_success) imp.clearconfiguration();
                 })
             }
