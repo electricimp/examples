@@ -556,7 +556,7 @@ class tmp112 {
 class IR_receiver {
     /* Note that the receive loops runs at about 160 us per iteration */
     
-    /* The IR Receiver is commonly set to receive via the SPI MISO input on PIN2 */
+    /* The IR Receiver is commonly set to receive via a GPIO input on PIN2 */
 
 	/* Receiver Thresholds in us. Inter-pulse times < THRESH_0 are zeros, 
 	 * while times > THRESH_0 but < THRESH_1 are ones, and times > THRESH_1 
