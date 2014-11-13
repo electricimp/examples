@@ -7,7 +7,7 @@
 const LPS25HTR_ADDR     = 0xB8; // 8-bit I2C Student Address for LPS25HTR
 const SI7020_ADDR       = 0x80; // 8-bit I2C Student Address for SI7020
 const ALS_RLOAD         = 47000.0; // load resistor value on ALS
-const READING_INTERVAL  = 3; // seconds between readings
+const READING_INTERVAL  = 60; // seconds between readings
 
 /* CLASS AND GLOBAL FUNCTION DEFINITIONS ------------------------------------ */
 
@@ -328,9 +328,16 @@ function aps_int() {
 
 function logloop() {
     imp.wakeup(READING_INTERVAL,logloop);
-    server.log(format("SI7020: RH = %0.2f, Temp = %0.2fC",rh.readRH(),rh.readTemp()));
-    server.log(format("APDS-9007: %0.2f Lux",als.read()));
+    h = rh.readRH();
+    t = rh.readTemp();
+    lx = als.read();
+    ll = hardware.lightlevel();
+    server.log(format("SI7020: RH = %0.2f, Temp = %0.2fC",h,t));
+    server.log(format("APDS-9007: %0.2f Lux",lx));
+    server.log(format("LightLevel: %0.2f", ll));
     //server.log(format("LPS25HTR: Press = %0.2f" Hg, Temp = %0.2fC",aps.readPress(),aps.readTemp()));
+    
+    agent.send("data", {humidity = h, temp = t, lux = lx, lightlevel = ll});
 }
 
 /* AGENT CALLBACKS ---------------------------------------------------------- */
