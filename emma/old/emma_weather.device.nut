@@ -1,19 +1,24 @@
+// NOTE:
+// This example uses Input/Output Ports, which have been replaced by Agents and HTTP request-based communication.
+// This code will not work as currently written, but remains primarily as a reference for older designs.
+// Examples of the current communication architecture are available at http://electricimp.com/docs/examples/
+
 /*
 Copyright (C) 2013 electric imp, inc.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
-and associated documentation files (the "Software"), to deal in the Software without restriction, 
-including without limitation the rights to use, copy, modify, merge, publish, distribute, 
-sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is 
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+and associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial 
+The above copyright notice and this permission notice shall be included in all copies or substantial
 portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE 
-AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
-DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
+AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
@@ -68,8 +73,8 @@ local luxUpdateCounter = 60;
 local out_lux = OutputPort("outLux");
 
 // hex translations of characters (upper case / alphanum only)
-// LSB 
-local hexTable= 
+// LSB
+local hexTable=
 {
     ['0']=0x75AE,
     ['1']=0x0102,
@@ -151,7 +156,7 @@ local function fadeIn() {
             imp.sleep(0.05);
         }
         hardware.pin2.write(0.0);
-        imp.sleep(1.0);        
+        imp.sleep(1.0);
     }
 }
 
@@ -165,7 +170,7 @@ local function fadeOut() {
             imp.sleep(0.05);
         }
         hardware.pin2.write(1.0);
-        imp.sleep(1.0); 
+        imp.sleep(1.0);
     }
 }
 
@@ -178,7 +183,7 @@ local function encodeCharacter(inputChar, outputBlob) {
 }
 
 local function encodeDecimalPoint(position, decimalPointWord) {
-    // lower byte of decimalPointWord addresses channels that are not used. 
+    // lower byte of decimalPointWord addresses channels that are not used.
     decimalPointWord = decimalPointWord | (0x1 << position+7);
     return decimalPointWord;
 }
@@ -248,7 +253,7 @@ function prepString(inputString) {
     local inputLen = inputString.len();
     local position = 0;
     local printableLen = 0;
-    
+
     // mechanism to hold display at right side when looping
     if (holdRightCount != 0) {
         needsUpdate = false;
@@ -266,19 +271,19 @@ function prepString(inputString) {
         if (inputString[position] == '.') {
             position++;
             continue;
-        } 
+        }
         // it wasn't a decimal point. Either Printable or will be replaced with spaces. Count.
         position++;
         printableLen++;
     }
-    
+
     // handle over-size strings
     if (printableLen > 8) {
         overSizeString = true;
         local endSliceIndex = get8Printables(inputString, overSizeStringPos);
         //server.log(format("prepared string:%s", inputString.slice(overSizeStringPos, endSliceIndex+1)));
         local returnString = inputString.slice(overSizeStringPos, endSliceIndex+1);
-        
+
         // catch end-of-string condition and hold at right side
         if ((endSliceIndex + 1) == inputLen) {
             // loop back to left edge of line if we hit the right edge
@@ -298,24 +303,24 @@ function prepString(inputString) {
         }
         return inputString;
     }
-    
+
 }
 
 // actual set-display-to-current-stored-string function
 function setDisplay() {
     // prepare string for printing (deal with periods and non-printables, window for display)
     local displayString = prepString(currentString);
-    
-    if (needsUpdate) {        
+
+    if (needsUpdate) {
         local inputPosition = 0;
         local outputPosition = 0;
         local outputBlob = blob(blobLen);
         local inputLen = displayString.len();
         local decimalPointWord = 0x0000;
-            
+
         // pad in dummy value of decimal point word. We will re-write this after encoding
         outputBlob.writen(0x0000, 'w');
-            
+
         while (inputPosition < inputLen) {
             local inputChar = displayString[inputPosition];
             if (inputChar == '.') {
@@ -350,7 +355,7 @@ function setDisplay() {
     }
     // start the next ALS conversion
     startAls();
-    
+
     // schedule next check for .5 seconds from now
     imp.wakeup(0.16, setDisplay);
 }
@@ -359,18 +364,18 @@ class displayInput extends InputPort
 {
     name = "Input"
     type = "string"
-    
+
     // we prepare the string for printing here
     function set(inputString) {
         inputString = inputString.tostring();
         inputString = inputString.toupper();
-        server.log(format("Received %s",inputString));        
+        server.log(format("Received %s",inputString));
         currentString = inputString;
         // set the update flag and wait for display to update
         server.log("Setting needsUpdate flag");
         needsUpdate = true;
         fadeOut();
-        
+
         // reset other flags that will be determined when prepping string
         overSizeString = false;
         overSizeStringPos = 0;

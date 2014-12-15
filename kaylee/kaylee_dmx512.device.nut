@@ -1,19 +1,24 @@
+// NOTE:
+// This example uses Input/Output Ports, which have been replaced by Agents and HTTP request-based communication.
+// This code will not work as currently written, but remains primarily as a reference for older designs.
+// Examples of the current communication architecture are available at http://electricimp.com/docs/examples/
+
 /*
 Copyright (C) 2013 electric imp, inc.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
-and associated documentation files (the "Software"), to deal in the Software without restriction, 
-including without limitation the rights to use, copy, modify, merge, publish, distribute, 
-sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is 
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+and associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial 
+The above copyright notice and this permission notice shall be included in all copies or substantial
 portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE 
-AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
-DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
+AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
@@ -40,7 +45,7 @@ function setLevel(addr, level) {
     // send DMX512 command to set device at "addr"
     outBlob.seek(addr);
     outBlob.writen(level, 'b');
-    
+
     // the frame will automatically be sent on the next refresh
 }
 
@@ -50,24 +55,24 @@ function refresh() {
     // break
     hardware.pin1.write(0);
     imp.sleep(0.0001);
-    
+
     // mark-after-break is implicitly sent here; bus idles high while we configure the UART in SW
     hardware.uart12.configure(250000, 8, PARITY_NONE, 2, NO_CTSRTS);
-    
+
     // send the frame
     hardware.uart12.write(outBlob);
-    
+
     // schedule next refresh
     imp.wakeup(0.1, refresh);
 }
 
 // Two input ports: one for full 512-device DMX frame, one for individual channel levels
-// This input port takes in full frames. If receiving as a string from the internet, 
+// This input port takes in full frames. If receiving as a string from the internet,
 // try using an agent to parse to an array and sanitize input!
 class chanInput extends InputPort {
     name = "full DMX Frame input"
     type = "array[512]"
-    
+
     function set(frame) {
         try {
             for (i = 0; i < 512; i++) {
@@ -90,7 +95,7 @@ class chanInput extends InputPort {
 class frameInput extends InputPort {
     name = "channel input"
     type = "array[2] = [addr, val]"
-    
+
     function set(channel) {
         try {
             local addr = channel[0];

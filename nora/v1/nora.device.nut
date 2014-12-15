@@ -1,19 +1,24 @@
+// NOTE:
+// This example uses Input/Output Ports, which have been replaced by Agents and HTTP request-based communication.
+// This code will not work as currently written, but remains primarily as a reference for older designs.
+// Examples of the current communication architecture are available at http://electricimp.com/docs/examples/
+
 /*
 Copyright (C) 2013 electric imp, inc.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
-and associated documentation files (the "Software"), to deal in the Software without restriction, 
-including without limitation the rights to use, copy, modify, merge, publish, distribute, 
-sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is 
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+and associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial 
+The above copyright notice and this permission notice shall be included in all copies or substantial
 portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE 
-AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
-DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
+AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
@@ -33,49 +38,49 @@ class hih3161{
         this.temp  = OutputPort("Temperature", "number");
         this.humid = OutputPort("Humidity", "number");
     }
-    
+
     function startConversion(){
         i2c.write(this.addr, "");
         this.clk = clock();
     }
-    
+
     function convert(){
         if(this.clk == null){
             this.startConversion()
         }
-    
+
         //Make sure we've waited long enough
         local elapsed = clock()-this.clk;
         if(elapsed < wait){
             imp.sleep(wait - elapsed);
         }
-    
+
         local th = i2c.read(this.addr, "", 4);
         if(th == null){
             server.error("I2C Returned Null");
             return;
         }
-        
+
         local t = ((((th[2]         << 6 ) | (th[3] >> 2)) * 165) / 16383.0) - 40;
         local h = ((((th[0] & 0x3F) << 8 ) | (th[1]     ))        / 163.83 );
-    
+
         //Round to 2 decimal places
         t = (t*100).tointeger() /100.0;
         //h = (h*100).tointeger() /100.0;
-    
+
         this.temp.set(t);
         this.humid.set(h);
     }
 }
-    
-    
+
+
 class mpl115{
     static wait = 0.005;
     static addr = 0xc0;
     i2c   = null;
     temp  = null;
     press = null;
-    clk   = null;    
+    clk   = null;
     a0    = null;
     b1    = null;
     b2    = null;
@@ -102,7 +107,7 @@ class mpl115{
             local b2_lsb  = i2c.read(addr, "\x09", 1);
             local c12_msb = i2c.read(addr, "\x0a", 1);
             local c12_lsb = i2c.read(addr, "\x0b", 1);
-            
+
             // if values (coefficients and ADC values) are less than 16 bits, lsb is padded from low end with zeros
             // a0 is 16 bits, signed, 12 integer, 3 fractional (2^3 = 8)
             a0 = ((a0_msb[0] << 8) | (a0_lsb[0] & 0x00ff));
@@ -122,7 +127,7 @@ class mpl115{
                 b1 *= -1;
             }
             b1 = b1/8192.0;
-    
+
             // b2 is 16 bits, signed, 1 integer, 14 fractional
             b2 = (b2_msb[0] << 8) | (b2_lsb[0] & 0xff);
             if (b2 & 0x8000) {
@@ -145,7 +150,7 @@ class mpl115{
             server.log("B1 Coeff: "+format("%f",b1));
             server.log("B2 Coeff: "+format("%f",b2));
             server.log("C12 Coeff: "+format("%f",c12));
-    
+
             //Stash them in the NV table for later use
             nv["a0"]  <- a0;
             nv["b1"]  <- b1;
@@ -154,13 +159,13 @@ class mpl115{
             nv["valid"] <- 1;
         }
     }
-    
+
     function startConversion(){
         // Start compensated pressure conversion
         i2c.write(addr, "\x12\xff");
         this.clk = clock();
     }
-    
+
     function convert(){
         if(this.clk == null){
             this.startConversion()
@@ -171,26 +176,26 @@ class mpl115{
         if(elapsed < wait){
             imp.sleep(wait-elapsed);
         }
-    
+
         // Read out temperature and pressure ADC values from Freescale sensor
         // Both values are 10 bits, unsigned, with the high 8 bits in the MSB value
         local press_result = i2c.read(0xc0, "\x00", 4);
-    
+
         if (press_result == null) {
             server.error("Pressure Conversion Failed");
             return;
         }else{
             local padc = ((press_result[0] & 0xff) << 2) | (press_result[1] & 0x03);
             local tadc = ((press_result[2] & 0xff) << 2) | (press_result[3] & 0x03);
-    
+
             // Calculate compensated pressure from coefficients and padc
             local pcomp = a0 + ((b1 + (c12 * tadc)) * padc) + (b2 * tadc);
-    
+
             // Pcomp is 0 at 50 kPa and full-scale (1023) at 115 kPa, so we scale to get kPa
             // Patm = 50 + (pcomp * ((115 - 50) / 1023))
             local p = 50 + (pcomp * (65.0 / 1023.0));
             this.press.set(p);
-                        
+
             //Temperature calculation from Arduino Library
             local t = 25 + (tadc-498.0)/(-5.35);
             this.temp.set(t);
@@ -209,9 +214,9 @@ class tsl2561{
         this.i2c = i2c;
         this.luxOut = OutputPort("Ambient Light", "number");
     }
-    
-    
-    
+
+
+
     function startConversion(){
         //Set the power bits in the config register to 11
         i2c.write(this.addr, "\x80\x03");
@@ -228,7 +233,7 @@ class tsl2561{
         if(elapsed < wait){
             imp.sleep(wait-elapsed);
         }
-        
+
         local reg0 = i2c.read(this.addr, "\xAC", 2);
         local reg1 = i2c.read(this.addr, "\xAE", 2);
         if(reg0 == null || reg1 == null){
@@ -237,11 +242,11 @@ class tsl2561{
         }else{
             local ch0 = ((reg0[1] & 0xFF) << 8) + (reg0[0] & 0xFF);
             local ch1 = ((reg1[1] & 0xFF) << 8) + (reg1[0] & 0xFF);
-            
+
             local ratio = ch1 / ch0.tofloat();
             local lux = 0.0;
             if( ratio <= 0.5){
-                lux = 0.0304*ch0 - 0.062*ch0*math.pow(ratio,1.4); 
+                lux = 0.0304*ch0 - 0.062*ch0*math.pow(ratio,1.4);
             }else if( ratio <= 0.61){
                 lux = 0.0224 * ch0 - 0.031 * ch1;
             }else if( ratio <= 0.8){
@@ -255,15 +260,15 @@ class tsl2561{
 
             this.luxOut.set(lux);
             server.log(format("Ch0: 0x%04X Ch1: 0x%04X Ratio: %f Lux: %f", ch0, ch1, ratio, lux));
-            
+
         }
     }
-        
+
 }
 
 //Configure I2C
 hardware.configure(I2C1_89);
-    
+
 //Power Senors On
 hardware.pin2.configure(DIGITAL_OUT);
 hardware.pin2.write(0);
@@ -295,7 +300,7 @@ tsl.convert();
 //Power Senors Off
 hardware.pin2.configure(DIGITAL_OUT);
 hardware.pin2.write(1);
-    
+
 //Use I2C lines to Drain the Rail
 hardware.pin8.configure(DIGITAL_OUT);
 hardware.pin9.configure(DIGITAL_OUT);
