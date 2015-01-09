@@ -81,7 +81,7 @@ switch (mac) {
 
     default:
         // This code is specific to the target hardware and would need to be customised and expanded as appropriate.
-        server.log("This is the impee to be tested and (maybe) blessed.");
+        server.log("This is the device to be tested and (maybe) blessed.");
 
         // Setup a timeout function which reports failure back to the factory process
         imp.wakeup(SUCCESS_TIMEOUT, function () {
@@ -94,7 +94,7 @@ switch (mac) {
                 // Notify the server of the success and handle the response
                 server.log("Testing timed out with 0.")
                 server.bless(false, function(bless_success) {
-                    server.log("Blessing (negative) " + (bless_success ? "PASSED" : "FAILED") + " for impee " + device_id + " and mac " + mac)
+                    server.log("Blessing (negative) " + (bless_success ? "PASSED" : "FAILED") + " for device " + device_id + " and mac " + mac)
                     agent.send("testresult", {device_id = device_id, mac = mac, passed = false, success = bless_success})
                 })
             }
@@ -114,7 +114,7 @@ switch (mac) {
                 // Notify the server of the success and handle the response
                 server.log("Testing passed.")
                 server.bless(true, function(bless_success) {
-                    server.log("Blessing " + (bless_success ? "PASSED" : "FAILED") + " for impee " + device_id + " and mac " + mac)
+                    server.log("Blessing " + (bless_success ? "PASSED" : "FAILED") + " for device " + device_id + " and mac " + mac)
                     agent.send("testresult", {device_id = device_id, mac = mac, passed = true, success = bless_success})
                     if (bless_success) imp.clearconfiguration();
                 })
