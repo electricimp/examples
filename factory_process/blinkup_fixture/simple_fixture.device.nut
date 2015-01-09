@@ -38,7 +38,7 @@ const PASSWORD = "yourWifiPW";
 const FIXTURE_MAC = "0c2a690xxxxx";  // NOTE this format of this value
 
 mac <- imp.getmacaddress(); 
-impeeid <- hardware.getimpeeid(); 
+deviceid <- hardware.getdeviceid(); 
 
 function factoryblinkup() {
     imp.wakeup(10, factoryblinkup);
@@ -48,7 +48,7 @@ function factoryblinkup() {
 function factorybless() {
     server.bless(true, function(bless_success) { 
         server.log("Blessing " + (bless_success ? "PASSED" : "FAILED")); 
-        agent.send("testresult", {device_id = impeeid, mac = mac, success = bless_success});
+        agent.send("testresult", {device_id = deviceid, mac = mac, success = bless_success});
         if (bless_success) imp.clearconfiguration();
     }); 
 }
