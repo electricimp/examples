@@ -46,10 +46,10 @@ function factoryblinkup() {
 }
 
 function factorybless() {
-    server.bless(true, function(bless_success) { 
+    server.bless(true, function(bless_success) {
+        if (bless_success) imp.clearconfiguration();
         server.log("Blessing " + (bless_success ? "PASSED" : "FAILED")); 
         agent.send("testresult", {device_id = deviceid, mac = mac, success = bless_success});
-        if (bless_success) imp.clearconfiguration();
     }); 
 }
 

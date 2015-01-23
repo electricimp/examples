@@ -114,9 +114,9 @@ switch (mac) {
                 // Notify the server of the success and handle the response
                 server.log("Testing passed.")
                 server.bless(true, function(bless_success) {
+                    if (bless_success) imp.clearconfiguration();
                     server.log("Blessing " + (bless_success ? "PASSED" : "FAILED") + " for device " + device_id + " and mac " + mac)
                     agent.send("testresult", {device_id = device_id, mac = mac, passed = true, success = bless_success})
-                    if (bless_success) imp.clearconfiguration();
                 })
             }
         });
