@@ -60,7 +60,7 @@ class SparkFunStream {
 /* REGISTER DEVICE CALLBACKS  ------------------------------------------------*/
 
 device.on("data", function(datapoint) {
-    local resp = stream.push({"temperature": datapoint.temp});
+    local resp = stream.push({"temp": datapoint.temp});
     server.log(format("PUSH: %i - %s", resp.statuscode, resp.body));
 });
 
