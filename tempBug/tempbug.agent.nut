@@ -30,7 +30,7 @@ class SparkFunStream {
         // make the request
         local request = http.get(url);
         if (cb == null) {
-            return request.sendsync(cb);
+            return request.sendsync();
         }
         
         request.sendasync(cb);
@@ -57,7 +57,6 @@ class SparkFunStream {
         return request.sendasync(cb);
     }
 }
-
 /* REGISTER DEVICE CALLBACKS  ------------------------------------------------*/
 
 device.on("data", function(datapoint) {
