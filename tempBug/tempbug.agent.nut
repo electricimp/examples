@@ -72,5 +72,5 @@ device.on("data", function(datapoint) {
 
 server.log("TempBug Agent Running");
 
-// instantiate our Xively client
+// instantiate our SparkFun client
 stream <- SparkFunStream(SPARKFUN_BASE, SPARKFUN_PUBLIC_KEY, SPARKFUN_PRIVATE_KEY);
