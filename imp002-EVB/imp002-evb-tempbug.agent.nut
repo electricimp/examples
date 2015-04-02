@@ -61,16 +61,6 @@ class SparkFunStream {
         return request.sendasync(cb);
     }
 }
-/* REGISTER DEVICE CALLBACKS  ------------------------------------------------*/
-
-device.on("temp", function(datapoint) {
-    local resp = stream.push({"temp": datapoint});
-    server.log(format("PUSH: %i - %s", resp.statuscode, resp.body));
-});
-
-/* REGISTER HTTP HANDLER -----------------------------------------------------*/
-
-// This agent does not need an HTTP handler
 
 /* RUNTIME BEGINS HERE -------------------------------------------------------*/
 
@@ -78,3 +68,10 @@ server.log("TempBug Agent Running");
 
 // instantiate our SparkFun client
 stream <- SparkFunStream(SPARKFUN_BASE, SPARKFUN_PUBLIC_KEY, SPARKFUN_PRIVATE_KEY);
+
+/* REGISTER DEVICE CALLBACKS  ------------------------------------------------*/
+
+device.on("temp", function(datapoint) {
+    local resp = stream.push({"temp": datapoint});
+    server.log(format("PUSH: %i - %s", resp.statuscode, resp.body));
+});
