@@ -4,7 +4,7 @@
 //
 // TempBug Example Device Code
 
-const READING_INTERVAL = 10; // Read a new sample every [READING_INTERVAL] seconds.
+const READING_INTERVAL = 300; // Read a new sample every [READING_INTERVAL] seconds.
 
 // -----------------------------------------------------------------------------
 class TMP1x2 {
