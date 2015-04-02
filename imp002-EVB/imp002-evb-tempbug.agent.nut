@@ -2,257 +2,79 @@
 // This file is licensed under the MIT License
 // http://opensource.org/licenses/MIT
 //
-// TempBug Example Device Code
+// TempBug Example Agent Code
 
-const READING_INTERVAL = 10; // Read a new sample every [READING_INTERVAL] seconds.
+/* GLOBALS and CONSTANTS -----------------------------------------------------*/
 
-// -----------------------------------------------------------------------------
-class TMP1x2 {
-    // Register addresses
-    static TEMP_REG         = 0x00;
-    static CONF_REG         = 0x01;
-    static T_LOW_REG        = 0x02;
-    static T_HIGH_REG       = 0x03;
+const SPARKFUN_BASE = "data.sparkfun.com";
+const SPARKFUN_PUBLIC_KEY = "YOUR PUBLIC KEY HERE";
+const SPARKFUN_PRIVATE_KEY = "YOUR PRIVATE KEY HERE";
 
-    // ADC resolution in degrees C
-    static DEG_PER_COUNT    = 0.0625;
+/* CLASS AND GLOBAL FUNCTION DEFINITIONS -------------------------------------*/
 
-    static CONVERSION_POLL_INTERVAL = 0; // breakable tight loop for conversion_done
-    static CONVERSION_TIMEOUT = 0.5; // seconds
-
-    // i2c address
-    _addr   = null;
-    _i2c    = null;
-
-    _conversion_timeout_timer = null;
-    _conversion_poll_timer = null;
-    _conversion_ready_cb = null;
-
-    // -------------------------------------------------------------------------
-    constructor(i2c, addr = 0x90) {
-        _addr   = addr;
-        _i2c    = i2c;
+class SparkFunStream {
+    _baseUrl = null;
+    
+    _publicKey = null;
+    _privateKey = null;
+   
+    constructor(baseUrl, publicKey, privateKey) {
+        _baseUrl = baseUrl;
+        _privateKey = privateKey;
+        _publicKey = publicKey;
     }
-
-    // -------------------------------------------------------------------------
-    function _twosComp(value, mask) {
-        value = ~(value & mask) + 1;
-        return value & mask;
-    }
-
-    // -------------------------------------------------------------------------
-    function _getReg(reg) {
-        local val = _i2c.read(_addr, format("%c", reg), 2);
-        if (val != null) {
-            return (val[0] << 8) | (val[1]);
-        } else {
-            return null;
-        }
-    }
+    
+    function push(data, cb = null) {
+        assert(typeof(data == "table"));
         
-    // -------------------------------------------------------------------------
-    function _setReg(reg, val) {
-        _i2c.write(_addr, format("%c%c%c", reg, (val & 0xff00) >> 8, val & 0xff));   
-    }
+        // add private key to table
+        data["private_key"] <- _privateKey;
+        local url = format("https://%s/input/%s?%s", _baseUrl, _publicKey, http.urlencode(data));
         
-    // -------------------------------------------------------------------------
-    function _setRegBit(reg, bit, state) {
-        local val = _getReg(reg);
-        if (state == 0) {
-            val = val & ~(0x01 << bit);
-        } else {
-            val = val | (0x01 << bit);
+        // make the request
+        local request = http.get(url);
+        if (cb == null) {
+            return request.sendsync();
         }
-        _setReg(reg, val);
-    }
-
-    // -------------------------------------------------------------------------
-    function _getRegBit(reg, bit) {
-        return (0x0001 << bit) & _getReg(reg);
-    }
-
-    // -------------------------------------------------------------------------
-    function _tempToRaw(temp) {
-        local raw = ((temp * 1.0) / DEG_PER_COUNT).tointeger();
-    if (_getExtMode()) {
-        if (raw < 0) { _twosComp(raw, 0x1FFF); }
-        raw = (raw & 0x1FFF) << 3;
-    } else {
-        if (raw < 0) { _twosComp(raw, 0x0FFF); }
-        raw = (raw & 0x0FFF) << 4;
-    }
-    return raw;
-    }
-
-    // -------------------------------------------------------------------------
-    function _rawToTemp(raw) {
-        if (_getExtMode()) {
-        raw = (raw >> 3) & 0x1FFF;
-        if (raw & 0x1000) { raw = -1.0 * _twosComp(raw, 0x1FFF); }
-    } else {
-        raw = (raw >> 4) & 0x0FFF;
-        if (raw & 0x0800) { raw = -1.0 * _twosComp(raw, 0x0FFF); }
-    }
-    return raw.tofloat() * DEG_PER_COUNT;
-    }
-
-    // -------------------------------------------------------------------------
-    // Device comes out of reset enabled by default
-    function setShutdown(state) {
-        _setRegBit(CONF_REG, 8, state);
-    }
-
-    // -------------------------------------------------------------------------
-    function _getShutdown() {
-        return _getRegBit(CONF_REG, 8);
+        
+        request.sendasync(cb);
     }
     
-    // -------------------------------------------------------------------------
-    // Device comes out of reset in comparator mode
-    function setModeComparator() {
-        _setRegBit(CONF_REG, 9, 0);
-    }
-    
-    // -------------------------------------------------------------------------
-    function setModeInterrupt() {
-        _setRegBit(CONF_REG, 9, 1);
-    }
-    
-    // -------------------------------------------------------------------------
-    function setActiveLow() {
-        _setRegBit(CONF_REG, 10, 0);
-    }
-    
-    // -------------------------------------------------------------------------
-    function setActiveHigh() {
-        _setRegBit(CONF_REG, 10, 1);
-    }
-    
-    // -------------------------------------------------------------------------
-    // Enable/Disable 13-bit extended mode
-    function setExtMode(state) {
-        _setRegBit(CONF_REG, 4, state);
-    }
-
-    // -------------------------------------------------------------------------
-    function _getExtMode() {
-        return _getRegBit(CONF_REG, 4);
-    }
-
-    // -------------------------------------------------------------------------
-    function _getConvReady() {
-        if (_getRegBit(CONF_REG, 0)) return false;
-        return true;
-    }
-    // -------------------------------------------------------------------------
-    // Set low threshold for Alert mode in degrees Celsius
-    function setLowThreshold(ths) {
-        server.log(format("setting low threshold to 0x%04X", _tempToRaw(ths)));
-        _setReg(T_LOW_REG, _tempToRaw(ths));
-    }
-
-    // -------------------------------------------------------------------------
-    function getLowThreshold() {
-        return _rawToTemp(_getReg(T_LOW_REG));
-    }
-
-    // -------------------------------------------------------------------------
-    // Set low threshold for Alert mode in degrees Celsius
-    function setHighThreshold(ths) {
-        server.log(format("setting high threshold to 0x%04X", _tempToRaw(ths)));
-        _setReg(T_HIGH_REG, _tempToRaw(ths));
-    }
-
-    // -------------------------------------------------------------------------
-    function getHighThreshold() {
-        return _rawToTemp(_getReg(T_HIGH_REG));
-    }
-
-    // -------------------------------------------------------------------------
-    function _startConversion() {
-        _setRegBit(CONF_REG, 15, 1);
-    }
-
-    // -------------------------------------------------------------------------
-    function _pollForConversion(cb = null) {
-        if (cb) { _conversion_ready_cb = cb; }
-        if (_getConvReady()) {
-            // success; cancel the timeout timer
-            if (_conversion_timeout_timer) { imp.cancelwakeup(_conversion_timeout_timer); }
-            local conversion_ready_cb = _conversion_ready_cb;
-            _conversion_ready_cb = null;
-            conversion_ready_cb();
-        } else {
-            // no result; schedule again
-            _conversion_poll_timer = imp.wakeup(CONVERSION_POLL_INTERVAL, _pollForConversion);
+    function get(cb = null) {
+        local url = format("https://%s/output/%s.json", _baseUrl, _publicKey);
+        
+        local request = http.get(url);
+        if(cb == null) {
+            return request.sendsync();
         }
+        return request.sendasync(cb);
     }
-
-    // -------------------------------------------------------------------------
-    // takes an optional callback which must accept one parameter
-    // callback param is a table, contains "temp" key
-    // on error, cb param will contain "err" key with error description, as well
-    // as "temp" key with null data
-    // 
-    // executes synchronously if callback is not provided
-    function getTemp(cb = null) {
-        if (_getShutdown()) {
-            _startConversion();
-            if (cb) { // asynchronous path
-                // set a timeout callback
-                    _conversion_timeout_timer = imp.wakeup(CONVERSION_TIMEOUT, function() {
-                        // failure; cancel polling for a result and call the callback with error
-                        imp.cancelwakeup(_conversion_poll_timer);
-                        _conversion_ready_cb =  null;
-                        cb({"err": "TMP1x2 conversion timed out", "temp": null});
-                    });
-                _pollForConversion(function() {
-                    cb({"temp": _rawToTemp(_getReg(TEMP_REG))});
-                });
-            } else { // synchronous path
-                local start = hardware.millis();
-                while (!_getConvReady() && (hardware.millis() - start) < (CONVERSION_TIMEOUT * 1000));
-                if ((hardware.millis() - start) >= (CONVERSION_TIMEOUT * 1000)) {
-                    return {"err": "TMP1x2 conversion timed out", "temp": null}
-                } 
-                return {"temp": _rawToTemp(_getReg(TEMP_REG))};
-            }
-        } else {
-            local temp = _rawToTemp(_getReg(TEMP_REG));
-            if (cb) { cb({"temp": temp}); }
-            else { return {"temp": temp}; }
+    
+    function clear(cb = null) {
+        local url = format("https://%s/input/%s/clear", _baseUrl, _publicKey);
+        local headers = { "phant-private-key": _privateKey };
+        
+        local request = http.httpdelete(url, headers);
+        if (cb == null) {
+            return request.sendsync();
         }
+        return request.sendasync(cb);
     }
 }
+/* REGISTER DEVICE CALLBACKS  ------------------------------------------------*/
 
-// -----------------------------------------------------------------------------
-
-i2c  <- hardware.i2c89;
-i2c.configure(CLOCK_SPEED_400_KHZ);
-
-temp <- TMP1x2(i2c);
-
-// the getTemp function takes one argument: a callback to call when the reading is complete
-// the callback also takes one argument, a table, which contains result data from the reading
-// if an error occurs, the result table will have a key called "err"
-// the temperature data is stored with the key "temp"
-//
-// See the TMP1x2 Class README for more information on how this class works
-// https://github.com/electricimp/reference/tree/master/hardware/TMP1x2
-temp.getTemp(function(result) {
-    if ("err" in result) {
-        // if we have an error reading the sensor, turn blinkup on and idle
-        server.log("Error Reading TMP102: "+err);
-        imp.enableblinkup(true);
-        // not doing anything, so might as well save some power
-        imp.setpowersave(true);
-        return;
-    } else {
-        // got data successfully; send it to the agent
-        agent.send("temp", result.temp);
-        // job done; go back to sleep as soon as pending transactions are finished
-        imp.onidle(function() {
-            server.sleepfor(READING_INTERVAL);
-        });
-    }
+device.on("data", function(datapoint) {
+    local resp = stream.push({"temp": datapoint.temp});
+    server.log(format("PUSH: %i - %s", resp.statuscode, resp.body));
 });
+
+/* REGISTER HTTP HANDLER -----------------------------------------------------*/
+
+// This agent does not need an HTTP handler
+
+/* RUNTIME BEGINS HERE -------------------------------------------------------*/
+
+server.log("TempBug Agent Running");
+
+// instantiate our SparkFun client
+stream <- SparkFunStream(SPARKFUN_BASE, SPARKFUN_PUBLIC_KEY, SPARKFUN_PRIVATE_KEY);
