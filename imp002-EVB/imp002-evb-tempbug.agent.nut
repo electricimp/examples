@@ -1,193 +1,258 @@
+// Copyright (c) 2014 Electric Imp
+// This file is licensed under the MIT License
+// http://opensource.org/licenses/MIT
+//
+// TempBug Example Device Code
 
-
-// -----------------------------------------------------------------------------
-const html = @"
-<!DOCTYPE html>
-<html lang='en'>
-  <head>
-    <meta charset='utf-8'>
-    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <title>TempBug</title>
-    <link href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.min.css' rel='stylesheet'>
-    <link href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap-theme.css' rel='stylesheet'>
-    <style>
-        body {
-            margin: 0px 10px;
-        }
-        .col-md-6 {
-            padding-left: 0px;
-            padding-right: 0px;
-        }
-        table, th, td {
-            border: none;
-            border-collapse: collapse;
-            padding: 6px;
-        }            
-        th {
-            text-align: right;
-        }
-        .google-visualization-atl.container {
-            border: none !important;
-        }
-        div.centre table {
-            margin: auto !important;
-        }
-    </style>
-  </head>
-  <body>
-    <div class='container-fluid'>
-        <div class='row'>
-            <div class='col-md-6 col-md-offset-3'>
-                <h4></h4>
-            </div>
-            
-            <div class='panel panel-primary col-md-6 col-md-offset-3'>
-                <div class='panel-heading'>Temperatures</div>
-                <div id='tempchart' style='width: 100%; height: 380px; margin-bottom: 5px;'></div>
-            </div>
-                
-        </div>
-    </div>
-                    
-    <div id='alerts'>
-    </div>
-
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js'></script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js'></script>
-    <script src='https://www.google.com/jsapi' type='text/javascript'></script>
-    <script>
-        google.load('visualization', '1.0', {'packages':['corechart', 'annotationchart']});
-        
-        $(function() { 
-
-            // Draw the graph
-            google.setOnLoadCallback(function() {
-                
-                // .........................................................
-                // Prepare the options for this chart
-                var options = {
-                    chartArea: {top: 10, width: '90%', height: '70%'},
-                    allValuesSuffix: ' °C',
-                    scaleFormat: '0.0',
-                    numberFormats: '0.0',
-                    animation: {
-                        duration: 1000,
-                        easing: 'inAndOut',
-                    },
-                };
-                
-                // Every time there is new data, redraw the chart
-                var chart = new google.visualization.AnnotationChart($('#tempchart')[0]);
-
-                // Prepare a data store for the temperature data
-                var data = new google.visualization.DataTable();
-                data.addColumn('datetime', 'When');
-                data.addColumn('number', 'Temperature');
-
-                // Redraw the data if the orientation changes
-                window.addEventListener('orientationchange', function() {
-                    chart.draw(data, options);
-                });
-                
-                // Redraw the data if the orientation changes
-                $(window).resize(function() {
-                    chart.draw(data, options);
-                });
-
-                // Now load the data regularly
-                function loadData() {
-                    var length = data.getNumberOfRows();
-                    if (length > 0) data.removeRows(0, length);
-                    $.get('data', function(newdata) {
-                        for (var i in newdata) {
-                            data.addRow([
-                                new Date(newdata[i].time * 1000),
-                                newdata[i].temp
-                                ]);
-                        }
-                        chart.draw(data, options);
-                    });
-                }
-                loadData();
-                setInterval(loadData, 60000);
-                
-            });
-        })
-    </script>
-  </body>
-</html>";
-
+const READING_INTERVAL = 10; // Read a new sample every [READING_INTERVAL] seconds.
 
 // -----------------------------------------------------------------------------
-// Serve up web requests for / (redirect to /view), /view (html) and /data (json)
-http.onrequest(function(req, res) {
-    if (req.path == "/") {
-        res.header("Location", http.agenturl() + "/view")
-        res.send(302, "Redirect")
-    } else if (req.path == "/view") {
-        res.send(200, html);
-    } else if (req.path == "/data") {
-        res.header("Content-Type", "application/json")
-        
-        // Turn the readings blob into an array of tables
-        storereadings.seek(0);
-        local readings = [];
-        while (!storereadings.eos()) {
-            local time = storereadings.readn('i');
-            local temp = storereadings.readn('s') / 10.0;
-            readings.push({time=time, temp=temp});
+class TMP1x2 {
+    // Register addresses
+    static TEMP_REG         = 0x00;
+    static CONF_REG         = 0x01;
+    static T_LOW_REG        = 0x02;
+    static T_HIGH_REG       = 0x03;
+
+    // ADC resolution in degrees C
+    static DEG_PER_COUNT    = 0.0625;
+
+    static CONVERSION_POLL_INTERVAL = 0; // breakable tight loop for conversion_done
+    static CONVERSION_TIMEOUT = 0.5; // seconds
+
+    // i2c address
+    _addr   = null;
+    _i2c    = null;
+
+    _conversion_timeout_timer = null;
+    _conversion_poll_timer = null;
+    _conversion_ready_cb = null;
+
+    // -------------------------------------------------------------------------
+    constructor(i2c, addr = 0x90) {
+        _addr   = addr;
+        _i2c    = i2c;
+    }
+
+    // -------------------------------------------------------------------------
+    function _twosComp(value, mask) {
+        value = ~(value & mask) + 1;
+        return value & mask;
+    }
+
+    // -------------------------------------------------------------------------
+    function _getReg(reg) {
+        local val = _i2c.read(_addr, format("%c", reg), 2);
+        if (val != null) {
+            return (val[0] << 8) | (val[1]);
+        } else {
+            return null;
         }
+    }
         
-        res.send(200, http.jsonencode(readings));
+    // -------------------------------------------------------------------------
+    function _setReg(reg, val) {
+        _i2c.write(_addr, format("%c%c%c", reg, (val & 0xff00) >> 8, val & 0xff));   
+    }
+        
+    // -------------------------------------------------------------------------
+    function _setRegBit(reg, bit, state) {
+        local val = _getReg(reg);
+        if (state == 0) {
+            val = val & ~(0x01 << bit);
+        } else {
+            val = val | (0x01 << bit);
+        }
+        _setReg(reg, val);
+    }
+
+    // -------------------------------------------------------------------------
+    function _getRegBit(reg, bit) {
+        return (0x0001 << bit) & _getReg(reg);
+    }
+
+    // -------------------------------------------------------------------------
+    function _tempToRaw(temp) {
+        local raw = ((temp * 1.0) / DEG_PER_COUNT).tointeger();
+    if (_getExtMode()) {
+        if (raw < 0) { _twosComp(raw, 0x1FFF); }
+        raw = (raw & 0x1FFF) << 3;
     } else {
-        res.send(404, "Noone here");
+        if (raw < 0) { _twosComp(raw, 0x0FFF); }
+        raw = (raw & 0x0FFF) << 4;
     }
-})
+    return raw;
+    }
 
+    // -------------------------------------------------------------------------
+    function _rawToTemp(raw) {
+        if (_getExtMode()) {
+        raw = (raw >> 3) & 0x1FFF;
+        if (raw & 0x1000) { raw = -1.0 * _twosComp(raw, 0x1FFF); }
+    } else {
+        raw = (raw >> 4) & 0x0FFF;
+        if (raw & 0x0800) { raw = -1.0 * _twosComp(raw, 0x0FFF); }
+    }
+    return raw.tofloat() * DEG_PER_COUNT;
+    }
 
-// -----------------------------------------------------------------------------
-// Add new readings
-device.on("readings", function(readings) {
+    // -------------------------------------------------------------------------
+    // Device comes out of reset enabled by default
+    function setShutdown(state) {
+        _setRegBit(CONF_REG, 8, state);
+    }
 
-    // server.save() doesn't store array's or tables as efficiently as blobs but it doesn't store blobs.
-    // So we are storing our data as a base64 encoded blob.
-    
-    // Add the readings into the store
-    local log = "";
-    storereadings.seek(0, 'e')
-    foreach (reading in readings) {
-        log += format("%0.02f°C, ", reading.t);
-        storereadings.writen(reading.s, 'i');
-        storereadings.writen((reading.t * 10).tointeger(), 's');
+    // -------------------------------------------------------------------------
+    function _getShutdown() {
+        return _getRegBit(CONF_REG, 8);
     }
     
-    // Trim to the last 8000 readings
-    const MAX_READINGS_SIZE = 48000; // 8000 entries * 6 bytes per entry * 4/3 base64 encoding < 64kb
-    if (storereadings.len() > MAX_READINGS_SIZE) {
-        storereadings.seek(-MAX_READINGS_SIZE, 'e')
-        storereadings = storereadings.readblob(MAX_READINGS_SIZE);
+    // -------------------------------------------------------------------------
+    // Device comes out of reset in comparator mode
+    function setModeComparator() {
+        _setRegBit(CONF_REG, 9, 0);
     }
     
-    // Convert the blob into an encoded string for server.save() to persist
-    store.readings = http.base64encode(storereadings);
-    server.save(store);
+    // -------------------------------------------------------------------------
+    function setModeInterrupt() {
+        _setRegBit(CONF_REG, 9, 1);
+    }
     
-    server.log(format("%d new reading(s) out of %d total: %s", readings.len(), store.readings.len()/8, log.slice(0, -2)));
+    // -------------------------------------------------------------------------
+    function setActiveLow() {
+        _setRegBit(CONF_REG, 10, 0);
+    }
+    
+    // -------------------------------------------------------------------------
+    function setActiveHigh() {
+        _setRegBit(CONF_REG, 10, 1);
+    }
+    
+    // -------------------------------------------------------------------------
+    // Enable/Disable 13-bit extended mode
+    function setExtMode(state) {
+        _setRegBit(CONF_REG, 4, state);
+    }
 
-})
+    // -------------------------------------------------------------------------
+    function _getExtMode() {
+        return _getRegBit(CONF_REG, 4);
+    }
 
+    // -------------------------------------------------------------------------
+    function _getConvReady() {
+        if (_getRegBit(CONF_REG, 0)) return false;
+        return true;
+    }
+    // -------------------------------------------------------------------------
+    // Set low threshold for Alert mode in degrees Celsius
+    function setLowThreshold(ths) {
+        server.log(format("setting low threshold to 0x%04X", _tempToRaw(ths)));
+        _setReg(T_LOW_REG, _tempToRaw(ths));
+    }
 
-// -----------------------------------------------------------------------------
-// Load the old readings
-// server.save({});
-store <- server.load();
-if ("readings" in store && store.readings.len() > 0) {
-    storereadings <- http.base64decode(store.readings);
-} else {
-    store.readings <- [];
-    storereadings <- blob();
+    // -------------------------------------------------------------------------
+    function getLowThreshold() {
+        return _rawToTemp(_getReg(T_LOW_REG));
+    }
+
+    // -------------------------------------------------------------------------
+    // Set low threshold for Alert mode in degrees Celsius
+    function setHighThreshold(ths) {
+        server.log(format("setting high threshold to 0x%04X", _tempToRaw(ths)));
+        _setReg(T_HIGH_REG, _tempToRaw(ths));
+    }
+
+    // -------------------------------------------------------------------------
+    function getHighThreshold() {
+        return _rawToTemp(_getReg(T_HIGH_REG));
+    }
+
+    // -------------------------------------------------------------------------
+    function _startConversion() {
+        _setRegBit(CONF_REG, 15, 1);
+    }
+
+    // -------------------------------------------------------------------------
+    function _pollForConversion(cb = null) {
+        if (cb) { _conversion_ready_cb = cb; }
+        if (_getConvReady()) {
+            // success; cancel the timeout timer
+            if (_conversion_timeout_timer) { imp.cancelwakeup(_conversion_timeout_timer); }
+            local conversion_ready_cb = _conversion_ready_cb;
+            _conversion_ready_cb = null;
+            conversion_ready_cb();
+        } else {
+            // no result; schedule again
+            _conversion_poll_timer = imp.wakeup(CONVERSION_POLL_INTERVAL, _pollForConversion);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // takes an optional callback which must accept one parameter
+    // callback param is a table, contains "temp" key
+    // on error, cb param will contain "err" key with error description, as well
+    // as "temp" key with null data
+    // 
+    // executes synchronously if callback is not provided
+    function getTemp(cb = null) {
+        if (_getShutdown()) {
+            _startConversion();
+            if (cb) { // asynchronous path
+                // set a timeout callback
+                    _conversion_timeout_timer = imp.wakeup(CONVERSION_TIMEOUT, function() {
+                        // failure; cancel polling for a result and call the callback with error
+                        imp.cancelwakeup(_conversion_poll_timer);
+                        _conversion_ready_cb =  null;
+                        cb({"err": "TMP1x2 conversion timed out", "temp": null});
+                    });
+                _pollForConversion(function() {
+                    cb({"temp": _rawToTemp(_getReg(TEMP_REG))});
+                });
+            } else { // synchronous path
+                local start = hardware.millis();
+                while (!_getConvReady() && (hardware.millis() - start) < (CONVERSION_TIMEOUT * 1000));
+                if ((hardware.millis() - start) >= (CONVERSION_TIMEOUT * 1000)) {
+                    return {"err": "TMP1x2 conversion timed out", "temp": null}
+                } 
+                return {"temp": _rawToTemp(_getReg(TEMP_REG))};
+            }
+        } else {
+            local temp = _rawToTemp(_getReg(TEMP_REG));
+            if (cb) { cb({"temp": temp}); }
+            else { return {"temp": temp}; }
+        }
+    }
 }
 
+// -----------------------------------------------------------------------------
 
-server.log("Started");
+i2c  <- hardware.i2c89;
+i2c.configure(CLOCK_SPEED_400_KHZ);
+
+temp <- TMP1x2(i2c);
+
+// the getTemp function takes one argument: a callback to call when the reading is complete
+// the callback also takes one argument, a table, which contains result data from the reading
+// if an error occurs, the result table will have a key called "err"
+// the temperature data is stored with the key "temp"
+//
+// See the TMP1x2 Class README for more information on how this class works
+// https://github.com/electricimp/reference/tree/master/hardware/TMP1x2
+temp.getTemp(function(result) {
+    if ("err" in result) {
+        // if we have an error reading the sensor, turn blinkup on and idle
+        server.log("Error Reading TMP102: "+err);
+        imp.enableblinkup(true);
+        // not doing anything, so might as well save some power
+        imp.setpowersave(true);
+        return;
+    } else {
+        // got data successfully; send it to the agent
+        agent.send("temp", result.temp);
+        // job done; go back to sleep as soon as pending transactions are finished
+        imp.onidle(function() {
+            server.sleepfor(READING_INTERVAL);
+        });
+    }
+});
