@@ -78,7 +78,7 @@ device.on("weather", function(d) {
             device.send("weather", last_weather);
         });
     }
-})
+});
 
 // Start up by grabbing the latest weather
 server.log("Agent started");
