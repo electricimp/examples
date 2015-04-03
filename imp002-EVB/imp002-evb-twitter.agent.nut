@@ -21,4 +21,4 @@ function onTweet(tweetData)
     
 }
 
-twitter.stream("electricimp", onTweet)
+twitter.stream("electricimp", onTweet);
