@@ -13,12 +13,10 @@ const TOKEN_SECRET = "";
 
 twitter <- Twitter(API_KEY, API_SECRET, AUTH_TOKEN, TOKEN_SECRET);
 
-function onTweet(tweetData) 
-{
+function onTweet(tweetData) {
     // Log the Tweet, and who tweeted it (there is a LOT more info in tweetData)
     server.log(format("%s - %s", tweetData.text, tweetData.user.screen_name));
     device.send("tweet", 0);
-    
 }
 
 twitter.stream("electricimp", onTweet);
