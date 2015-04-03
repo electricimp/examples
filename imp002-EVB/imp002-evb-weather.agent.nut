@@ -69,10 +69,7 @@ function getConditions(callback = null) {
     }
 }
 
-
-/*******************************************************************************
- * Respond to the device requesting the current weather
- */
+// Respond to the device requesting the current weather
 device.on("weather", function(d) {
     if ("conditions" in last_weather) {
         device.send("weather", last_weather);
@@ -83,9 +80,6 @@ device.on("weather", function(d) {
     }
 })
 
-/*******************************************************************************
- * Start up by grabbing the latest weather
- */
+// Start up by grabbing the latest weather
 server.log("Agent started");
 getConditions();
-
