@@ -376,7 +376,7 @@ accel.setEnable(1);
 // set the accelerometer's refresh rate
 accel.setDatarate(10); // 10 Hz
 accel.setInertInt1En(1); // enable inertial interrupt 
-accel.setInt1Ths(1.1); // trigger interrupt on 1.2G accel in any direction
+accel.setInt1Ths(1.1); // trigger interrupt on 1.1G accel in any direction
 accel.setInt1Duration(1); // require 5 samples over threshold before triggering
 // clear the accelerometer interrupt in case there is a latched interrupt
 accel.getInt1Src();

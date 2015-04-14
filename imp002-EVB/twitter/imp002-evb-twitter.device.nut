@@ -7,9 +7,9 @@
 pwm <- hardware.pinC;
 
 agent.on("tweet", function(dummy) {
-    // play a 500 Hz tone, 50% duty cycle
+    // play a 200 Hz tone, 50% duty cycle
     pwm.configure(PWM_OUT, 1.0/200.0, 0.5);
-    // in 150 ms, switch the tone to 1 kHz
+    // in 150 ms, switch the tone to 750 Hz
     imp.wakeup(0.15, function() {
         pwm.configure(PWM_OUT, 1.0/750.0, 0.5);
     });
