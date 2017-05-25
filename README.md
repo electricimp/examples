@@ -2,11 +2,13 @@
 
 This is a collection of examples written for the Electric Imp platform.  Not all code in this repository is actively maintained, so please submit pull requests if you make improvements to the example code.
 
-## Examples
+## Recent Examples
 
 ### [SensorNode_BasicEnvExample](./SensorNode_BasicEnvExample/)
 This example shows a low power application for the ImpAccelerator Battery Powered Sensor node that takes environmental sensor readings.
 ##### Updated May 25, 2017
+
+## Older Examples
 
 ### [imp002-EVB](./imp002-EVB/)
 This example code is intended to be used with the imp002-EVB guide on the Electric Imp Developer Center.
