@@ -8,6 +8,10 @@ This is a collection of examples written for the Electric Imp platform.  Not all
 This example shows a low power application for the ImpAccelerator Battery Powered Sensor node that takes environmental sensor readings.
 ##### Updated May 25, 2017
 
+### [FieldbusGateway_PumpPLC](./FieldbusGateway_PumpPLC/)
+This example uses an impAccelerator Fielbus Gateway and the Electric Imp Modbus Library to contol and monitor a pump via a Click PLC.
+##### Updated May 25, 2017
+
 ## Older Examples
 
 ### [imp002-EVB](./imp002-EVB/)
