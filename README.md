@@ -12,6 +12,10 @@ This example uses an impAccelerator Fielbus Gateway and the Electric Imp Modbus 
 This example transmits accelerometer data from an Arduino Feather with a LoRa RH_RF95 to an impAccelerator Wireless Gateway with a LoRa RN2903 radio.
 ##### Updated May 26, 2017
 
+### [FactoryFixtrure_SensorNodeTesting](./FactoryFixtrure_SensorNodeTesting/)
+This example contains an example of factory firmware code. It uses an impFactory™ as the factory fixture and impAccelerator™ Battery Powered Sensor Nodes as the devices being tested and produced.
+##### Updated May 26, 2017
+
 ### [SensorNode_BasicEnvExample](./SensorNode_BasicEnvExample/)
 This example shows a low power application for the ImpAccelerator Battery Powered Sensor node that takes environmental sensor readings.
 ##### Updated May 25, 2017
