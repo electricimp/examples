@@ -8,6 +8,10 @@ This is a collection of examples written for the Electric Imp platform.  Not all
 This example uses an impAccelerator Fielbus Gateway and the Electric Imp Modbus Library to monitor the temperature via a Click PLC.
 ##### Updated May 26, 2017
 
+### [WirelessGateway_LoRaBall](./WirelessGateway_LoRaBall/)
+This example transmits accelerometer data from an Arduino Feather with a LoRa RH_RF95 to an impAccelerator Wireless Gateway with a LoRa RN2903 radio.
+##### Updated May 26, 2017
+
 ### [SensorNode_BasicEnvExample](./SensorNode_BasicEnvExample/)
 This example shows a low power application for the ImpAccelerator Battery Powered Sensor node that takes environmental sensor readings.
 ##### Updated May 25, 2017
