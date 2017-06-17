@@ -1,6 +1,6 @@
 # Simple Remote Monitoring Application
 
-In this example we will create an simple remote monitoring application that takes syncronous readings from multiple sensors and sends them to the cloud using the Initial State webservice. We will use a Hardware Abstraction Layer (HAL) to reference all hardware objects, and to organize our application code we will use a class. This code can be easily configured for use with an impExplorer Developer Kit or impAccelerator Battery Powered Sensor Node.  
+In this example we will create an simple remote monitoring application that takes synchronous readings from multiple sensors and sends them to the cloud using the Initial State webservice. We will use a Hardware Abstraction Layer (HAL) to reference all hardware objects, and to organize our application code we will use a class. This code can be easily configured for use with an impExplorer Developer Kit or impAccelerator Battery Powered Sensor Node.  
 
 ## Skill level
 
@@ -13,7 +13,7 @@ This example will focus on writing squirrel code. Please visit the [getting star
 * How to use Electric Imp libraries
 * How to use a Hardware Abstraction Layer (HAL)
 * How to write a `class` in Squirrel
-* How to configure sensors to take sychonous readings
+* How to configure sensors to take synchronous readings
 * How to send data between device and agent
 * How to send data to Initial State
 
@@ -37,7 +37,7 @@ This example will focus on writing squirrel code. Please visit the [getting star
 * Locate the HAL for your hardware. The HAL files can be found on Github in the repositories linked below. Find the `.HAL.nut` file in the repository that matches your hardware. 
     * [impExplorer Developer Kit HAL](https://github.com/electricimp/ExplorerKitHAL)
     * [impAccelerator Battery Powered Sensor Node](https://github.com/electricimp/SensorNodeHAL)
-* Copy and Paste the HAL table into the code in the HARDWARE ABSTRACTION LAYER section. *Please note:* DO NOT copy and paste from thie example, use the HAL found in github. Below is an example of what a HAL table will look like when insterted into the code.
+* Copy and Paste the HAL table into the code in the HARDWARE ABSTRACTION LAYER section. Below is an example of what a HAL table will look like when insterted into the code. *Please note:* DO NOT copy and paste from thie example, use the HAL found in github. 
 
 ```
 // HARDWARE ABSTRACTION LAYER

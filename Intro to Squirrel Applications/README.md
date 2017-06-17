@@ -8,9 +8,11 @@ Begin by learning the basics of programming Electric Imp. We will use Electric I
 
 ## Example 2 - Simple Remote Monitoring Application
 
-This next example we will expand our application to take syncronous readings from multiple sensors. We will use a Hardware Abstraction Layer (HAL) to reference all hardware objects, and to organize our application code we will use a class.
+In this example we will create an simple remote monitoring application that takes synchronous readings from multiple sensors and sends them to the cloud using the Initial State webservice. We will use a Hardware Abstraction Layer (HAL) to reference all hardware objects, and to organize our application code we will use a class. This code can be easily configured for use with an impExplorer Developer Kit or impAccelerator Battery Powered Sensor Node.  
 
-## Example 3 - Asynchonous Remote Monitoring Application
+## Example 3 - Asynchronous Remote Monitoring Application
+
+In this example we will create a remote monitoring application that takes asynchronous sensor readings using the Promise libary. We will conserve power by turning off the WiFi and taking readings while offline then connecting periodically to send the readings we have collected. This code can be easily configured for use with an impExplorer Developer Kit or impAccelerator Battery Powered Sensor Node. 
 
 ## Example 4 - Simple Smart Refigerator
 

@@ -11,7 +11,7 @@ This example will focus on writing squirrel code. Please visit the [getting star
 ## What You Learn
 
 * How to use Electric Imp libraries
-* How to configure a sensor and take sychonous readings
+* How to configure a sensor and take synchronous readings
 * How to send data between device and agent
 * How to send data to Initial State
 
