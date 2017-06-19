@@ -1,10 +1,10 @@
-# Simple Smart Refrigerator Application
+# Refrigerator Monitor Application
 
-In this example we will create an simple refrigerator monitoring application that takes synchronous readings from the temperature/humidity sensor and the internal light sensor. The light reading is used to determine if the refrigerator door is open or closed. The door status, temperature and humidity readings are sent to the cloud using the Initial State webservice. We will use a Hardware Abstraction Layer (HAL) to reference all hardware objects, and to organize our application code we will use a class. This code can be easily configured for use with an impExplorer Developer Kit or impAccelerator Battery Powered Sensor Node.  
+In this example we will create a refrigerator monitoring application that takes an asynchronous reading from the temperature/humidity senor. We will use the internal light senor to determine if the refrigerator door is open. We will conserve power by turning off the WiFi and taking readings while offline then connecting periodically to send the readings we have collected to the cloud. This code can be easily configured for use with an impExplorer Developer Kit or impAccelerator Battery Powered Sensor Node.  
 
 ## Skill level
 
-**Beginner**
+**Intermediate**
 
 This example will focus on writing squirrel code. Please visit the [getting started guide](https://electricimp.com/docs/gettingstarted/) on the Electric Imp Dev Center for insturctions on How to configure your device with BlinkUp and how to use the Electric Imp IDE.
 
@@ -13,8 +13,9 @@ This example will focus on writing squirrel code. Please visit the [getting star
 * How to use Electric Imp libraries
 * How to use a Hardware Abstraction Layer (HAL)
 * How to write a `class` in Squirrel
-* How to configure a sensor to take synchronous readings
-* How to send data between device and agent
+* How to configure a sensor to take an asychronous reading
+* How to program your device to [run offline](https://electricimp.com/docs/resources/offline/) 
+* How to send data between device and agent using Message Manager library
 * How to send data to Initial State
 
 ## What You Need
@@ -95,7 +96,7 @@ class Application {
 * Sign into [Initial State](https://app.initialstate.com/#/login/account)
 * Find your Streaming Access Key on the [My Account page](https://app.initialstate.com/#/account)
 * Navigate back to the [Electric Imp IDE](https://ide.electricimp.com)
-* In the Agent code enter your Initial State Streaming Access Key into the Application class static STREAMING_ACCESS_KEY variable on line 23
+* In the Agent code enter your Initial State Streaming Access Key into the Application class static STREAMING_ACCESS_KEY variable on line 24
 * Hit Build and Run to start the code
 * Note the agent ID in the logs
 * Navigate back to Initial State, find the Bucket that matches your agent ID

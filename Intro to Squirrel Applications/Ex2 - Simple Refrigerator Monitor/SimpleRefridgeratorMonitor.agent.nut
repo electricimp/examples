@@ -1,4 +1,4 @@
-// Simple Smart Refrigerator Application Agent Code
+// Simple Refrigerator Monitor Application Agent Code
 // ---------------------------------------------------
 
 // WEBSERVICE LIBRARY
@@ -9,7 +9,7 @@
 #require "InitialState.class.nut:1.0.0"
 
 
-// SMART REFRIGERATOR APPLICATION CODE
+// REFRIGERATOR MONITOR APPLICATION CODE
 // ---------------------------------------------------
 // Application code, listen for readings from device,
 // when a reading is received send the data to Initial 

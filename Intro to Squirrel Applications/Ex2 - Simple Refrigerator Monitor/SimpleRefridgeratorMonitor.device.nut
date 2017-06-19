@@ -1,4 +1,4 @@
-// Simple Smart Refrigerator Application Device Code
+// Simple Refrigerator Monitor Application Device Code
 // ---------------------------------------------------
 
 // SENSOR LIBRARIES
@@ -18,7 +18,7 @@
 // YOUR_HAL <- {...}
 
 
-// SMART REFRIGERATOR APPLICATION CODE
+// REFRIGERATOR MONITOR APPLICATION CODE
 // ---------------------------------------------------
 // Application code, take readings from our temperature
 // humidity and light sensors. Use the light level to 
