@@ -12,6 +12,8 @@ Begin by learning the basics of programming Electric Imp. We will use Electric I
 
 ### Example 2 - Simple Smart Refrigerator
 
+In this example we will create an simple refrigerator monitoring application that takes synchronous readings from the temperature/humidity sensor and the internal light sensor. The light reading is used to determine if the refrigerator door is open or closed. The door status, temperature and humidity readings are sent to the cloud using the Initial State webservice. We will use a Hardware Abstraction Layer (HAL) to reference all hardware objects, and to organize our application code we will use a class. This code can be easily configured for use with an impExplorer Developer Kit or impAccelerator Battery Powered Sensor Node. 
+
 ### Example 3 - Simple Remote Monitoring Application
 
 In this example we will create an simple remote monitoring application that takes synchronous readings from multiple sensors and sends them to the cloud using the Initial State webservice. We will use a Hardware Abstraction Layer (HAL) to reference all hardware objects, and to organize our application code we will use a class. This code can be easily configured for use with an impExplorer Developer Kit or impAccelerator Battery Powered Sensor Node.  
