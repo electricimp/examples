@@ -1,4 +1,4 @@
-// Simple Remote Monitoring Application Agent Code
+// Asynchronous Remote Monitoring Application Agent Code
 // ---------------------------------------------------
 
 // WEBSERVICE LIBRARY

@@ -32,6 +32,8 @@ In this example we will create a remote monitoring application that takes asynch
 
 ### Example 6 - Power Efficient Remote Monitoring Application
 
+In this example we will create a remote monitoring application that takes asynchronous sensor readings using the Promise libary. We will conserve power by putting the device to sleep between readings and connecting periodically to send the readings we have collected. This code can be easily configured for use with an impExplorer Developer Kit (imp001 model only) or impAccelerator Battery Powered Sensor Node.
+
 ### Example 7 - Remote Monitoring Application with an Interrupt
 
 ### Example 8 - Power Efficient Refrigerator Monitor
