@@ -8,7 +8,7 @@
 // Accelerometer Library
 #require "LIS3DH.class.nut:1.3.0"
 // Temperature Humidity sensor Library
-#require "HTS221.class.nut:2.0.1"
+#require "HTS221.device.lib.nut:2.0.1"
 // Air Pressure sensor Library
 #require "LPS22HB.class.nut:1.0.0"
 // Library to help with asynchonous programming
