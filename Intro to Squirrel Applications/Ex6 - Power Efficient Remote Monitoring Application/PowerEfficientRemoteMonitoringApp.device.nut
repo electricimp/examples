@@ -42,6 +42,7 @@ class Application {
     static BOOT_TIMER_SEC = 60;
     // Accelerometer data rate in Hz
     static ACCEL_DATARATE = 1;
+    static ACCEL_SHUTDOWN = 0;
 
     // Hardware variables
     i2c             = null; // Replace with your sensori2c
@@ -82,8 +83,6 @@ class Application {
         // Message Manager allows us to call a function if a message  
         // fails to be delivered. We will use this to recover data 
         mm.onFail(sendFailHandler.bindenv(this));
-        
-        initializeSensors();
     }
 
     function checkWakeReason() {
@@ -92,15 +91,18 @@ class Application {
         switch (hardware.wakereason()) {
             case WAKEREASON_TIMER :
                 // We woke up after sleep timer expired.
-                // Don't need to configure anything.
+                // Let's pwer up our sensors.
+                powerUpSensors();
                 break;
             case WAKEREASON_PIN :
                 // We woke up because an interrupt pin was triggerd.
-                // Don't need to configure anything.
+                // Let's pwer up our sensors.
+                powerUpSensors();
                 break;
             case WAKEREASON_SNOOZE : 
                 // We woke up after connection timeout.
-                // Don't need to configure anything.
+                // Let's pwer up our sensors.
+                powerUpSensors();
                 break;
             default :
                 // NV can persist data when the device goes into sleep mode 
@@ -108,6 +110,8 @@ class Application {
                 // erase stored data, so we only want to call it when the
                 // application is starting up.
                 configureNV();
+
+                initializeSensors();
 
                 // We want to make sure we can always blinkUp a device
                 // when it is first powered on, so we do not want to
@@ -239,6 +243,9 @@ class Application {
     }
 
     function powerDown() {
+        // Power Down sensors
+        powerDownSensors();
+
         // Calculate how long before next reading time
         local timer = nv.nextReadTime - time();
         
@@ -259,6 +266,18 @@ class Application {
             // Schedule next reading, but don't go to sleep
             imp.wakeup(timer, run.bindenv(this))
         }
+    }
+
+    function powerDownSensors() {
+        tempHumid.setMode(HTS221_MODE.POWER_DOWN);
+        accel.setDataRate(ACCEL_SHUTDOWN);
+        accel.enable(false);
+    }
+
+    function powerUpSensors() {
+        tempHumid.setMode(HTS221_MODE.ONE_SHOT);
+        accel.setDataRate(ACCEL_DATARATE);
+        accel.enable(true);
     }
 
     function failHandler(readings = null) {
