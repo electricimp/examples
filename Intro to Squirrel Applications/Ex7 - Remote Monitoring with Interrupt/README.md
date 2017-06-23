@@ -1,6 +1,6 @@
-# Power Efficient Remote Monitoring Application
+# Remote Monitoring Application with Interrupt
 
-In this example we will create a remote monitoring application that takes asynchronous sensor readings using the Promise libary. We will conserve power by putting the device to sleep between readings and connecting periodically to send the readings we have collected. This code can be easily configured for use with an impExplorer Developer Kit (imp001 model only) or impAccelerator Battery Powered Sensor Node. 
+In this example we will create a remote monitoring application that takes asynchronous sensor readings using the Promise libary and detects freefall events. We will conserve power by putting the device to sleep between readings. The device will connect periodically to send readings and will also wake and connect if a freefall is detected. This code can be easily configured for use with an impExplorer Developer Kit (imp001 model only) or impAccelerator Battery Powered Sensor Node. 
 
 ## Skill level
 
@@ -14,8 +14,10 @@ This example will focus on writing squirrel code. Please visit the [getting star
 * How to use a Hardware Abstraction Layer (HAL)
 * How to write a `class` in Squirrel
 * How to configure sensors to take asychronous readings using the Promise library
+* How to configure the acceleromter's freefall interrupt
 * How to configure and use NV storage
 * How to put the imp into sleep mode
+* How to wake on an interrupt
 * How to program your device to [run offline](https://electricimp.com/docs/resources/offline/)
 * How to change the default connection policy
 * How to send data between device and agent using Message Manager library
@@ -69,8 +71,8 @@ ExplorerKit_001 <- {
 * Assign your hardware class variables. In the Application class before the constructor you will find a number of class variables. You will need to re-assign the hardware variables so they look something like the example below. *Please note:* DO NOT copy and paste from thie example, as these values may differ from the ones in your HAL.
 
 ```
-// POWER EFFICIENT REMOTE MONITORING APPLICATION CODE
-// ---------------------------------------------------
+// REMOTE MONITORING INTERRUPT APPLICATION CODE
+// --------------------------------------------------------
 // Application code, take readings from our sensors
 // and send the data to the agent 
 
@@ -81,17 +83,18 @@ class Application {
     // Time in seconds to wait between connections
     static REPORTING_INTERVAL_SEC = 300;
     // Max number of stored readings
-    static MAX_NUM_STORED_READINGS = 23;
+    static MAX_NUM_STORED_READINGS = 20;
     // Time to wait after boot before turning off WiFi
     static BOOT_TIMER_SEC = 60;
     // Accelerometer data rate in Hz
-    static ACCEL_DATARATE = 1;
+    static ACCEL_DATARATE = 10;
 
     // Hardware variables
     i2c             = ExplorerKit_001.SENSOR_AND_GROVE_I2C; // Replace with your sensori2c
     tempHumidAddr   = ExplorerKit_001.TEMP_HUMID_I2C_ADDR; // Replace with your tempHumid i2c addr
     pressureAddr    = ExplorerKit_001.PRESSURE_I2C_ADDR; // Replace with your pressure i2c addr
     accelAddr       = ExplorerKit_001.ACCEL_I2C_ADDR; // Replace with your accel i2c addr
+    wakePin         = ExplorerKit_001.POWER_GATE_AND_WAKE_PIN; // Replace with your wake pin
 
     // Sensor variables
     tempHumid = null;
