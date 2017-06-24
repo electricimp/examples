@@ -36,4 +36,6 @@ In this example we will create a remote monitoring application that takes asynch
 
 ### Example 7 - Remote Monitoring Application with an Interrupt
 
+In this example we will create a remote monitoring application that takes asynchronous sensor readings using the Promise libary and detects freefall events. We will conserve power by putting the device to sleep between readings. The device will connect periodically to send readings and will also wake and connect if a freefall is detected. This code can be easily configured for use with an impExplorer Developer Kit (imp001 model only) or impAccelerator Battery Powered Sensor Node.
+
 ### Example 8 - Power Efficient Refrigerator Monitor
