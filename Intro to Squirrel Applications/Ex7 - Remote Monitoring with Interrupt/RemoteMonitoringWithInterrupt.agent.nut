@@ -43,17 +43,18 @@ class Application {
         mm.on("data", dataHandler.bindenv(this));
     }
 
-    function dataHandler(data, reply) {
+    function dataHandler(msg, reply) {
         // Log the data from the device. The data is a 
         // table, so use JSON encodeing method convert to a string
-        server.log(http.jsonencode(data));
+        // server.log(http.jsonencode(msg.data)); 
 
         // Initial State requires the data in a specific structre
         // Build an array with the data from our reading.
         local events = [];
 
-        if ("readings" in data) {
-            foreach (reading in data.readings) {
+        if ("readings" in msg.data) {
+            server.log(http.jsonencode(msg.data.readings));
+            foreach (reading in msg.data.readings) {
                 events.push({"key" : "temperature", "value" : reading.temperature, "epoch" : reading.time});
                 events.push({"key" : "humidity", "value" : reading.humidity, "epoch" : reading.time});
                 events.push({"key" : "pressure", "value" : reading.pressure, "epoch" : reading.time});
@@ -63,8 +64,9 @@ class Application {
             }
         }
 
-        if ("alerts" in data) {
-            foreach (alert in data.alerts) {
+        if ("alerts" in msg.data) {
+            server.log(http.jsonencode(msg.data.alerts));
+            foreach (alert in msg.data.alerts) {
                 events.push({"key" : "alert", "value" : alert.msg, "epoch" : alert.time});
             }
         }

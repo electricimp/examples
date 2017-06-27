@@ -31,7 +31,7 @@ class SmartFridge {
     static READING_INTERVAL_SEC = 5;
 
     // The lx level at which we know the door is open
-    static LX_THRESHOLD         = 1500;
+    static LX_THRESHOLD         = 3000;
 
     // Hardware variables
     i2c             = null; // Replace with your sensori2c

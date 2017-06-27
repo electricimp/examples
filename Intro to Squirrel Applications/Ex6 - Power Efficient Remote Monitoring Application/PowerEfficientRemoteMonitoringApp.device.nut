@@ -59,7 +59,7 @@ class Application {
     mm = null;
     
     // Flag to track first disconnection
-    _boot = true;
+    _boot = false;
 
     constructor() {
         // Power save mode will reduce power consumption when the 
@@ -107,7 +107,8 @@ class Application {
             default :
                 // We pushed new code or just rebooted the device, etc. Lets
                 // congigure everything. 
-                
+                server.log("Device running...");
+                                
                 // NV can persist data when the device goes into sleep mode 
                 // Set up the table with defaults - note this method will 
                 // erase stored data, so we only want to call it when the
@@ -118,6 +119,7 @@ class Application {
                 // when it is first powered on, so we do not want to
                 // immediately disconnect from WiFi after boot
                 // Set up first disconnect
+                _boot = true;
                 imp.wakeup(BOOT_TIMER_SEC, function() {
                     _boot = false;
                     powerDown();
@@ -253,8 +255,8 @@ class Application {
         // Calculate how long before next reading time
         local timer = nv.nextReadTime - time();
         
-        // Check if we just booted up or we are 
-        // about to take a reading
+        // Check that we did not just boot up and are 
+        // not about to take a reading
         if (!_boot && timer > 2) {
             // Go to sleep
             if (server.isconnected()) {
@@ -268,7 +270,10 @@ class Application {
             }
         } else {
             // Schedule next reading, but don't go to sleep
-            imp.wakeup(timer, takeReadings.bindenv(this))
+            imp.wakeup(timer, function() {
+                powerUpSensors();
+                takeReadings();
+            }.bindenv(this))
         }
     }
 
@@ -276,6 +281,12 @@ class Application {
         tempHumid.setMode(HTS221_MODE.POWER_DOWN);
         accel.setDataRate(ACCEL_SHUTDOWN);
         accel.enable(false);
+    }
+
+    function powerUpSensors() {
+        tempHumid.setMode(HTS221_MODE.ONE_SHOT);
+        accel.setDataRate(ACCEL_DATARATE);
+        accel.enable(true);
     }
 
     function failHandler(readings = null) {
@@ -415,7 +426,6 @@ class Application {
 
 // RUNTIME 
 // ---------------------------------------------------
-server.log("Device running...");
 
 // Initialize application to start readings loop
 app <- Application();

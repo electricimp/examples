@@ -41,7 +41,7 @@ class Application {
     // Time to wait after boot before turning off WiFi
     static BOOT_TIMER_SEC = 60;
     // Accelerometer data rate in Hz
-    static ACCEL_DATARATE = 10;
+    static ACCEL_DATARATE = 25;
 
     // Hardware variables
     i2c             = null; // Replace with your sensori2c
@@ -59,7 +59,7 @@ class Application {
     mm = null;
     
     // Flag to track first disconnection
-    _boot = true;
+    _boot = false;
 
     constructor() {
         // Power save mode will reduce power consumption when the 
@@ -108,7 +108,8 @@ class Application {
             default :
                 // We pushed new code or just rebooted the device, etc. Lets
                 // congigure everything. 
-
+                server.log("Device running...");
+            
                 // NV can persist data when the device goes into sleep mode 
                 // Set up the table with defaults - note this method will 
                 // erase stored data, so we only want to call it when the
@@ -119,6 +120,7 @@ class Application {
                 // when it is first powered on, so we do not want to
                 // immediately disconnect from WiFi after boot
                 // Set up first disconnect
+                _boot = true;
                 imp.wakeup(BOOT_TIMER_SEC, function() {
                     _boot = false;
                     powerDown();
@@ -190,26 +192,31 @@ class Application {
         // Update the next reading time varaible
         setNextReadTime(now);
         
+        local connected = server.isconnected();
         // Only send if we are already connected 
         // to WiFi or if it is time to connect
-        if (server.isconnected() || timeToConnect()) {
-            
+        if (connected || timeToConnect()) {
+
             // Update the next connection time varaible
             setNextConnectTime(now);
 
             // We changed the default connection policy, so we need to 
             // use this method to connect
-            server.connect(function(reason) {
-                if (reason == SERVER_CONNECTED) {
-                    // We connected let's send readings
-                    sendData();
-                } else {
-                    // We were not able to connect
-                    // Let's make sure we don't run out 
-                    // of meemory with our stored readings
-                    failHandler();
-                }
-            });
+            if (connected) {
+                sendData();
+            } else {
+                server.connect(function(reason) {
+                    if (reason == SERVER_CONNECTED) {
+                        // We connected let's send readings
+                        sendData();
+                    } else {
+                        // We were not able to connect
+                        // Let's make sure we don't run out 
+                        // of meemory with our stored readings
+                        failHandler();
+                    }
+                }.bindenv(this));
+            }
 
         } else {
             // Not time to connect, let's sleep until
@@ -269,9 +276,9 @@ class Application {
 
         // Calculate how long before next reading time
         local timer = nv.nextReadTime - time();
-        
-        // Check if we just booted up or we are 
-        // about to take a reading
+    
+        // Check that we did not just boot up and are 
+        // not about to take a reading
         if (!_boot && timer > 2) {
             // Go to sleep
             if (server.isconnected()) {
@@ -285,12 +292,19 @@ class Application {
             }
         } else {
             // Schedule next reading, but don't go to sleep
-            imp.wakeup(timer, takeReadings.bindenv(this));
+            imp.wakeup(timer, function() {
+                powerUpSensors();
+                takeReadings();
+            }.bindenv(this));
         }
     }
 
     function powerDownSensors() {
         tempHumid.setMode(HTS221_MODE.POWER_DOWN);
+    }
+    
+    function powerUpSensors() {
+        tempHumid.setMode(HTS221_MODE.ONE_SHOT);
     }
 
     function failHandler(data = null) {
@@ -416,6 +430,14 @@ class Application {
     function configureInterrupt() {
         accel.configureInterruptLatching(true);
         accel.configureFreeFallInterrupt(true);
+        
+        // Configure wake pin
+        wakePin.configure(DIGITAL_IN_WAKEUP, function() {
+            if (wakePin.read()) {
+                checkInterrupt();
+                checkConnetionTime();
+            }
+        }.bindenv(this));
     }
 
     function checkInterrupt() {
@@ -433,9 +455,6 @@ class Application {
         tempHumid = HTS221(i2c, tempHumidAddr);
         pressure = LPS22HB(i2c, pressureAddr);
         accel = LIS3DH(i2c, accelAddr);
-
-        // Configure wake pin
-        wakePin.configure(DIGITAL_IN_WAKEUP);
     }
 
     function configureSensors() {
@@ -456,7 +475,6 @@ class Application {
 
 // RUNTIME 
 // ---------------------------------------------------
-server.log("Device running...");
 
 // Initialize application to start readings loop
 app <- Application();

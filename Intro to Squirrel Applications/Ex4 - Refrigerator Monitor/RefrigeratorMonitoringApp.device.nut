@@ -36,7 +36,7 @@ class SmartFridge {
     static BOOT_TIMER_SEC           = 60;
 
     // The lx level at which we know the door is open
-    static LX_THRESHOLD             = 1500;
+    static LX_THRESHOLD             = 3000;
 
     // Hardware variables
     i2c             = null; // Replace with your sensori2c
@@ -103,6 +103,9 @@ class SmartFridge {
             // Check door status using internal LX sensor to 
             // determine if the door is open
             reading.doorOpen <- (hardware.lightlevel() > LX_THRESHOLD);
+
+            // Add table to the readings array for storage til next connection
+            readings.push(reading);
 
             // Only send readings if we have some and are either already
             // connected to WiFi, there is a change in the door status or

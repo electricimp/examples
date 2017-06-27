@@ -40,15 +40,15 @@ class SmartFridge {
         // Let's log the agent ID here
         server.log("Agent ID: " + agentID);
 
-        device.on("reading", readingHandler.bindenv(this));
+        mm.on("readings", readingsHandler.bindenv(this));
     }
 
-    function readingHandler(reading) {
+    function readingsHandler(msg, reply) {
         // Initial State requires the data in a specific structre
         // Build an array with the data from our reading.
         local events = [];
 
-        foreach (reading in readings) {
+        foreach (reading in msg.data) {
             // Log the reading from the device. The reading is a 
             // table, so use JSON encodeing method convert to a string
             server.log(http.jsonencode(reading));
