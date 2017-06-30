@@ -4,6 +4,11 @@ This is a collection of examples written for the Electric Imp platform.  Not all
 
 ## Recent Examples
 
+### Intro to Squirrel Applications
+
+A series of eight examples for use with the sensors on the impExplorer Developer Kit or impAccelerator Battery Powered Sensor Node. These examples range from simple to advanced programming.  Each example builds on the skills learned in the previous example. Please note that the first few examples are not power efficient and will drain battery powered devices quickly. 
+##### Updated June 29, 2017
+
 ### [SensorNode_BatteryCheck](./SensorNode_BatteryCheck/)
 This example was written for the Battery Powered Sensor Node to determine the battery voltage. The battery class included in this example can be used for other devices as long as there is an analog pin that is connected directly to the battery. **Please note** this code is not usable for determining the battery voltage on the impExplorer Developer Kit, since no analog pins are connected directly to the battery.  
 ##### Updated June 21, 2017
