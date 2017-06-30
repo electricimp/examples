@@ -1,17 +1,12 @@
-// Refrigerator Monitor Application Agent Code
+// Asset Tracker Application Agent Code
 // ---------------------------------------------------
 
 // WEBSERVICE LIBRARYS
 // ---------------------------------------------------
 // Libraries must be required before all other code
 
-
 // IBM Watson Library
 #require "IBMWatson.class.nut:1.1.0"
-// Initial State Library
-#require "InitialState.class.nut:1.0.0"
-// Library to manage agent/device communication
-#require "MessageManager.lib.nut:2.0.0"
 
 
 // WEBSERVICE WRAPPER CLASSES
@@ -20,50 +15,14 @@
 // register this device with the webservice if needed. They also 
 // configure the data before sending.
 
-class IState {
-
-    iState = null;
-    devID = null;
-
-    constructor(_devID, StreamingAccessKey) {
-        iState = InitialState(StreamingAccessKey);
-        devID = _devID;
-    }
-
-    function send(data) {
-        // Initial State requires the data in a specific structure
-        // Build an array with the data from our reading.
-        local events = [];
-
-        foreach (reading in data) {
-            events.push({"key" : "temperature", "value" : reading.temperature, "epoch" : reading.time});
-            events.push({"key" : "humidity", "value" : reading.humidity, "epoch" : reading.time});
-            events.push({"key" : "door_open", "value" : reading.doorOpen, "epoch" : reading.time});
-        }
-
-        // Send reading to Initial State
-        iState.sendEvents(events, function(err, resp) {
-            if (err != null) {
-                // We had trouble sending to Initial State, log the error
-                server.error("Error sending to Initial State: " + err);
-            } else {
-                // A successful send. The response is an empty string, so
-                // just log a generic send message
-                server.log("Reading sent to Initial State.");
-            }
-        })
-    }
-
-}
-
 class Watson {
 
     // Watson Settings
     static DEVICE_TYPE = "Arrow_Imp005_EZ";
     static DEVICE_TYPE_DESCRIPTION = "Arrow Imp 005 EZ Eval";
-    static EVENT_ID = "RefrigeratorMonitor";
+    static EVENT_ID = "AssetTracker";
 
-    // Time to wait before sending if device is not ready
+    // Time to wait before send if device is not ready
     static SEND_DELAY_SEC = 5;
 
     watson = null;
@@ -167,39 +126,145 @@ class Watson {
 }
 
 
-// REFRIGERATOR MONTOR APPLICATION CODE
+// GOOGLE MAPS INTEGRATION
+// ---------------------------------------------------
+// Receives location from Google based on WiFi scan results
+
+class GoogleMaps {
+
+    static LOCATION_URL = "https://www.googleapis.com/geolocation/v1/geolocate?key=";
+
+    static WIFI_SIGNALS_ERROR = "Insufficient wifi signals found";
+    static GOOGLE_REQ_ERROR = "Unexpected response from Google";
+    static GOOGLE_REQ_LIMIT_EXCEEDED_ERROR  = "You have exceeded your daily limit";
+    static GOOGLE_REQ_INVALID_KEY_ERROR  = "Your Google Maps Geolocation API key is not valid or the request body is not valid JSON";
+    static GOOGLE_REQ_LOCATION_NOT_FOUND_ERROR  = "Your API request was valid, but no results were returned";
+
+    _apiKey = null;
+
+    constuctor(apiKey) {
+        _apiKey = apiKey;
+    }
+
+    function getLocation(wifis, cb) {
+        if (wifis.len() < 2) {
+            imp.wakeup(0, function() {
+                cb(WIFI_SIGNALS_ERROR, null);
+            }.bindenv(this))
+            return;
+        }
+
+        // Build request
+        local url = format("%s%s", LOCATION_URL, _apiKey);
+        local headers = {"Content-Type" : "application/json"};
+        local body = { "wifiAccessPoints": [] };
+
+        foreach (network in wifis) {
+            body.wifiAccessPoints.append({ "macAddress": _addColons(network.bssid),
+                                           "signalStrength": network.rssi
+                                           "channel" : network.channel });
+        }
+
+        local request = http.post(url, headers, http.jsonencode(body));
+        request.sendasync(function(res) {
+            _locationRespHandler(wifis, res, cb);
+        }.bindenv(this));
+    }
+
+    // Process location HTTP response
+    function _locationRespHandler(wifis, res, cb) {
+        local body; 
+        local err = null;
+
+        try {
+            body = http.jsondecode(res.body);
+        } catch(e) {
+            imp.wakeup(0, function() { cb(e, res); }.bindenv(this))
+        }
+        
+        local statuscode = res.statuscode;
+        switch(statuscode) {
+            case 200:
+                if ("location" in body) {
+                    res = body;
+                } else {
+                    err = GOOGLE_REQ_LOCATION_NOT_FOUND_ERROR;
+                }
+                break;
+            case 400:
+                err = GOOGLE_REQ_INVALID_KEY_ERROR;
+                break;
+            case 403:
+                err = GOOGLE_REQ_LIMIT_EXCEEDED_ERROR;
+                break;
+            case 404:
+                err = GOOGLE_REQ_LOCATION_NOT_FOUND_ERROR;
+                break;
+            case 429:
+                // Too many requests try again in a second
+                imp.wakeup(1, function() {
+                    getLocation(wifis);
+                }.bindenv(this));
+                return;
+            default:
+                if ("message" in body) {
+                    // Return Google's error message
+                    err = body.message;
+                } else {
+                    // Pass generic error and response so user can handle error
+                    err = GOOGLE_REQ_ERROR;
+                }
+        }
+        
+        imp.wakeup(0, function() {
+            cb(err, res);  
+        }.bindenv(this));
+    }
+
+    // Format bssids for Google
+    function _addColons(bssid) {
+        // Format a WLAN basestation MAC for transmission to Google
+        local result = bssid.slice(0, 2);
+        for (local i = 2 ; i < 12 ; i += 2) {
+            result = result + ":" + bssid.slice(i, i + 2)
+        }
+        return result.toupper();
+    }
+}
+
+
+// ASSET TRACKER APPLICATION CODE
 // ---------------------------------------------------
 // Application code, listen for readings from device,
-// when a reading is received send the data to the webservices 
+// when a reading is received send the data to Initial 
+// State 
 
-class SmartFridge {
+class AssetTracker {
 
     // Class variables
-    iState = null;
+    gMaps = null;
     deviceID = null;
-    mm = null;
 
-    constructor(watsonApiKey, watsonAuthToken, watsonOrgId, iStateAccessKey = null) {
+    constructor(watsonApiKey, watsonAuthToken, watsonOrgId, googleApiKey) {
         // Get the device ID
         deviceID = imp.configparams.deviceid;
 
         // Initialize Watson
         watson = Watson(deviceID, watsonApiKey, watsonAuthToken, watsonOrgId);
+        gMaps = GoogleMaps(googleApiKey);
 
-        // Initialize Initial State if we have a key
-        if (iStateAccessKey != null) {
-            iState = IState(deviceID, iStateAccessKey);
-        }
-
-        // Configure message manager for device/agent communication
-        mm = MessageManager();
-
-        mm.on("readings", readingsHandler.bindenv(this));
+        device.on("wifi.networks", getLocation.bindenv(this));
     }
 
-    function readingsHandler(msg, reply) {
-        watson.send(msg.data);
-        if (iState) iState.send(msg.data);
+    function getLocation(wifis) {
+        gMaps.getLocation(wifis, function(err, res) {
+            if (err) {
+                server.error(err);
+            } else {
+                server.log(http.jsonencode(res))
+                watson.send(res.location);
+            }
+        }.bindenv(this));
     }
 
 }
@@ -209,12 +274,8 @@ class SmartFridge {
 // ---------------------------------------------------
 server.log("Agent running...");
 
-// Initial state is optional if you wish to push data 
-// add your "Streaming Access Key" to the variable below
-// On Intial State website navigate to "my account" 
-// page find/create a "Streaming Access Key"
-// Paste it into the variable below
-const IS_STREAMING_ACCESS_KEY = null;
+// Google API key from the google developer console
+const GOOGLE_API_KEY = "<YOUR API KEY HERE>";
 
 // Watson API Auth Keys
 // See library examples for step by step Watson setup
@@ -223,4 +284,4 @@ const WATSON_AUTH_TOKEN = "<YOUR AUTHENTICATION TOKEN HERE>";
 const WATSON_ORG_ID = "<YOUR ORG ID>";
 
 // Run the Application
-SmartFridge(WATSON_API_KEY, WATSON_AUTH_TOKEN, WATSON_ORG_ID, IS_STREAMING_ACCESS_KEY);
+AssetTracker(WATSON_API_KEY, WATSON_AUTH_TOKEN, WATSON_ORG_ID, GOOGLE_API_KEY);
