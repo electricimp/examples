@@ -52,6 +52,11 @@ class Application {
         // Build an array with the data from our reading.
         local events = [];
 
+        // Add door status
+        server.log("Door is open: " + msg.data.doorOpen);
+        events.push({"key" : "doorOpen", "value" : msg.data.doorOpen});
+
+        // Add readings 
         if ("readings" in msg.data) {
             server.log(http.jsonencode(msg.data.readings));
             foreach (reading in msg.data.readings) {
@@ -60,10 +65,11 @@ class Application {
             }
         }
 
+        // Add alerts
         if ("alerts" in msg.data) {
             server.log(http.jsonencode(msg.data.alerts));
             foreach (alertType, alertVal in msg.data.alerts) {
-                events.push({"key" : alertType, "value" : alertVal, "epoch" : alert.time});
+                events.push({"key" : alertType, "value" : alertVal, "epoch" : time()});
             }
         }
 

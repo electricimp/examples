@@ -603,8 +603,8 @@ class Application {
             // Create a table to store the results from the sensor readings
             local reading = {};
             // Add sensor readings
-            if ("temperature" in results) reading.temperature <- results.temperature;
-            if ("humidity" in results) reading.humidity <- results.humidity;
+            if ("temperature" in result) reading.temperature <- result.temperature;
+            if ("humidity" in result) reading.humidity <- result.humidity;
             // We have a good reading
             if (reading.len() > 0) {
                 // Add a timestamp 
@@ -612,6 +612,7 @@ class Application {
                 nv.readings.push(reading);
                 // Check for Temp/Humid alert conditions
                 checkForTempHumidAlerts(reading);
+                checkConnetionTime();
             } else if (nv.readings.len() > 0 || nv.alerts.len() > 0) {
                 // Even if this reading failed if we have stored readings
                 // or events continue to run the connection flow
@@ -858,12 +859,12 @@ class Application {
 
             // Schedule next action, but don't go to sleep
             _nextActTimer = imp.wakeup(timer, function() {
-                if (nextActTimer != null) {
+                if (_nextActTimer != null) {
                     imp.cancelwakeup(_nextActTimer);
                     _nextActTimer = null;
                 }
                 local now = time();
-                if (nv.nextReadTime >= now) {
+                if (nv.nextReadTime <= now) {
                     // Time for a reading
                     powerUpSensors();
                     run();
