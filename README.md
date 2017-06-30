@@ -4,8 +4,11 @@ This is a collection of examples written for the Electric Imp platform.  Not all
 
 ## Recent Examples
 
-### Intro to Squirrel Applications
+### Arrow Imp005 EZ Eval Examples(./Arrow_Imp005_EZ_Eval_Examples)
+Examples for use with the Imp005 EZ Eval board.
+##### Updated June 30, 2017
 
+### Intro to Squirrel Applications(./Intro%20to%20Squirrel%20Applications)
 A series of eight examples for use with the sensors on the impExplorer Developer Kit or impAccelerator Battery Powered Sensor Node. These examples range from simple to advanced programming.  Each example builds on the skills learned in the previous example. Please note that the first few examples are not power efficient and will drain battery powered devices quickly. 
 ##### Updated June 29, 2017
 
