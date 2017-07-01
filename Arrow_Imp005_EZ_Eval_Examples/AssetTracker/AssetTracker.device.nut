@@ -55,8 +55,8 @@ class AssetTracker {
 
     // Hardware variables
     i2c        = IMP005_EZ_EVAL.SENSOR_AND_IOH_I2C; 
-    accelAddr  = IMP005_EZ_EVAL.ACCEL_I2C_ADDR;
-    intPin     = IMP005_EZ_EVAL.ACCEL_INT;
+    accelAddr  = 0x30;
+    intPin     = IMP005_EZ_EVAL.IOH_12;
 
     // Sensor variables
     accel = null;

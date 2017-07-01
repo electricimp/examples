@@ -72,8 +72,10 @@ class Watson {
     ready = false;
 
     constructor(_devID, apiKey, authToken, orgId) {
-        watson = IBMWatson(apiKey, authToken, orgId);
         devID = _devID;
+
+        watson = IBMWatson(apiKey, authToken, orgId);
+        configureWatson();
     }
 
     function send(data) {

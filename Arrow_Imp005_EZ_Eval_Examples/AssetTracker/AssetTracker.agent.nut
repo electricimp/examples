@@ -31,8 +31,10 @@ class Watson {
     ready = false;
 
     constructor(_devID, apiKey, authToken, orgId) {
-        watson = IBMWatson(apiKey, authToken, orgId);
         devID = _devID;
+        
+        watson = IBMWatson(apiKey, authToken, orgId);
+        configureWatson();
     }
 
     function send(data) {
@@ -142,7 +144,7 @@ class GoogleMaps {
 
     _apiKey = null;
 
-    constuctor(apiKey) {
+    constructor(apiKey) {
         _apiKey = apiKey;
     }
 
@@ -203,7 +205,7 @@ class GoogleMaps {
             case 429:
                 // Too many requests try again in a second
                 imp.wakeup(1, function() {
-                    getLocation(wifis);
+                    getLocation(wifis, cb);
                 }.bindenv(this));
                 return;
             default:
@@ -243,6 +245,7 @@ class AssetTracker {
 
     // Class variables
     gMaps = null;
+    watson = null;
     deviceID = null;
 
     constructor(watsonApiKey, watsonAuthToken, watsonOrgId, googleApiKey) {
@@ -257,6 +260,9 @@ class AssetTracker {
     }
 
     function getLocation(wifis) {
+        // send motion alert here
+
+        // get location
         gMaps.getLocation(wifis, function(err, res) {
             if (err) {
                 server.error(err);

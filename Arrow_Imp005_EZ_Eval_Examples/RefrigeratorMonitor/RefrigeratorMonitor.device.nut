@@ -83,7 +83,7 @@ class SmartFridge {
 
     // Track current door status so we know when there is a
     // there is a change
-    currentDoorOpenStatus = false;
+    doorOpenStatus = false;
 
     // Varaible to track when to connect
     nextConnectTime = null;
@@ -134,18 +134,21 @@ class SmartFridge {
             // determine if the door is open
             reading.doorOpen <- (hardware.lightlevel() > LX_THRESHOLD);
 
+            // Add temp alert condtion
+
+            
             // Add table to the readings array for storage til next connection
             readings.push(reading);
 
             // Only send readings if we have some and are either already
             // connected to WiFi, there is a change in the door status or
             // if it is time to connect
-            if (readings.len() > 0 && (server.isconnected() || currentDoorOpenStatus != reading.doorOpen || timeToConnect())) {
+            if (readings.len() > 0 && ((server.isconnected() || doorOpenStatus != reading.doorOpen || timeToConnect()))) {
                 sendReadings();
             }
 
             // update current door status
-            currentDoorOpenStatus = reading.doorOpen;
+            doorOpenStatus = reading.doorOpen;
             // Schedule the next reading
             imp.wakeup(READING_INTERVAL_SEC, run.bindenv(this));    
         }.bindenv(this));
