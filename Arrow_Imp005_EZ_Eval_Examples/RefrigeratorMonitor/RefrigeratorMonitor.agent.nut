@@ -179,6 +179,7 @@ class SmartFridge {
 
     // Class variables
     iState = null;
+    watson = null;
     deviceID = null;
     mm = null;
 
