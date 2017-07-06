@@ -41,3 +41,9 @@ In this example we will create a remote monitoring application that takes asynch
 ### Example 8 - Power Efficient Refrigerator Monitor
 
 In this example we will create a refirgerator monitoring application. The application monitors the temperature and humdity of the refrigerator and sends alerts if the temperature or humidity is higher than a set threshold for too long. The application also monitors the refrigerator door using the accelerometer to wake on motion and the internal light sensor to determine the door status. The application saves power by sleeping between readings when the door is closed, and only connecting to WiFi periodically to upload readings or when an alert is triggered. This code can be easily configured for use with an impExplorer Developer Kit (imp001 model only) or impAccelerator Battery Powered Sensor Node. 
+
+## Adding Webservices
+
+### Example 9 - Adding Webservices to Simple Remote Monitoring Application 
+
+In this example we will use the device code from example 3, but adapt the agent code to send data to an additional webservice, IBM Watson IoT.  
