@@ -18,21 +18,20 @@
 class Watson {
 
     // Watson Settings
-    static DEVICE_TYPE = "Arrow_Imp005_EZ";
+    static DEVICE_TYPE             = "Arrow_Imp005_EZ";
     static DEVICE_TYPE_DESCRIPTION = "Arrow Imp 005 EZ Eval";
-    static EVENT_ID = "AssetTracker";
+    static EVENT_ID                = "AssetTracker";
 
     // Time to wait before send if device is not ready
     static SEND_DELAY_SEC = 5;
 
     watson = null;
-    devID = null;
-
-    ready = false;
+    devID  = null;
+    ready  = false;
 
     constructor(_devID, apiKey, authToken, orgId) {
         devID = _devID;
-        
+
         watson = IBMWatson(apiKey, authToken, orgId);
         configureWatson();
     }
@@ -260,9 +259,11 @@ class AssetTracker {
     }
 
     function getLocation(wifis) {
-        // send motion alert here
+        // Send motion alert
+        watson.send({"motion" : time()}); 
 
-        // get location
+        // Update location 
+        // Get location from google maps then send to Watson
         gMaps.getLocation(wifis, function(err, res) {
             if (err) {
                 server.error(err);

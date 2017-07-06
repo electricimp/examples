@@ -36,9 +36,11 @@ class IState {
         local events = [];
 
         foreach (reading in data) {
-            events.push({"key" : "temperature", "value" : reading.temperature, "epoch" : reading.time});
-            events.push({"key" : "humidity", "value" : reading.humidity, "epoch" : reading.time});
-            events.push({"key" : "door_open", "value" : reading.doorOpen, "epoch" : reading.time});
+            local t = reading.time;
+            events.push({"key" : "temperature", "value" : reading.temperature, "epoch" : t});
+            events.push({"key" : "humidity", "value" : reading.humidity, "epoch" : t});
+            events.push({"key" : "door_open", "value" : reading.doorOpen, "epoch" : t});
+            events.push({"key" : "temp_alert", "value" : reading.tempAlert, "epoch" : t});
         }
 
         // Send reading to Initial State
@@ -59,17 +61,16 @@ class IState {
 class Watson {
 
     // Watson Settings
-    static DEVICE_TYPE = "Arrow_Imp005_EZ";
+    static DEVICE_TYPE             = "Arrow_Imp005_EZ";
     static DEVICE_TYPE_DESCRIPTION = "Arrow Imp 005 EZ Eval";
-    static EVENT_ID = "RefrigeratorMonitor";
+    static EVENT_ID                = "RefrigeratorMonitor";
 
     // Time to wait before sending if device is not ready
     static SEND_DELAY_SEC = 5;
 
     watson = null;
-    devID = null;
-
-    ready = false;
+    devID  = null;
+    ready  = false;
 
     constructor(_devID, apiKey, authToken, orgId) {
         devID = _devID;

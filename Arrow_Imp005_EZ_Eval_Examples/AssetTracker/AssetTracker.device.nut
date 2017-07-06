@@ -49,12 +49,14 @@ IMP005_EZ_EVAL <- {
 
 class AssetTracker {
 
-    static ACCEL_DATARATE = 100;
+    // Movement detection accel settings
+    static ACCEL_DATARATE      = 100;
     static ACCEL_INT_THRESHOLD = 0.030;
-    static ACCEL_INT_DURATION = 100;
+    static ACCEL_INT_DURATION  = 100;
 
     // Hardware variables
-    i2c        = IMP005_EZ_EVAL.SENSOR_AND_IOH_I2C; 
+    i2c        = IMP005_EZ_EVAL.SENSOR_AND_IOH_I2C;
+    // These are values for the external sparkfun accel 
     accelAddr  = 0x30;
     intPin     = IMP005_EZ_EVAL.IOH_12;
 
@@ -100,7 +102,7 @@ class AssetTracker {
         if ("int1" in int) {
             server.log("Motion detected");
             // Send agent Wifi scan results, so we can 
-            // Get the location of the device
+            // get the location of the device
             agent.send("wifi.networks", imp.scanwifinetworks());
         }
     }

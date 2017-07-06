@@ -65,6 +65,9 @@ class SmartFridge {
     // Time to wait after boot before turning off WiFi
     static BOOT_TIMER_SEC           = 60;
 
+    // When tempertaure is above this threshold add an alert
+    static TEMP_THRESHOLD           = 30;
+
     // The lx level at which we know the door is open
     static LX_THRESHOLD             = 3000;
 
@@ -73,7 +76,7 @@ class SmartFridge {
     tempHumidAddr   = IMP005_EZ_EVAL.TEMP_HUMID_I2C_ADDR;
 
     // Sensor variables
-    tempHumid       = null;
+    tempHumid = null;
 
     // Message Manager variable
     mm = null;
@@ -127,16 +130,17 @@ class SmartFridge {
             local reading = { "time" : time() };
 
             // Add temperature and humidity readings
-            if ("temperature" in result) reading.temperature <- result.temperature;
+            if ("temperature" in result) {
+                reading.temperature <- result.temperature;
+                // Add boolean temp alert to reading 
+                reading.tempAlert <- (reading.temperature >= TEMP_THRESHOLD);
+            }
             if ("humidity" in result) reading.humidity <- result.humidity;
 
             // Check door status using internal LX sensor to 
             // determine if the door is open
             reading.doorOpen <- (hardware.lightlevel() > LX_THRESHOLD);
 
-            // Add temp alert condtion
-
-            
             // Add table to the readings array for storage til next connection
             readings.push(reading);
 
