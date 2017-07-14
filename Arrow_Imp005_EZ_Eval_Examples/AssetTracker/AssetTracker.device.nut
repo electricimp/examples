@@ -56,8 +56,7 @@ class AssetTracker {
 
     // Hardware variables
     i2c        = IMP005_EZ_EVAL.SENSOR_AND_IOH_I2C;
-    // These are values for the external sparkfun accel 
-    accelAddr  = 0x30;
+    accelAddr  = IMP005_EZ_EVAL.ACCEL_I2C_ADDR;
     intPin     = IMP005_EZ_EVAL.IOH_12;
 
     // Sensor variables
@@ -71,7 +70,9 @@ class AssetTracker {
         // Configure accelerometer
         accel.init();
         accel.setLowPower(true);
+        // Set data (sampling) rate
         accel.setDataRate(ACCEL_DATARATE);
+        // Ignore gravity bias
         accel.configureHighPassFilter(LIS3DH.HPF_AOI_INT1, null, LIS3DH.HPF_DEFAULT_MODE);
 
         // Configure accelerometer interrupt
@@ -93,18 +94,17 @@ class AssetTracker {
 
     function interruptHandler() {
         // This callback is called on every pin state change
-        // Don't do anything when interrupt is cleared
-        if (intPin.read() == 0) return;
 
-        // Clear the interrupt
-        local int = accel.getInterruptTable();
-        // Check for movement
-        if ("int1" in int) {
-            server.log("Motion detected");
+        // Check for motion
+        if (intPin.read()) {
+            // Clear the interrupt
+            local int = accel.getInterruptTable();
+            server.log("motion detected");
             // Send agent Wifi scan results, so we can 
-            // get the location of the device
+            // Get the location of the device
             agent.send("wifi.networks", imp.scanwifinetworks());
         }
+
     }
 }
 
