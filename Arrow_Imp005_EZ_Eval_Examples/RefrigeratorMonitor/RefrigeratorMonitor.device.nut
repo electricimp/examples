@@ -61,22 +61,23 @@ class SmartFridge {
     // Time in seconds to wait between readings
     static READING_INTERVAL_SEC     = 5;
     // Time in seconds to wait between connections
+    // Increasing this time reduces WiFi power use
     static REPORTING_INTERVAL_SEC   = 300; 
     // Time to wait after boot before turning off WiFi
-    static BOOT_TIMER_SEC           = 60;
+    static BOOT_TIMER_SEC           = 30;
 
     // When tempertaure is above this threshold add an alert
-    static TEMP_THRESHOLD           = 30;
+    static TEMP_THRESHOLD           = 32;
 
     // The lx level at which we know the door is open
-    static LX_THRESHOLD             = 3000;
+    static LX_THRESHOLD             = 15000;
 
     // Hardware variables
     i2c             = IMP005_EZ_EVAL.SENSOR_AND_IOH_I2C; 
     tempHumidAddr   = IMP005_EZ_EVAL.TEMP_HUMID_I2C_ADDR;
 
     // Sensor variables
-    tempHumid = null;
+    tempHumid       = null;
 
     // Message Manager variable
     mm = null;
@@ -86,9 +87,9 @@ class SmartFridge {
 
     // Track current door status so we know when there is a
     // there is a change
-    doorOpenStatus = false;
+    doorOpenStatus = 0;
 
-    // Varaible to track when to connect
+    // Variable to track when to connect
     nextConnectTime = null;
     
     // Flag to track first disconnection
@@ -133,13 +134,13 @@ class SmartFridge {
             if ("temperature" in result) {
                 reading.temperature <- result.temperature;
                 // Add boolean temp alert to reading 
-                reading.tempAlert <- (reading.temperature >= TEMP_THRESHOLD);
+                reading.tempAlert <- (reading.temperature >= TEMP_THRESHOLD) ? 1:0;
             }
             if ("humidity" in result) reading.humidity <- result.humidity;
 
             // Check door status using internal LX sensor to 
             // determine if the door is open
-            reading.doorOpen <- (hardware.lightlevel() > LX_THRESHOLD);
+            reading.doorOpen <- (hardware.lightlevel() > LX_THRESHOLD) ? 1:0;
 
             // Add table to the readings array for storage til next connection
             readings.push(reading);
@@ -147,7 +148,7 @@ class SmartFridge {
             // Only send readings if we have some and are either already
             // connected to WiFi, there is a change in the door status or
             // if it is time to connect
-            if (readings.len() > 0 && ((server.isconnected() || doorOpenStatus != reading.doorOpen || timeToConnect()))) {
+            if (readings.len() > 0 && ((server.isconnected() || doorOpenStatus != reading.doorOpen || reading.tempAlert > 0 || timeToConnect()))) {
                 sendReadings();
             }
 
@@ -159,6 +160,7 @@ class SmartFridge {
     }
 
     function sendReadings() {
+        server.log("sending readings");
         // Send readings to the agent
         // This method calls agent.send, which will 
         // force the server to connect to WiFi            
