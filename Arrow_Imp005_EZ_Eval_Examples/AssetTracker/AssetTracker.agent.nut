@@ -255,12 +255,13 @@ class AssetTracker {
         watson = Watson(deviceID, watsonApiKey, watsonAuthToken, watsonOrgId);
         gMaps = GoogleMaps(googleApiKey);
 
+        // Register device receive callback
         device.on("wifi.networks", getLocation.bindenv(this));
     }
 
     function getLocation(wifis) {
-        // Send motion alert
-        watson.send({"motion" : time()}); 
+        server.log("send motion alert");
+        watson.send({"motion" : 1}); 
 
         // Update location 
         // Get location from google maps then send to Watson
@@ -268,7 +269,7 @@ class AssetTracker {
             if (err) {
                 server.error(err);
             } else {
-                server.log(http.jsonencode(res))
+                server.log("send location: " + http.jsonencode(res))
                 watson.send(res.location);
             }
         }.bindenv(this));
