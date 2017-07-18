@@ -218,7 +218,7 @@ server.log("Agent running...");
 // On Intial State website navigate to "my account" 
 // page find/create a "Streaming Access Key"
 // Paste it into the variable below
-const IS_STREAMING_ACCESS_KEY = null;
+// const IS_STREAMING_ACCESS_KEY = null;
 
 // Watson API Auth Keys
 // See library examples for step by step Watson setup
@@ -227,4 +227,4 @@ const WATSON_AUTH_TOKEN = "<YOUR AUTHENTICATION TOKEN HERE>";
 const WATSON_ORG_ID = "<YOUR ORG ID>";
 
 // Run the Application
-SmartFridge(WATSON_API_KEY, WATSON_AUTH_TOKEN, WATSON_ORG_ID, IS_STREAMING_ACCESS_KEY);
+SmartFridge(WATSON_API_KEY, WATSON_AUTH_TOKEN, WATSON_ORG_ID, null;
