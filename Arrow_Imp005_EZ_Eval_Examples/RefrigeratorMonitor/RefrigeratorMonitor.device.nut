@@ -59,10 +59,10 @@ IMP005_EZ_EVAL <- {
 class SmartFridge {
 
     // Time in seconds to wait between readings
-    static READING_INTERVAL_SEC     = 5;
+    static READING_INTERVAL_SEC     = 2;
     // Time in seconds to wait between connections
     // Increasing this time reduces WiFi power use
-    static REPORTING_INTERVAL_SEC   = 300; 
+    static REPORTING_INTERVAL_SEC   = 10; 
     // Time to wait after boot before turning off WiFi
     static BOOT_TIMER_SEC           = 30;
 
