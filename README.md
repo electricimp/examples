@@ -4,6 +4,10 @@ This is a collection of examples written for the Electric Imp platform.  Not all
 
 ## Recent Examples
 
+### [Thermocouple](./Thermocouple)
+This is simple example code to read temperature from a thermocouple click board. To read the thermocouple, call the function readThermoCoupleTemp(), which will return the temperature as an integer. The thermocouple runs on 3.3v. The range of the thermocouple is -270 to 1372 degrees celsius. This example was written for use with an impAccelerator Fielbus Gateway, but can be easily modified for use with any imp.
+##### Updated July 17, 2017
+
 ### [Arrow Imp005 EZ Eval Examples](./Arrow_Imp005_EZ_Eval_Examples)
 Examples for use with the Imp005 EZ Eval board.
 ##### Updated June 30, 2017
