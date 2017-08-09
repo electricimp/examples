@@ -4,6 +4,10 @@ This is a collection of examples written for the Electric Imp platform.  Not all
 
 ## Recent Examples
 
+### [GoogleCalendar](./GoogleCalendar)
+This is example code for using the imp with Google Calendar. The example provided allows you to schedule turning on lights on the device (an imp explorer kit) by adding an event titled "lights" to your calendar. The example code, however, also provides methods within a GoogleCalendar class which let you schedule, modify, delete, and view events from your calendar. By setting them up with ```device.on``` calls from the agent and ```device.send``` calls from the device, you can perform these actions by interacting with the device as well.
+##### Updated August 9, 2017
+
 ### [Thermocouple](./Thermocouple)
 This is simple example code to read temperature from a thermocouple click board. The thermocouple runs on 3.3v. The range of the thermocouple is -270 to 1372 degrees celsius. This example was written for use with an impAccelerator Fielbus Gateway, but can be easily modified for use with any imp.
 ##### Updated July 17, 2017
