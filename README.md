@@ -4,6 +4,10 @@ This is a collection of examples written for the Electric Imp platform.  Not all
 
 ## Recent Examples
 
+### [ArduCAM OV2640 Example](./ArduCAM_OV2640_Example)
+This example contains a facial recognition application and a driver class for the OV2640 ArduCAM. The camera driver can be used to develop other camera applications. The facial recognition application uses the Kairos Facial Recognition API to detect and recognize faces. To run this application you will need to set up an account on Kairos.
+##### Updated August 24, 2017
+
 ### [GoogleCalendar](./GoogleCalendar)
 This is example code for using the imp with Google Calendar. The example provided allows you to schedule turning on lights on the device (an imp explorer kit) by adding an event titled "lights" to your calendar. The example code, however, also provides methods within a GoogleCalendar class which let you schedule, modify, delete, and view events from your calendar. By setting them up with ```device.on``` calls from the agent and ```device.send``` calls from the device, you can perform these actions by interacting with the device as well.
 ##### Updated August 9, 2017
