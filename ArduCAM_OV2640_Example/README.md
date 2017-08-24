@@ -52,7 +52,7 @@ Once you've enrolled some images of a person's face (you can enroll multiple ima
 
 This class provides driver code for the ArduCAM mini 2MP / OV2640 camera.
 
-To add this class to your project, copy and paste the **Camera.class.nut** file to top of your device code. Then add your application code after.
+To add this class to your project, copy and paste the [Camera.class.nut](./Camera.class.nut) file to top of your device code. Then add your application code after.
 
 ### Class Usage 
 
