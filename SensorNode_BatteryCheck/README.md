@@ -1,6 +1,6 @@
 # impAccelerator&trade; Battery Powered Sensor Node Battery Check Example
 
-This example was written for the impAccelerator Battery Powered Sensor Node to determine the battery voltage. 
+This example was written for the [impAccelerator Battery Powered Sensor Node](https://store.electricimp.com/collections/featured-products/products/impaccelerator-battery-powered-sensor-node?variant=33499292818) to determine the battery voltage. 
 
 The Battery class included in this example can be used for other devices provided there is an analog pin that is connected directly to the battery. As a result, this code can't be used to determine the battery voltage on the impExplorer&trade; Kit, since no analog pins are connected directly to its battery.  
 
