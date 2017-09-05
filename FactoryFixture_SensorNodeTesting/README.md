@@ -1,6 +1,6 @@
 # impAccelerator&trade; Battery Powered Sensor Node Factory Firmware
 
-This example provides sample factory firmware code. It uses an impFactory&tade; as the factory fixture and impAccelerator Battery Powered Sensor Nodes as the devices being tested and blessed.
+This example provides sample factory firmware code. It uses an [impFactory&trade;](https://store.electricimp.com/collections/featured-products/products/impfactory?variant=31163225426) as the factory fixture and [impAccelerator Battery Powered Sensor Nodes](https://store.electricimp.com/collections/featured-products/products/impaccelerator-battery-powered-sensor-node?variant=33499292818) as the devices being tested and blessed.
 
 Please refer to the manufacturing guides in the [Electric Imp Dev Center](https://electricimp.com/docs/manufacturing/migration/) for infomation on developing factory firmware before running this code. This code will bless devices that pass tests, locking them to the production code that is linked in the factory setup.
 
