@@ -1,6 +1,6 @@
-# impAcclerator&trade; Battery Powered Sensor Node Basic Example
+# impAccelerator&trade; Battery Powered Sensor Node Basic Example
 
-This example provides a low-power application for the impAccelerator Battery Powered Sensor Nnode that takes environmental sensor readings.
+This example provides a low-power application for the [impAccelerator Battery Powered Sensor Node](https://store.electricimp.com/collections/featured-products/products/impaccelerator-battery-powered-sensor-node?variant=33499292818) that takes environmental sensor readings.
 
 ## Hardware
 
