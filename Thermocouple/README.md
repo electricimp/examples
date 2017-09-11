@@ -1,6 +1,6 @@
 # Thermocouple Examples
 
-This example has simple code for reading temperature from a [thermocouple click board](https://shop.mikroe.com/thermo-click) and also an application that sends temperature data to Initial State. 
+This example has simple code for reading temperature from a thermocouple click board and also an application that sends temperature data to Initial State. 
 
 ## Hardware
 - [Imp 005 ImpAccelerator Fieldbus Gateway](https://store.electricimp.com/collections/featured-products/products/impaccelerator-fieldbus-gateway?variant=31118564754)
@@ -12,9 +12,9 @@ Plug the click board into the mikroBUS header on the Fieldbus Gateway. This exam
 
 ## Basic Usage - Read Temperature from a Thermocouple
 
-This example shows how to read temperature from a [thermocouple click board](https://shop.mikroe.com/thermo-click) and log the result. It shows how to configure the SPI and has one function **readThermoCoupleTemp()**, which will return the temperature as an integer. The thermocouple runs on 3.3v. The range of the thermocouple is -270 to 1372 degrees celsius.
+This example shows how to read temperature from a thermocouple click board and log the result. It shows how to configure the SPI and has one function **readThermoCoupleTemp()**, which will return the temperature as an integer. The thermocouple runs on 3.3v. The range of the thermocouple is -270 to 1372 degrees celsius.
 
-#### Instructions
+### Instructions
 
 This example has side device code only. 
 
@@ -24,7 +24,7 @@ This example has side device code only.
 
 ## Simple Application - Send Temperature Data to Inital State
 
-This example sends temperature data read from a [thermocouple click board](https://shop.mikroe.com/thermo-click) to the cloud service Initial State. 
+This example sends temperature data read from a thermocouple click board to the cloud service Initial State. 
 
 ### Device Code 
 
@@ -34,7 +34,7 @@ The device code builds on the Basic Usage example to create a Thermocouple class
 
 The Agent code listens for temperature readings from the device. When a reading is received the temperature is checked to see if it is above a threshold. Then both the tempertature and temperatureAlert are sent to Initial State. When the data is received by Initial State a blink message is then sent to the device.
 
-#### Instructions
+### Instructions
 
 * Navigate to the [Electric Imp IDE](https://ide.electricimp.com)
 * Copy and paste the [SimpleApplicationThermocouleExample.device.nut](/.SimpleApplicationThermocouleExample.device.nut) file into the divice code window in the IDE 
