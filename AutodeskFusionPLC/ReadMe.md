@@ -19,7 +19,7 @@ This example uses an [Autodesk Fusion IoT Discovery Gateway](https://electricimp
 
 ## Device Code
 
-The Fielbus Gateway’s imp005 polls the PLC for changes to the button state and signal from the water-level sensor. When a button-state change is detected, the pump is turned on or off. The status LEDs on the Fieldbus Accelerator are toggled to indicate when the button is pressed and when the pump is active. The water level is monitored by a sensor and when it reaches certain thresholds, a stack light is turned on. If the water level reaches a maximum threshold, the pump will be turned off automatically. The device reports all pump state and water-level changes to the agent.
+The Autodesk Fusion IoT Discovery Gateway’s imp005 polls the PLC for changes to the button state and signal from the water-level sensor. When a button-state change is detected, the pump is turned on or off. The status LEDs on the Autodesk Fusion IoT Discovery Gateway are toggled to indicate when the button is pressed and when the pump is active. The water level is monitored by a sensor and when it reaches certain thresholds, a stack light is turned on. If the water level reaches a maximum threshold, the pump will be turned off automatically. The device reports all pump state and water-level changes to the agent.
 
 ## Agent Code
 
