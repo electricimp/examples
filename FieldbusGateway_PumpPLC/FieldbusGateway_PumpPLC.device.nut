@@ -60,7 +60,7 @@ class App {
     static CLICK_OUTPUT_Y2_ADDR = 8193; // Amber Stack Light
     static CLICK_OUTPUT_Y3_ADDR = 8194; // Red Stack Light
     static CLICK_OUTPUT_Y4_ADDR = 8195; // Pump
-    static CLICK_INPUT_X1_ADDR = 0x0001; // Button
+    static CLICK_INPUT_X1_ADDR = 0x0000; // Button
 
     static CLICK_OUT_ON = true;
     static CLICK_OUT_OFF = false;
