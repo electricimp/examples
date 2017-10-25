@@ -1,6 +1,6 @@
 # Pump PLC
 
-This example uses an [Autodesk Fusion IoT Discovery Gateway](https://electricimp.com/docs/hardware/resources/reference-designs/autodeskgateway/) and the Electric Imp Modbus Library to contol a Click Programmable Logic Controller (PLC). The PLC listens for a button press and activates a pump. When active, the pump pushes water into a tank, and the PLC monitors the water level. The Fielbus Gateway uploads the current water level and the pump status to several cloud services.
+This example uses an [Autodesk Fusion IoT Discovery Gateway](https://electricimp.com/docs/hardware/resources/reference-designs/autodeskgateway/) and the Electric Imp Modbus Library to contol a Click Programmable Logic Controller (PLC). The PLC listens for a button press and activates a pump. When active, the pump pushes water into a tank, and the PLC monitors the water level. The Discovery Gateway uploads the current water level and the pump status to Autodesk Fusion.
 
 ## Hardware
 
