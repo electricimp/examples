@@ -4,6 +4,10 @@ This is a collection of examples written for the Electric Imp platform.  Not all
 
 ## Recent Examples
 
+### [searchXML](./searchXML)
+This example contains a function used for searching for a specific path within an XML string. It supports sibling tags with the same name but does not support nested tags with the same name. It can be used synchronously or asynchronously and the README contains examples of both.
+##### Updated November 16, 2017
+
 ### [Thermocouple](./Thermocouple)
 This example has simple code for reading temperature from a thermocouple click board and also an application that sends temperature data to Initial State. The thermocouple runs on 3.3v. The range of the thermocouple is -270 to 1372 degrees celsius. These examples are written for use with an impAccelerator Fielbus Gateway, but can be easily modified for use with any imp.
 ##### Updated Sept 11, 2017
