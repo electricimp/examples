@@ -57,6 +57,8 @@ class App {
     constructor(_readingTimer, debug = false) {
         readingTimer = _readingTimer;
         local opts = (debug) ? {"debug" : true} : {};
+        opts.baudRate <- 38400;
+        opts.parity <- PARITY_ODD;
         modbus = Modbus485Master(FieldbusGateway_005.RS485_UART, FieldbusGateway_005.RS485_nRE, opts);
     }
 
