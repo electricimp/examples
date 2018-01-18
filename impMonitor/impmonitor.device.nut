@@ -1,5 +1,7 @@
-// impMonitor
-//
+// impMonitor DEVICE CODE
+// Copyright (c) 2018, Electric Imp, Inc.
+// Writer: Tony Smith
+// Licence: MIT
 
 // CONSTANTS
 const SLEEP_TIME = 43200;
