@@ -22,6 +22,10 @@ The web page uses JavaScript and jQuery to auto-update separately from the impCe
 
 The device code does very little, but is required. Agents are maintained only for devices that connect to the Electric Imp impCloud™. As such, this app requires a device which just checks in twice a day to ensure the agent is never closed down. You can adjust the value of the device code’s *SLEEP_TIME* constant to set the device to sleep for longer periods than the default 12 hours. In fact, the device needs only check in with the server every 30 days to keep the agent running.
 
+### Extending the Code ###
+
+The impCentral API’s [standard device record](https://apidoc.electricimp.com/#tag/Devices%2Fpaths%2F~1devices%2Fget) contains much more information than is included here, so one way to extend the code is to extract more data about each device and present that data in the UI. The key areas to change are the *ENTRY_START* and *ENTRY_END* constants, which define the HTML code used to present each listed device, and the function *getDeviceData()*, which uses those HTML constants to build each device’s listing, including its name and the status indicator graphics.
+
 ## License ##
 
 impMonitor is made available under the [MIT Licence](./LICENSE).
