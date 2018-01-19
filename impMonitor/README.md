@@ -16,7 +16,7 @@ The UI includes PNG graphics for the status and other indicators, and these are 
 
 If you wish to change the graphics, you will need to convert them to hex strings by opening them in a tool capable of presenting a hex readout of any file. The bundled files were generated with BBEdit on macOS, but there are many other such tools you can use. Take care when editing not to alter the data, and make sure each octet is correctly prefixed with `\x` to tell Squirrel that it should read the string as a sequence of bytes rather than series of characters.
 
-The web page uses JavaScript and jQuery to auto-update separately from the impCentral device check. As such, it can be opened in a web browser — enter the URL of your agent — and kept to the side of your screen, or on a separate device, as a live status readout.
+The web page uses JavaScript to auto-update separately from the impCentral device check. As such, it can be opened in a web browser — enter the URL of your agent — and kept to the side of your screen, or on a separate device, as a live status readout.
 
 ### Device Code ###
 
