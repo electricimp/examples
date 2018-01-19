@@ -2,6 +2,7 @@
 // Copyright (c) 2018, Electric Imp, Inc.
 // Writer: Tony Smith
 // Licence: MIT
+// Version: 1.0.1
 
 // IMPORTS
 #require "Rocky.class.nut:2.0.1"
@@ -100,6 +101,10 @@ function getDeviceData() {
     // Build the UI from the list of devices gathered above
     if (uDevices.len() > 0) {
         htmlBody = "";
+        
+        // Sort the incoming device list aphabetically
+        uDevices.sort(sorter);
+        
         foreach (device in uDevices) {
             // 'device' is a table - use it to get the device's name (or ID if it has no name),
             // and its online status, then build the device's entry in the HTML table
@@ -134,7 +139,7 @@ function getDeviceData() {
         devices = uDevices;
     } else {
         // Create a simple HTML body indicating the user has no devices
-        htmlBody = ENTRY_START + "&nbsp;</td>" + @"<td class='tabborder'>&nbsp;</td><td class='tabcontent'><h4>No Devices</h4></td></tr>"
+        htmlBody = @"<tr><td class='tabcontent'><h4 align='center'>No Devices</h4></td></tr>";
     }
 }
 
@@ -300,6 +305,18 @@ function updateDevices() {
     imp.wakeup(LOOP_TIME, updateDevices);
 }
 
+// UTILITY FUNCTIONS
+function sorter(first, second) {
+  // Helper function for array.sort()
+  // Sort devices by name. Devices without a name
+  // Should appear at the end of the list
+	local a = first.attributes.name;
+	local b = second.attributes.name;
+	if (a == null || a > b) return 1;
+	if (b == null || a < b) return -1;
+	return 0;
+}
+
 // START OF PROGRAM
 
 // Define the API
@@ -325,6 +342,9 @@ api.get("/images/([^/]*)", function(context) {
 
 // Log into the API
 login(USERNAME, PASSWORD);
+
+// Set default text to display
+htmlBody = @"<tr><td class='tabcontent'><h4 align='center'>Getting Device Info...</h4></td></tr>";
 
 // Start the device check loop
 updateDevices();
