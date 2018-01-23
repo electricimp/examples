@@ -261,15 +261,15 @@ function refreshedAccessToken(data) {
     // so add it to the 'token' structure
     data = http.jsondecode(data.body);
     if ("accessToken" in token) {
-        token.accessToken = data.access_token.access_token;
+        token.accessToken = data.access_token;
     } else {
-        token.accessToken <- data.access_token.access_token;
+        token.accessToken <- data.access_token;
     }
 
     if ("expiryTime" in token) {
-        token.expiryTime = time() + data.access_token.expires_in.tointeger();
+        token.expiryTime = time() + data.expires_in.tointeger();
     } else {
-        token.expiryTime <- time() + data.access_token.expires_in.tointeger();
+        token.expiryTime <- time() + data.expires_in.tointeger();
     }
 
     // Since we bypassed a device update request to come here,
@@ -311,8 +311,8 @@ function sorter(first, second) {
   // Helper function for array.sort()
   // Sort devices by name. Devices without a name
   // Should appear at the end of the list
-	local a = first.attributes.name;
-	local b = second.attributes.name;
+	local a = first.attributes.name.tolower();
+	local b = second.attributes.name.tolower();
 	if (a == null || a > b) return 1;
 	if (b == null || a < b) return -1;
 	return 0;
