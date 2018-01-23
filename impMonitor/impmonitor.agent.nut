@@ -28,6 +28,7 @@ const HTML_HEADER = @"<!DOCTYPE html><html lang='en-US'><meta charset='UTF-8'>
   <link rel='apple-touch-icon' href='https://smittytone.github.io/images/ati-imp.png'>
   <link rel='shortcut icon' href='https://smittytone.github.io/images/ico-imp.ico'>
   <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <meta http-equiv='Cache-Control' content='no-cache, no-store, must-revalidate'>
   <style>
     .center { margin-left: auto; margin-right: auto; margin-bottom: auto; margin-top: auto; }
     body {background-color: #21abd4;}
@@ -101,10 +102,10 @@ function getDeviceData() {
     // Build the UI from the list of devices gathered above
     if (uDevices.len() > 0) {
         htmlBody = "";
-        
+
         // Sort the incoming device list aphabetically
         uDevices.sort(sorter);
-        
+
         foreach (device in uDevices) {
             // 'device' is a table - use it to get the device's name (or ID if it has no name),
             // and its online status, then build the device's entry in the HTML table
