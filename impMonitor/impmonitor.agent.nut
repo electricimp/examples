@@ -2,7 +2,7 @@
 // Copyright (c) 2018, Electric Imp, Inc.
 // Writer: Tony Smith
 // Licence: MIT
-// Version: 1.0.1
+// Version: 1.0.2
 
 // IMPORTS
 #require "Rocky.class.nut:2.0.1"
@@ -27,8 +27,8 @@ const HTML_HEADER = @"<!DOCTYPE html><html lang='en-US'><meta charset='UTF-8'>
   <link href='https://fonts.googleapis.com/css?family=Comfortaa' rel='stylesheet'>
   <link rel='apple-touch-icon' href='https://smittytone.github.io/images/ati-imp.png'>
   <link rel='shortcut icon' href='https://smittytone.github.io/images/ico-imp.ico'>
-  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
   <meta http-equiv='Cache-Control' content='no-cache, no-store, must-revalidate'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
   <style>
     .center { margin-left: auto; margin-right: auto; margin-bottom: auto; margin-top: auto; }
     body {background-color: #21abd4;}
@@ -51,7 +51,7 @@ const HTML_HEADER = @"<!DOCTYPE html><html lang='en-US'><meta charset='UTF-8'>
 const HTML_FOOTER = @"  </table>
   </div>
   </div>
-  <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
+
   <script>
     setTimeout(function() {
       location.reload(true);
@@ -102,10 +102,7 @@ function getDeviceData() {
     // Build the UI from the list of devices gathered above
     if (uDevices.len() > 0) {
         htmlBody = "";
-
-        // Sort the incoming device list aphabetically
         uDevices.sort(sorter);
-
         foreach (device in uDevices) {
             // 'device' is a table - use it to get the device's name (or ID if it has no name),
             // and its online status, then build the device's entry in the HTML table
@@ -135,13 +132,21 @@ function getDeviceData() {
             htmlBody = htmlBody + tableEntry;
         }
 
-        // Having processed the updated device list,
-        // store it for next time
+        // Having processed the updated device list, store it for next time
         devices = uDevices;
     } else {
         // Create a simple HTML body indicating the user has no devices
         htmlBody = @"<tr><td class='tabcontent'><h4 align='center'>No Devices</h4></td></tr>";
     }
+}
+
+function sorter(first, second) {
+    // Sort devices by name
+    local a = first.attributes.name.tolower();
+    local b = second.attributes.name.tolower();
+    if (a == null || a > b) return 1;
+    if (b == null || a < b) return -1;
+    return 0;
 }
 
 function isFirstPage(links) {
@@ -230,10 +235,11 @@ function refreshAccessToken() {
     request.sendasync(refreshedAccessToken);
 }
 
-function gotAccessToken(data) {
+function gotAccessToken(respData) {
     // We have retrieved an initial access token,
     // so add it and other useful data to the 'token' structure
-    data = http.jsondecode(data.body);
+    local data = http.jsondecode(respData.body);
+    
     if ("accessToken" in token) {
         token.accessToken = data.access_token;
     } else {
@@ -254,22 +260,36 @@ function gotAccessToken(data) {
 
     // Flag that we are now logged in
     isLoggedIn = true;
+    server.log("Acquired Access Token: " + token.accessToken);
+    server.log("Expires in " + data.expires_in + " seconds");
 }
 
-function refreshedAccessToken(data) {
+function refreshedAccessToken(respData) {
     // We have retrieved a subsequent access token,
     // so add it to the 'token' structure
-    data = http.jsondecode(data.body);
-    if ("accessToken" in token) {
-        token.accessToken = data.access_token;
+    local data = http.jsondecode(respData.body);
+
+    if ("access_token" in data) {
+        if ("accessToken" in token) {
+            token.accessToken = data.access_token;
+        } else {
+            token.accessToken <- data.access_token;
+        }
+
+        server.log("Acquired Fresh Access Token: " + token.accessToken);
     } else {
-        token.accessToken <- data.access_token;
+        server.error("Could not refresh access token. JSON: " + respData.body);
+        isLoggedIn = false;
     }
 
-    if ("expiryTime" in token) {
-        token.expiryTime = time() + data.expires_in.tointeger();
-    } else {
-        token.expiryTime <- time() + data.expires_in.tointeger();
+    if ("expires_in" in data) {
+        if ("expiryTime" in token) {
+            token.expiryTime = time() + data.expires_in.tointeger();
+        } else {
+            token.expiryTime <- time() + data.expires_in.tointeger();
+        }
+
+        server.log("Expires in " + data.expires_in + " seconds");
     }
 
     // Since we bypassed a device update request to come here,
@@ -281,11 +301,13 @@ function isAccessTokenValid() {
     // Check if the currently held access token has expired.
     // Return 'true' if it is good, or 'false' if we need a new one
     // No token available? Return false
-    if (token == null || !("expiryTime" in token)) return false;
+    local rv = true;
+    if (token == null || !("expiryTime" in token)) rv = false;
     local expiry = token.expiryTime;
     local now = time();
-    if (now >= expiry) return false;
-    return true;
+    if (now >= expiry) rv = false;
+    server.log("Access Token " + (rv ? "is valid" : "has expired"));
+    return rv;
 }
 
 // DEVICE-CHECK LOOP FUNCTION
@@ -303,19 +325,8 @@ function updateDevices() {
     }
 
     // Schedule the next check in LOOP_TIME seconds
+    server.log("Updating device information in " + LOOP_TIME + " seconds");
     imp.wakeup(LOOP_TIME, updateDevices);
-}
-
-// UTILITY FUNCTIONS
-function sorter(first, second) {
-  // Helper function for array.sort()
-  // Sort devices by name. Devices without a name
-  // Should appear at the end of the list
-	local a = first.attributes.name.tolower();
-	local b = second.attributes.name.tolower();
-	if (a == null || a > b) return 1;
-	if (b == null || a < b) return -1;
-	return 0;
 }
 
 // START OF PROGRAM
