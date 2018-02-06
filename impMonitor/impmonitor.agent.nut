@@ -2,7 +2,7 @@
 // Copyright (c) 2018, Electric Imp, Inc.
 // Writer: Tony Smith
 // Licence: MIT
-// Version: 1.0.2
+// Version: 1.0.3
 
 // IMPORTS
 #require "Rocky.class.nut:2.0.1"
@@ -45,8 +45,10 @@ const HTML_HEADER = @"<!DOCTYPE html><html lang='en-US'><meta charset='UTF-8'>
 <body>
   <div class='container'>
   <div class='uicontent' align='center'>
-    <h3>Device Status Monitor<br>&nbsp;</h3>
-    <table width='100%%'>
+    <h3>Electric Imp</h3>
+    <h3>Device Status Monitor</h3>
+    <p>Updated at %s<br>&nbsp;</p>
+        <table width='100%%'>
       ";
 const HTML_FOOTER = @"  </table>
   </div>
@@ -67,9 +69,10 @@ const ENTRY_END = @"<td class='tabborder'><img src='%s' width='16' height='16'><
       </tr>
       ";
 const API_BASE_URL = "https://api.electricimp.com/v5/";
-const USER_AGENT = "impAgent-impMonitor-0.0.1";
+const USER_AGENT = "impAgent-impMonitor-1.0.3";
 const LOOP_TIME = 60;
 const PAGE_SIZE = 100;
+const EXPIRY_DELTA = 5;
 
 // GLOBALS
 local api = null;
@@ -91,11 +94,15 @@ function getDeviceData() {
     do {
         local request = http.get(url, headers);
         local data = request.sendsync();
-        data = http.jsondecode(data.body);
-        if ("links" in data) {
-            nextURL = getNextPageLink(getNextURL(data.links));
-            foreach (device in data.data) uDevices.append(device);
-            url = nextURL;
+        try {
+            data = http.jsondecode(data.body);
+            if ("links" in data) {
+                nextURL = getNextPageLink(getNextURL(data.links));
+                foreach (device in data.data) uDevices.append(device);
+                url = nextURL;
+            }
+        } catch (err) {
+            server.error(err + " (data: " + data.body + ")");
         }
     } while (nextURL.len() != 0);
 
@@ -239,7 +246,7 @@ function gotAccessToken(respData) {
     // We have retrieved an initial access token,
     // so add it and other useful data to the 'token' structure
     local data = http.jsondecode(respData.body);
-    
+
     if ("accessToken" in token) {
         token.accessToken = data.access_token;
     } else {
@@ -260,7 +267,7 @@ function gotAccessToken(respData) {
 
     // Flag that we are now logged in
     isLoggedIn = true;
-    server.log("Acquired Access Token: " + token.accessToken);
+    server.log("Acquired Access Token: " + token.accessToken.slice(0, 40) + "...");
     server.log("Expires in " + data.expires_in + " seconds");
 }
 
@@ -276,7 +283,7 @@ function refreshedAccessToken(respData) {
             token.accessToken <- data.access_token;
         }
 
-        server.log("Acquired Fresh Access Token: " + token.accessToken);
+        server.log("Acquired Fresh Access Token: " + token.accessToken.slice(0, 40) + "...");
     } else {
         server.error("Could not refresh access token. JSON: " + respData.body);
         isLoggedIn = false;
@@ -305,7 +312,11 @@ function isAccessTokenValid() {
     if (token == null || !("expiryTime" in token)) rv = false;
     local expiry = token.expiryTime;
     local now = time();
-    if (now >= expiry) rv = false;
+    // Expire the token even it it hasn't expired, but is nonetheless
+    // within EXPIRY_DELTA of expiry. This is to prevent the token
+    // expiring while the request is being made, ie. after the request
+    // is sent but before the server has checked it
+    if (now >= expiry - EXPIRY_DELTA) rv = false;
     server.log("Access Token " + (rv ? "is valid" : "has expired"));
     return rv;
 }
@@ -329,6 +340,13 @@ function updateDevices() {
     imp.wakeup(LOOP_TIME, updateDevices);
 }
 
+function timestamp() {
+    local now = date();
+    local timeString = format("%02i", now.hour) + ":" + format("%02i", now.min) + ":" + format("%02i", now.sec);
+    local dateString = format("%04i", now.year) + "-" + format("%02i", now.month + 1) + "-" + format("%02i", now.day);
+    return dateString + " " + timeString;
+}
+
 // START OF PROGRAM
 
 // Define the API
@@ -336,7 +354,7 @@ api = Rocky();
 
 // A call to the endpoint / calls up the current web page
 api.get("/", function(context) {
-    context.send(200, HTML_HEADER + htmlBody + HTML_FOOTER);
+    context.send(200, format(HTML_HEADER, timestamp()) + htmlBody + HTML_FOOTER);
 });
 
 // GET call to /images
