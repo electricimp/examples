@@ -219,9 +219,9 @@ class AzureTwin {
 
     // Sends a message with method invocation status
     function _sendMethodResponse(id, error) {
-        local topic = format("$iothub/methods/res/%s/?$rid=%s", error, id);
+        local topic   = format("$iothub/methods/res/%s/?$rid=%s", error, id);
         local message = _mqttclient.createmessage(topic, "");
-        local id = message.sendasync();
+        local id      = message.sendasync();
 
         _log("Message to " + topic + " was scheduled as " + id);
     }
@@ -234,10 +234,11 @@ class AzureTwin {
         if (null != (index = topic.find("$iothub/twin/res/"))) {
 
             local res = split(topic, "/");
-            local cb = _twinStatusRequestCb;
+            local cb  = _twinStatusRequestCb;
 
-            if (null != cb ) _twinStatusRequestCb = null;
-            else {
+            if (null != cb ) {
+                _twinStatusRequestCb = null;
+            } else {
                 cb = _twinUpdateRequestCb;
                 _twinUpdateRequestCb = null;
             }
@@ -324,7 +325,6 @@ class AzureTwin {
         }
 
         _notifyState();
-
         _subscribe();
     }
 
