@@ -45,9 +45,9 @@ twin <- AzureTwin(connectionString, onConnect, onUpdate, onMethod);
 
 | Status | Description |
 | ------ | ------------|
-| *AT_DISCONNECTED* | The connection was lost. To reconnect call [reconnect]() method. |
+| *AT_DISCONNECTED* | The connection was lost. To reconnect call `reconnect()` method. |
 | *AT_CONNECTING*   | The library tries to establish connection |
-| *AT_CONNECTED*    | MQTT connection complete |
+| *AT_CONNECTED*    | MQTT connection established |
 | *AT_SUBSCRIBING*  | The library tries to subscribe to specific topic to receive </br> notifications |
 | *AT_SUBSCRIBED*   | The library is up and ready |
 

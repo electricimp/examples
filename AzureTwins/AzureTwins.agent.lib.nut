@@ -130,13 +130,9 @@ class AzureTwin {
     // Sends subscribe request message
     function _subscribe() {
         if (_state == AT_CONNECTED) {
-
             local topics = ["$iothub/twin/res/#","$iothub/methods/POST/#", "$iothub/twin/PATCH/properties/desired/#"];
-
             local id = _mqttclient.subscribe(topics, "AT_MOST_ONCE", _onSubscribe.bindenv(this));
-
             _state = AT_SUBSCRIBING;
-
             _log("Subscribing (" + id + ")...");
         }
     }
@@ -144,12 +140,9 @@ class AzureTwin {
     // Callback in response to subscribe request status
     function _onSubscribe(messages) {
         foreach (i, mess in messages) {
-
             if (typeof mess != "array") mess = [mess];
-
             foreach(request in mess) {
-                _log("Subscription complete. rc =  " + request.rc);
-
+                _log("Subscription completed. rc =  " + request.rc);
                 if (request.rc == 0) {
                     if (_state == AT_SUBSCRIBING) _state = AT_SUBSCRIBED;
                 } else {
@@ -176,22 +169,21 @@ class AzureTwin {
     function _connect() {
         if (AT_DISCONNECTED == _state) {
 
-            _log("AT_CONNECTING");
+            _log("Connecting...");
 
-            local cn = AzureIoTHub.ConnectionString.Parse(_deviceConnectionString);
-
-            local devPath = "/" + cn.DeviceId;
-            local username = cn.HostName + devPath + AZURE_IOTHUB_API_VERSION;
-            local resourcePath = "/devices" + devPath + AZURE_IOTHUB_API_VERSION;
-            local resourceUri = AzureIoTHub.Authorization.encodeUri(cn.HostName + resourcePath);
-
+            local cn            = AzureIoTHub.ConnectionString.Parse(_deviceConnectionString);
+            local devPath       = "/" + cn.DeviceId;
+            local username      = cn.HostName + devPath + AZURE_IOTHUB_API_VERSION;
+            local resourcePath  = "/devices" + devPath + AZURE_IOTHUB_API_VERSION;
+            local resourceUri   = AzureIoTHub.Authorization.encodeUri(cn.HostName + resourcePath);
             local passwDeadTime = AzureIoTHub.Authorization.anHourFromNow();
-
-            local sas = AzureIoTHub.SharedAccessSignature.create(resourceUri, null, cn.SharedAccessKey, passwDeadTime).toString();
+            local sas           = AzureIoTHub.SharedAccessSignature.create(
+                resourceUri, null, cn.SharedAccessKey, passwDeadTime
+            ).toString();
 
             local options = {
-                username = username,
-                password = sas
+                username        = username,
+                password        = sas
             };
 
             _mqttclient.connect(_onConnection.bindenv(this), options);
@@ -351,12 +343,12 @@ class AzureTwin {
     // Information level logger
     function _log(txt) {
         if (ENABLE_DEBUG) {
-            server.log("[" + (typeof this) + "]  " + txt);
+            server.log("[" + (typeof this) + "] " + txt);
         }
     }
 
     // Error level logger
     function _error(txt) {
-        server.error("[" + (typeof this) + "]  " + txt);
+        server.error("[" + (typeof this) + "] " + txt);
     }
 }

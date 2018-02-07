@@ -33,30 +33,29 @@ print <- pp.print.bindenv(pp);
 ///=====================================================
 const  authToken = "@{ConnectionString}";
 
-print(authToken);
+server.log("Using connection string: " + authToken);
 
 function updateCompleteCb(err, body) {
-    print("onUpdate");
+    server.log("onUpdate called");
     print(err);
     print(body);
 }
 
 function statusReceivedCb(err, body) {
-    print("onStatus");
+    server.log("onStatus called");
     print(err);
     print(body);
-
     twin.updateStatus("{\"test111\" : \"result2222\"}", updateCompleteCb);
 }
 
 function onUpdate(version, body) {
-    print("onUpdate");
+    server.log("onUpdate called");
     print(version);
     print(body);
 }
 
 function onMethod(method, data) {
-    print("onMethod");
+    server.log("onMethod called");
     print(method);
     print(data);
 
@@ -64,17 +63,16 @@ function onMethod(method, data) {
 }
 
 function onConnect(status) {
-    print("onConnect");
-    print(status);
+    server.log("onConnect called. status: " + status);
     if (status == AT_SUBSCRIBED) {
         twin.getCurrentStatus(statusReceivedCb);
     }
 }
 
-print("Twin ...");
+server.log("Creating instance of AzureTwin...");
 twin <- AzureTwin(authToken, onConnect, onUpdate, onMethod);
 
-print("Hub ...");
+server.log("Creating instance of AzureIoTHub...");
 client <- AzureIoTHub.Client(authToken);
 client.connect(function(err) {
         if (err) {
