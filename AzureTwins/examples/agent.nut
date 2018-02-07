@@ -66,7 +66,7 @@ function onMethod(method, data) {
 function onConnect(status) {
     :: print("onConnect");
     :: print(status);
-    if (status == SUBSCRIBED) {
+    if (status == AT_SUBSCRIBED) {
         twin.getCurrentStatus(statusReceivedCb);
     }
 }

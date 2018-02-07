@@ -22,22 +22,24 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 //
-const AZURE_IOTHUB_API_VERSION="/api-version=2016-11-14";
+const AZURE_IOTHUB_API_VERSION = "/api-version=2016-11-14";
 
-const DISCONNECTED = "DISCONNECTED";
-const CONNECTING   = "CONNECTING";
-const CONNECTED    = "CONNECTED";
-const SUBSCRIBING  = "SUBSCRIBING";
-const SUBSCRIBED   = "SUBSCRIBED";
+const AT_DISCONNECTED = "DISCONNECTED";
+const AT_CONNECTING   = "CONNECTING";
+const AT_CONNECTED    = "CONNECTED";
+const AT_SUBSCRIBING  = "SUBSCRIBING";
+const AT_SUBSCRIBED   = "SUBSCRIBED";
+
+const ENABLE_DEBUG    = 1;
 
 // Azure Twin API client. Support Twin property patching and listening for method invocation requests
 class AzureTwin {
 
     _deviceConnectionString     = null;
     _mqttclient                 = null;
-    _state                      = DISCONNECTED;
+    _state                      = AT_DISCONNECTED;
 
-    _connectionListener        = null;
+    _connectionListener         = null;
     _twinUpdateHandler          = null;
     _methodInvocationHandler    = null;
     _twinStatusRequestCb        = null;
@@ -64,7 +66,6 @@ class AzureTwin {
         _mqttclient = mqtt.createclient("ssl://" + cn.HostName, cn.DeviceId, _onMessage.bindenv(this), _onDelivery.bindenv(this), _onDisconnected.bindenv(this));
 
         _connect();
-
     }
 
     // Send request to get latest twin status
@@ -75,7 +76,7 @@ class AzureTwin {
     function getCurrentStatus(onComplete) {
         if (_twinStatusRequestCb != null) throw "getStatus is ongoing";
 
-        if (_state == SUBSCRIBED) {
+        if (_state == AT_SUBSCRIBED) {
             local topic = "$iothub/twin/GET/?$rid="+_reqCounter;
             local message = _mqttclient.createmessage(topic, "");
             local id = message.sendasync(_onSendStatusRequest.bindenv(this));
@@ -97,7 +98,7 @@ class AzureTwin {
     function updateStatus(status, onComplete) {
         if (_twinUpdateRequestCb != null) throw "updateStatus is ongoing";
 
-        if (_state == SUBSCRIBED) {
+        if (_state == AT_SUBSCRIBED) {
             local topic = "$iothub/twin/PATCH/properties/reported/?$rid=" + _reqCounter;
             local message = _mqttclient.createmessage(topic, status);
             local id = message.sendasync(_onSendUpdateRequest.bindenv(this));
@@ -117,18 +118,17 @@ class AzureTwin {
         _connect();
     }
 
-
     // ----------------- private API ---------------
 
     // Sends subscribe request message
     function _subscribe() {
-        if (_state == CONNECTED) {
+        if (_state == AT_CONNECTED) {
 
             local topics = ["$iothub/twin/res/#","$iothub/methods/POST/#", "$iothub/twin/PATCH/properties/desired/#"];
 
             local id = _mqttclient.subscribe(topics, "AT_MOST_ONCE", _onSubscribe.bindenv(this));
 
-            _state = SUBSCRIBING;
+            _state = AT_SUBSCRIBING;
 
             _log("Subscribing (" + id + ")...");
         }
@@ -144,15 +144,13 @@ class AzureTwin {
                 _log("Subscription complete. rc =  " + request.rc);
 
                 if (request.rc == 0) {
-                    if (_state == SUBSCRIBING) _state = SUBSCRIBED;
+                    if (_state == AT_SUBSCRIBING) _state = AT_SUBSCRIBED;
                 } else {
                     _mqttclient.disconnect();
-                    _state = DISCONNECTED;
+                    _state = AT_DISCONNECTED;
                 }
             }
-
         }
-
         _notifyState();
     }
 
@@ -169,9 +167,9 @@ class AzureTwin {
 
     // Initiates new MQTT connection (if disconnected)
     function _connect() {
-        if (DISCONNECTED == _state) {
+        if (AT_DISCONNECTED == _state) {
 
-            _log("connecting");
+            _log("AT_CONNECTING");
 
             local cn = AzureIoTHub.ConnectionString.Parse(_deviceConnectionString);
 
@@ -191,7 +189,7 @@ class AzureTwin {
 
             _mqttclient.connect(_onConnection.bindenv(this), options);
 
-            _state = CONNECTING;
+            _state = AT_CONNECTING;
         }
     }
 
@@ -228,7 +226,6 @@ class AzureTwin {
     // Sends a message with method invocation status
     function _sendMethodResponse(id, error) {
         local topic = format("$iothub/methods/res/%s/?$rid=%s", error, id);
-
         local message = _mqttclient.createmessage(topic, "");
         local id = message.sendasync();
 
@@ -292,16 +289,13 @@ class AzureTwin {
                 }
             }
         }
-
     }
 
-
-    // ------------------ mqtt handlers ---------------------
+    // ------------------ MQTT handlers ---------------------
 
     // Connection Lost handler
     function _onDisconnected() {
-        _state = DISCONNECTED;
-
+        _state = AT_DISCONNECTED;
         _log("Disconnected");
 
         if (null != _connectionListener) _connectionListener("disconnected");
@@ -330,9 +324,9 @@ class AzureTwin {
         _log("Connected: " + rc + " " + blah);
 
         if (rc == 0) {
-            _state = CONNECTED;
+            _state = AT_CONNECTED;
         } else {
-            _state = DISCONNECTED;
+            _state = AT_DISCONNECTED;
         }
 
         _notifyState();
@@ -347,12 +341,9 @@ class AzureTwin {
         return "AzureTwin";
     }
 
-    // Debug flag
-    _debug = true;
-
     // Information level logger
     function _log(txt) {
-        if (_debug) {
+        if (ENABLE_DEBUG) {
             server.log("[" + (typeof this) + "]  " + txt);
         }
     }
@@ -361,6 +352,4 @@ class AzureTwin {
     function _error(txt) {
         server.error("[" + (typeof this) + "]  " + txt);
     }
-
-
 }

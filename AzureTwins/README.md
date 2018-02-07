@@ -34,11 +34,11 @@ twin <- AzureTwin(authToken, onConnect, onUpdate, onMethod);
 
 | Status | Description |
 | ------ | ------------|
-| *DISCONNECTED* | The connection was lost. To reconnect call [reconnect]() method. |
-| *CONNECTING* | The library tries to establish connection |
-| *CONNECTED* | MQTT connection complete |
-| *SUBSCRIBING* | The library tries to subscribe to specific topic to receive </br> notifications |
-| *SUBSCRIBED* | The library is up and ready |
+| *AT_DISCONNECTED* | The connection was lost. To reconnect call [reconnect]() method. |
+| *AT_CONNECTING*   | The library tries to establish connection |
+| *AT_CONNECTED*    | MQTT connection complete |
+| *AT_SUBSCRIBING*  | The library tries to subscribe to specific topic to receive </br> notifications |
+| *AT_SUBSCRIBED*   | The library is up and ready |
 
 #### `onUpdate` callback
 
