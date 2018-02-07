@@ -1,15 +1,26 @@
-AzureTwins is a library to work with [Azure Twins API](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-device-twins). It supports full set of operations provided by the  service.
+# AzureTwins Library
 
-**NOTE** The library tries to maintain permanent MQTT connection to Azure Twin to receive any asynchronous updates. However it case of connection failure it doesn't restore connection automatically.
+AzureTwins is a library, that helps you work with [Azure Twins API](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-device-twins). It supports full set of operations provided by the service.
+
+**NOTE:** The library tries to maintain permanent MQTT connection to Azure Twin to receive 
+any asynchronous updates. However it case of connection failure it doesn't restore 
+connection automatically. This should be taken care of by the application.
 
 ### Prerequisites
 
-AzureTwins library required [AzureIotHub](https://github.com/electricimp/AzureIoTHub) client for authentication procedure with  [Device Connection String](https://github.com/electricimp/AzureIoTHub#device-connection-string) as credentials.
+AzureTwins library requires [AzureIotHub](https://github.com/electricimp/AzureIoTHub) 
+to be included as well. This is needed for authentication procedure with 
+[Device Connection String](https://github.com/electricimp/AzureIoTHub#device-connection-string) 
+as credentials. 
+
+This dependency between the libraries can easily be resolved as needed.
 
 
 ### How to create AzureTwin client
 
-The client requires [Device Connection String](https://github.com/electricimp/AzureIoTHub#device-connection-string), connection status listener, desired properties update listener and method invocation listener as constructor parameters.
+The client requires [Device Connection String](https://github.com/electricimp/AzureIoTHub#device-connection-string), 
+connection status listener, a listener for desired properties updates and method invocation listener 
+as constructor parameters.
 
 ``` squirrel
 #require "AzureIoTHub.agent.lib.nut:2.1.0"
@@ -25,7 +36,7 @@ function onMethod(method, data) {
 function onConnect(status) {
 }
 
-twin <- AzureTwin(authToken, onConnect, onUpdate, onMethod);
+twin <- AzureTwin(connectionString, onConnect, onUpdate, onMethod);
 ```
 
 #### `onConnect` callback

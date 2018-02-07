@@ -62,8 +62,15 @@ class AzureTwin {
         _twinUpdateHandler          = twinUpdateHandler;
         _methodInvocationHandler    = methodInvocationHandler;
 
+        // TODO: may want to move the client string parser to this class
         local cn = AzureIoTHub.ConnectionString.Parse(deviceConnection);
-        _mqttclient = mqtt.createclient("ssl://" + cn.HostName, cn.DeviceId, _onMessage.bindenv(this), _onDelivery.bindenv(this), _onDisconnected.bindenv(this));
+        _mqttclient = mqtt.createclient(
+            "ssl://" + cn.HostName,
+            cn.DeviceId,
+            _onMessage.bindenv(this),
+            _onDelivery.bindenv(this),
+            _onDisconnected.bindenv(this)
+        );
 
         _connect();
     }
