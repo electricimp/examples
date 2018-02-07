@@ -84,14 +84,12 @@ class AzureTwin {
         if (_twinStatusRequestCb != null) throw "getStatus is ongoing";
 
         if (_state == AT_SUBSCRIBED) {
-            local topic = "$iothub/twin/GET/?$rid="+_reqCounter;
+            local topic   = "$iothub/twin/GET/?$rid=" + _reqCounter;
             local message = _mqttclient.createmessage(topic, "");
-            local id = message.sendasync(_onSendStatusRequest.bindenv(this));
+            local id      = message.sendasync(_onSendStatusRequest.bindenv(this));
 
-            _reqCounter++
-
+            _reqCounter++;
             _twinStatusRequestCb = onComplete;
-
             _log("Message to " + topic + " was scheduled as " + id);
         } else {
             throw "AzureTwin is not connected";
@@ -106,14 +104,12 @@ class AzureTwin {
         if (_twinUpdateRequestCb != null) throw "updateStatus is ongoing";
 
         if (_state == AT_SUBSCRIBED) {
-            local topic = "$iothub/twin/PATCH/properties/reported/?$rid=" + _reqCounter;
+            local topic   = "$iothub/twin/PATCH/properties/reported/?$rid=" + _reqCounter;
             local message = _mqttclient.createmessage(topic, status);
-            local id = message.sendasync(_onSendUpdateRequest.bindenv(this));
+            local id      = message.sendasync(_onSendUpdateRequest.bindenv(this));
 
             _reqCounter++;
-
             _twinUpdateRequestCb = onComplete;
-
             _log("Message to " + topic + " was scheduled as " + id);
         } else {
             throw "AzureTwin is not connected";
@@ -168,7 +164,6 @@ class AzureTwin {
     // Initiates new MQTT connection (if disconnected)
     function _connect() {
         if (AT_DISCONNECTED == _state) {
-
             _log("Connecting...");
 
             local cn            = AzureIoTHub.ConnectionString.Parse(_deviceConnectionString);
@@ -239,8 +234,8 @@ class AzureTwin {
         if (null != (index = topic.find("$iothub/twin/res/"))) {
 
             local res = split(topic, "/");
-
             local cb = _twinStatusRequestCb;
+
             if (null != cb ) _twinStatusRequestCb = null;
             else {
                 cb = _twinUpdateRequestCb;

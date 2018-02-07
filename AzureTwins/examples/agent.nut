@@ -67,6 +67,10 @@ function onConnect(status) {
     if (status == AT_SUBSCRIBED) {
         twin.getCurrentStatus(statusReceivedCb);
     }
+
+    if (status == AT_DISCONNECTED) {
+        twin.reconnect();
+    }
 }
 
 server.log("Creating instance of AzureTwin...");
