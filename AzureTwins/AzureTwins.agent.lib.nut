@@ -138,7 +138,7 @@ class AzureTwin {
         foreach (i, mess in messages) {
             if (typeof mess != "array") mess = [mess];
             foreach(request in mess) {
-                _log("Subscription completed. rc =  " + request.rc);
+                _log("Subscription succeeded. rc = " + request.rc);
                 if (request.rc == 0) {
                     if (_state == AT_SUBSCRIBING) _state = AT_SUBSCRIBED;
                 } else {
