@@ -37,26 +37,26 @@ server.log("Using connection string: " + authToken);
 
 function updateCompleteCb(err, body) {
     server.log("onUpdate called");
-    print(err);
+    server.log(err);
     print(body);
 }
 
 function statusReceivedCb(err, body) {
     server.log("onStatus called");
-    print(err);
+    server.log(err);
     print(body);
     twin.updateStatus("{\"test111\" : \"result2222\"}", updateCompleteCb);
 }
 
 function onUpdate(version, body) {
     server.log("onUpdate called");
-    print(version);
+    server.log(version);
     print(body);
 }
 
 function onMethod(method, data) {
     server.log("onMethod called");
-    print(method);
+    server.log(method);
     print(data);
 
     return "200";

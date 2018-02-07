@@ -243,7 +243,7 @@ class AzureTwin {
                 _twinUpdateRequestCb = null;
             }
 
-            //service send message to the topic $iothub/twin/res/{status}/?$rid={request id}
+            // service send message to the topic $iothub/twin/res/{status}/?$rid={request id}
             local status = res[3];
 
             if (status == "200")  status = null;
