@@ -2,7 +2,7 @@
 // Copyright (c) 2018, Electric Imp, Inc.
 // Writer: Tony Smith
 // Licence: MIT
-// Version: 1.0.3
+// Version: 1.0.4
 
 // IMPORTS
 #require "Rocky.class.nut:2.0.1"
@@ -69,7 +69,7 @@ const ENTRY_END = @"<td class='tabborder'><img src='%s' width='16' height='16'><
       </tr>
       ";
 const API_BASE_URL = "https://api.electricimp.com/v5/";
-const USER_AGENT = "impAgent-impMonitor-1.0.3";
+const USER_AGENT = "impAgent-impMonitor-1.0.4";
 const LOOP_TIME = 60;
 const PAGE_SIZE = 100;
 const EXPIRY_DELTA = 5;
@@ -86,13 +86,14 @@ local devices = [];
 function getDeviceData() {
     // Ask the impCentral API for a list of devices, calling up multiple pages
     // as needed and then combining them into a single list 'uDevices'
-    local headers = { "User-Agent": "impAgent Monitor 0.0.1",
+    local headers = { "User-Agent": "impAgent Monitor 1.0.4",
                       "Authorization": "Bearer " + token.accessToken };
     local url = API_BASE_URL + "devices" + "?page[size]=" + format("%i", PAGE_SIZE);
     local nextURL = "";
     local uDevices = [];
     do {
         local request = http.get(url, headers);
+        if (!(isAccessTokenValid())) return;
         local data = request.sendsync();
         try {
             data = http.jsondecode(data.body);
@@ -245,63 +246,99 @@ function refreshAccessToken() {
 function gotAccessToken(respData) {
     // We have retrieved an initial access token,
     // so add it and other useful data to the 'token' structure
-    local data = http.jsondecode(respData.body);
-
-    if ("accessToken" in token) {
-        token.accessToken = data.access_token;
-    } else {
-        token.accessToken <- data.access_token;
+    if (respData.statuscode != 200) {
+        server.error("Server error: " + respData.statuscode);
+        isLoggedIn = false;
+        return;
     }
 
-    if ("expiryTime" in token) {
-        token.expiryTime = time() + data.expires_in.tointeger();
-    } else {
-        token.expiryTime <- time() + data.expires_in.tointeger();
-    }
+    try  {
+        local data = http.jsondecode(respData.body);
 
-    if ("refreshToken" in token) {
-        token.refreshToken = data.refresh_token;
-    } else {
-        token.refreshToken <- data.refresh_token;
-    }
+        if ("access_token" in data) {
+            isLoggedIn = true;
 
-    // Flag that we are now logged in
-    isLoggedIn = true;
-    server.log("Acquired Access Token: " + token.accessToken.slice(0, 40) + "...");
-    server.log("Expires in " + data.expires_in + " seconds");
+            if ("accessToken" in token) {
+                token.accessToken = data.access_token;
+            } else {
+                token.accessToken <- data.access_token;
+            }
+
+            server.log("Acquired Access Token: " + token.accessToken.slice(0, 40) + "...");
+        } else {
+            server.error("Could not get access token. JSON: " + respData.body);
+            isLoggedIn = false;
+            return;
+        }
+
+        if ("expires_in" in data) {
+            if ("expiryTime" in token) {
+                token.expiryTime = time() + data.expires_in.tointeger();
+            } else {
+                token.expiryTime <- time() + data.expires_in.tointeger();
+            }
+
+            server.log("Expires in " + data.expires_in + " seconds");
+        } else {
+            server.error("No access token expiry time");
+        }
+
+        if ("refresh_token" in data) {
+            if ("refreshToken" in token) {
+                token.refreshToken = data.refresh_token;
+            } else {
+                token.refreshToken <- data.refresh_token;
+            }
+        } else {
+            server.error("No refresh token");
+        }
+    } catch (err) {
+        server.error("gotAccessToken() " + err);
+    }
 }
 
 function refreshedAccessToken(respData) {
     // We have retrieved a subsequent access token,
     // so add it to the 'token' structure
-    local data = http.jsondecode(respData.body);
-
-    if ("access_token" in data) {
-        if ("accessToken" in token) {
-            token.accessToken = data.access_token;
-        } else {
-            token.accessToken <- data.access_token;
-        }
-
-        server.log("Acquired Fresh Access Token: " + token.accessToken.slice(0, 40) + "...");
-    } else {
-        server.error("Could not refresh access token. JSON: " + respData.body);
+    if (respData.statuscode != 200) {
+        server.error("Server error: " + respData.statuscode);
         isLoggedIn = false;
+        return;
     }
 
-    if ("expires_in" in data) {
-        if ("expiryTime" in token) {
-            token.expiryTime = time() + data.expires_in.tointeger();
+    try {
+        local data = http.jsondecode(respData.body);
+
+        if ("access_token" in data) {
+            if ("accessToken" in token) {
+                token.accessToken = data.access_token;
+            } else {
+                token.accessToken <- data.access_token;
+            }
+
+            server.log("Acquired Fresh Access Token: " + token.accessToken.slice(0, 40) + "...");
         } else {
-            token.expiryTime <- time() + data.expires_in.tointeger();
+            server.error("Could not refresh access token. JSON: " + respData.body);
+            isLoggedIn = false;
+            return;
         }
 
-        server.log("Expires in " + data.expires_in + " seconds");
-    }
+        if ("expires_in" in data) {
+            if ("expiryTime" in token) {
+                token.expiryTime = time() + data.expires_in.tointeger();
+            } else {
+                token.expiryTime <- time() + data.expires_in.tointeger();
+            }
 
-    // Since we bypassed a device update request to come here,
-    // we need to make that request now
-    getDeviceData();
+            server.log("Expires in " + data.expires_in + " seconds");
+        }
+
+        // Since we bypassed a device update request to come here,
+        // we need to make that request now
+        getDeviceData();
+    } catch (err) {
+        server.error("refreshedAccessToken() " + err);
+    }
 }
 
 function isAccessTokenValid() {
@@ -333,6 +370,8 @@ function updateDevices() {
             // The access token is good - update the devices' status
             getDeviceData();
         }
+    } else {
+        login(USERNAME, PASSWORD);
     }
 
     // Schedule the next check in LOOP_TIME seconds
@@ -369,9 +408,6 @@ api.get("/images/([^/]*)", function(context) {
     if (path == "spacer.png") imageData = SPACER_PNG;
     context.send(200, imageData);
 });
-
-// Log into the API
-login(USERNAME, PASSWORD);
 
 // Set default text to display
 htmlBody = @"<tr><td class='tabcontent'><h4 align='center'>Getting Device Info...</h4></td></tr>";
