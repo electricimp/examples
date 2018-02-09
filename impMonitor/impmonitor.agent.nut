@@ -14,12 +14,8 @@
 #import "spacer.png.nut"
 
 // CONSTANTS
-// If you are not using Squinter or an equivalent tool to combine multiple Squirrel files,
-// you need to uncomment the following two lines and enter your Electric Imp account credentials
-// const USERNAME = "<YOUR__ELECTRIC_IMP_ACCOUNT_USERNAME>";
-// const PASSWORD = "<YOUR_ELECTRIC_IMP_ACCOUNT_PASSWORD>";
-#import "~/dropbox/programming/imp/codes/monitor.nut"
-
+const USERNAME = "<YOUR__ELECTRIC_IMP_ACCOUNT_USERNAME>";
+const PASSWORD = "<YOUR_ELECTRIC_IMP_ACCOUNT_PASSWORD>";
 const HTML_HEADER = @"<!DOCTYPE html><html lang='en-US'><meta charset='UTF-8'>
 <head>
   <title>Device Status Monitor 0.0.1</title>
