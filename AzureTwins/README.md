@@ -67,9 +67,9 @@ The library follows [this document](https://docs.microsoft.com/en-us/azure/iot-h
 
 ### How to get latest version of Azure Twin document
 
-`getCurrentStatus` method may be used to retrieve latest JSON document. Its implementation follow [this document](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-mqtt-support#retrieving-a-device-twins-properties)
+`getCurrentStatus` method may be used to retrieve latest state of the twin document in JSON format. Its implementation follows [the spec](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-mqtt-support#retrieving-a-device-twins-properties)
 
-The function accepts single callback function that is called when document is received or error happens.
+The function accepts single callback function that is executed when a response is received or an error happens.
 
 ``` squirrel
 
@@ -81,7 +81,7 @@ twin.getCurrentStatus(onStatusReceived);
 
 ```
 
-The signature of the callback function is following
+The signature of the callback function is the following
 
 | Parameter | Description |
 | --------- | ----------- |
@@ -90,11 +90,11 @@ The signature of the callback function is following
 
 ### How to update device twin's reported properties
 
-`updateStatus` method may be used to patch twin's reported properties. Its implementation follows [this document](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-mqtt-support#update-device-twins-reported-properties)
+`updateStatus` method may be used to patch twin's reported properties. Its implementation follows [the spec](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-mqtt-support#update-device-twins-reported-properties)
 
-The function accepts new set of properties in a form serialized JSON document and callback function that is called when document is updated or in case of communication issues.
+The function accepts new set of properties in a form serialized JSON document and a callback function that is executed when document is updated or in case of communication issues.
 
-The signature of the callback function is following
+The signature of the callback function is the following
 
 | Parameter | Description |
 | --------- | ----------- |
