@@ -324,8 +324,8 @@ class AzureTwin {
             _state = AT_DISCONNECTED;
         }
 
-        _notifyState();
         _subscribe();
+        _notifyState();
     }
 
     // ------------------ service functions ---------------------
