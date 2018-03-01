@@ -6,7 +6,7 @@ This is a collection of examples written for the Electric Imp platform.  Not all
 
 ### [impMonitor](./impMonitor)
 This example demonstrates the use of the impCentral™ API to retrieve information about your development devices and use that data to generate a live web-based status readout via HTML, JavaScript and jQuery.
-##### Updated February 06, 2018
+##### Updated March 01, 2018
 
 ### [searchXML](./searchXML)
 This example contains a function used for searching for a specific path within an XML string. It supports sibling tags with the same name but does not support nested tags with the same name. It can be used synchronously or asynchronously and the README contains examples of both.
