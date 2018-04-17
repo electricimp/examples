@@ -68,7 +68,7 @@ Open the Electric Imp mobile app on your smartphone to configure your device.
 
 The Electric Imp Platform has two main components: the imp-enabled device and the impCloud&trade;. The imp-enabled device runs the device code, which in this use case consolidates the data gathered from the temperature sensor via the Click PLC. Each device is paired one-to-one with its own online assistant &mdash; or, as we call it, an ‘agent’ &mdash; in the impCloud and which runs the agent code. The device sends this data to its agent. In this example, the agent code relays the data to the Azure IoT Central cloud. Here’s a broad overview of this flow:
 
-![System Overview](./imgs/EmbWorld-Cypress-MSFT-PLC-Demo-Diagram.pdf)
+![System Overview](./imgs/EmbWorld-Cypress-MSFT-PLC-Demo-Diagram.png)
 
 With impCentral Electric Imp provides all the tools you need to write and deploy the software (to the device and to its agent) that will control your imp-enabled connected product. impCental runs in a desktop web browser and communicates between the device and cloud solutions.
 
@@ -88,7 +88,7 @@ With impCentral Electric Imp provides all the tools you need to write and deploy
 
 1. Login to [Microsoft IoT Central](https://apps.azureiotcentral.com/), click **+ New Application**:
 
-![Create New Application ](./imgs/MS_IoTCentral_NewApplication)
+![Create New Application ](./imgs/MS_IoTCentral_NewApplication.png)
 
 2. In the pop-up panel select:
 
@@ -104,11 +104,11 @@ With impCentral Electric Imp provides all the tools you need to write and deploy
 
 1. On the Homepage Click on the **Create Device Templates** shortcut to create a device template. This will also create your first device of this type:
 
- ![Create Device Template](./imgs/MS_IoTCentral_CreateDevTemp_Shortcut)
+ ![Create Device Template](./imgs/MS_IoTCentral_CreateDevTemp_Shortcut.png)
 
 2. Enter the name for your device template. For this example I'll use the name *Fieldbus-PLC*, since my devices will be Fieldbus Gateways with PLCs attached:
 
-![Name Device Template](./imgs/MS_IoTCentral_Create_Dev_Template)
+![Name Device Template](./imgs/MS_IoTCentral_Create_Dev_Template.png)
 
 3. After creating a device template your first simulated device will be automatically created. You can edit the device name and upload a photo if desired.
 
@@ -124,15 +124,15 @@ local data =
 5. Add **temperature** to the device template: 
  - Click **+ New Measurement** 
 
-![Add New Measurement](./imgs/MS_IoTCentral_NewMeasurement)
+![Add New Measurement](./imgs/MS_IoTCentral_NewMeasurement.png)
 
  - Select **Telemetry**.
 
-![New Measurement Telemetry](./imgs/MS_IoTCentral_NewMeasureOpen)
+![New Measurement Telemetry](./imgs/MS_IoTCentral_NewMeasureOpen.png)
 
  - Fill in Telemetry form:
 
-![Telemetry Form](./imgs/MS_IoTCentral_TelemetryForm)
+![Telemetry Form](./imgs/MS_IoTCentral_TelemetryForm.png)
 
     - Fill in the **Display Name**, this will be displayed in your application.
     - Fill in **Field Name**, this must match the code from your device, so for this example this field must be *temperature*.
