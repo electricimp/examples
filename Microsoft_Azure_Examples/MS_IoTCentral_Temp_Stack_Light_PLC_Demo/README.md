@@ -134,13 +134,13 @@ local data =
 
 ![Telemetry Form](./imgs/MS_IoTCentral_TelemetryForm.png)
 
-    - Fill in the **Display Name**, this will be displayed in your application.
-    - Fill in **Field Name**, this must match the code from your device, so for this example this field must be *temperature*.
-    - (Optional) fill in **Units**, for this example *degC*.
-    - (Optional) **Minimum Value**, graphing will use this value to set the y axis, so choose a value that makes sense for your application. I have used a value of *10*.
-    - (Optional) **Maximum Value**, graphing will use this value to set the y axis, so choose a value that makes sense for your application. I have used a value of *40*.
-    - (Optional) **Decimal Places**, enter the number of decimal places your data should display. I have used a value of *0*.
-    - At the top of the form click **Save**.
+ - Fill in the **Display Name**, this will be displayed in your application.
+ - Fill in **Field Name**, this must match the code from your device, so for this example this field must be *temperature*.
+ - (Optional) fill in **Units**, for this example *degC*.
+ - (Optional) **Minimum Value**, graphing will use this value to set the y axis, so choose a value that makes sense for your application. I have used a value of *10*.
+ - (Optional) **Maximum Value**, graphing will use this value to set the y axis, so choose a value that makes sense for your application. I have used a value of *40*.
+ - (Optional) **Decimal Places**, enter the number of decimal places your data should display. I have used a value of *0*.
+ - At the top of the form click **Save**.
 
 6. Add **temperatureAlert** to the device template: 
  - Click **+ New Measurement** 
@@ -170,4 +170,4 @@ const DEVICE_CONNECTION_STRING = "HostName=saas-iothub-5428cf2a-c98c-411e-9e11-1
 // Start the Application
 Application(DEVICE_CONNECTION_STRING);
 ```
-
+6. Click **Build and Force Restart** to launch the your application.
