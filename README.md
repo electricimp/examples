@@ -2,6 +2,13 @@
 
 This is a collection of examples written for the Electric Imp platform.  Not all code in this repository is actively maintained, so please submit pull requests if you make improvements to the example code.
 
+## [Microsoft Azure Examples](./Microsoft_Azure_Examples)
+
+### [MS_IoTCentral_Temp_Stack_Light_PLC_Demo](./Microsoft_Azure_Examples)
+
+
+
+
 ## Recent Examples
 
 ### [impMonitor](./impMonitor)
