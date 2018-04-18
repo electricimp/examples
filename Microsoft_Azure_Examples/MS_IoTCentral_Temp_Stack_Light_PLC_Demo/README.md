@@ -28,26 +28,40 @@ In this example, you begin by learning the basics of working with Electric Imp. 
 5. A [Microsoft Account](https://login.microsoftonline.com).
 6. [impAccelerator™ Fieldbus Gateway](https://store.electricimp.com/products/impaccelerator-fieldbus-gateway?variant=31118564754)
 7. [C0-02DD1-D Click PLC](https://www.automationdirect.com/adc/Shopping/Catalog/Programmable_Controllers/CLICK_Series_PLCs_(Stackable_Micro_Brick)/PLC_Units/C0-02DD1-D?utm_source=google&utm_medium=product-search&gclid=CPeB4NWljNQCFUlNfgod9l4OVg).
-8. Thermistor.
-9. Stack Light.
-9. Power Supply.
+8. [10k NTC Thermistor](https://www.sparkfun.com/products/250).
+9. [10k Resistor](https://www.sparkfun.com/products/14491).
+10. [Stack Light](https://www.amazon.com/gp/product/B00OCGC3P8/ref=oh_aui_search_detailpage?ie=UTF8&psc=1).
+11. [24V Power Supply](https://www.automationdirect.com/adc/Shopping/Catalog/Programmable_Controllers/CLICK_Series_PLCs_(Stackable_Micro_Brick)/Power_Supplies/C0-01AC).
+12. [Wire](https://www.amazon.com/dp/B00B4ZRPEY/ref=psdc_495310_t4_B0040DEI9M).
 
 ## Hardware Setup
 
-TODO: REPLACE THIS SECTION WITH CORRECT SETUP AND photo and/or wiring diagram 
-
-- Connect Fieldbus Gateway to Click PLC via RS485.
-- Connect Thermistor to Click PLC Analog input.
+- Connect Fieldbus Gateway to Click PLC via RS485. 
+<img src="./imgs/Fieldbus_RS45_WiringCloseup.jpg" width="500">
+- Connect 10k Thermistor to Click PLC with 10k resistor.
+    - Thermistor (Black Wire) -> PLC **ACOM**
+    - Thermisotr -> 10k Resistor
+    - 10k Resistor (Red Wire) -> Power Supply **24V**
+    - 10k Resistor (Yellow Wire) -> PLC analog in **AD1 I** 
+<img src="./imgs/Therm_Fritzing.png" width="200">
+<img src="./imgs/Therm_PLC_WiringCloseup.jpg" width="500">
 - Connect Stack Light to Click PLC.
-- Connect the PLC and and the Fieldbus Gateway to the power supply.
+    - Green Wire -> PLC **Y1** 
+    - Yellow Wire -> PLC **Y2** 
+    - Red Wire -> PLC **Y3**
+    - Grey Wire -> Power Supply **0V**
+<img src="./imgs/StackLight_WiringCloseup.jpg" width="500">
+- Connect the PLC to the power supply.
+    - PLC power (on the bottom of the unit) to the Power Supply terminals.
+<img src="./imgs/PLC_Power_WiringCloseup.jpg" width="500">
+    - Power Supply **24V** -> PLC **C2**
+<img src="./imgs/PLC_Power_Jumper_WiringCloseup.jpg" width="500">
+- Connect the Fieldbus Gateway to the power supply.
+<img src="./imgs/FieldbusGateway_Power_WiringCloseup.jpg" width="500">
 
 Assembled, the hardware should look like this:
 
-![PLC and Power Supply Wiring](./imgs/PLC_and_PowerSupply.jpg)
-![impAccelerator™ Fieldbus Gateway Wiring Close Up](./imgs/Fieldbus_WiringCloseup.jpg)
-![PLC Wiring Close Up](./imgs/Click_WiringCloseup.jpg)
-![Power Supply Close Up](./imgs/PowerSupply_WiringCloseup.jpg)
-![impAccelerator™ Fieldbus Gateway and PLC Demo](./imgs/Full_Setup.jpg)
+<img src="./imgs/Setup_Overview.jpg" width="500">
 
 ## Step by step instructions
 
