@@ -92,7 +92,7 @@ class ClickPLCTempMonitor {
     // THEMISTOR CONSTANTS
     static NUM_ANALOG_READ_BYTES               = 2;
     static B_THERM                             = 3988;
-    static T0_THERM                            = 265;
+    static T0_THERM                            = 298.15;
 
     // TEMP ALERT DEFAULT
     static DEFAULT_TEMP_THRESHOLD              = 28;
