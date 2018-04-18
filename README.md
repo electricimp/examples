@@ -6,6 +6,10 @@ This is a collection of examples written for the Electric Imp platform.  Not all
 
 ### [MS_IoTCentral_Temp_Stack_Light_PLC_Demo](./Microsoft_Azure_Examples/MS_IoTCentral_Temp_Stack_Light_PLC_Demo)
 
+This example uses an impAccelerator Fielbus Gateway and the Electric Imp Modbus Library to monitor the temperature via a Click PLC. The temperature data is sent to Microsoft Azure using the Electic Imp [AzureIoTHub libray](https://github.com/electricimp/AzureIoTHub) and can be monitored using Azure IoT Central.
+
+##### Updated April 16, 2018
+
 ## Recent Examples
 
 ### [impMonitor](./impMonitor)
