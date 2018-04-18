@@ -135,13 +135,13 @@ With impCentral Electric Imp provides all the tools you need to write and deploy
 
 3. After creating a device template your first simulated device will be automatically created. You can edit the device name and upload a photo if desired.
 
-4. Next we need to match the data that the imp is sending via the application code with the device template we are creating. For this application we are going to track *temperature* and *temperatureAlert* telemetry data. The data structure is defined on lines 110-113 of the example device code (see code snapshot below):
+4. Next we need to match the data that the imp is sending via the application code with the device template we are creating. For this application we are going to track *temperature* and *temperatureAlert* telemetry data. The data structure is defined on lines 183-186 of the example device code (see code snapshot below):
 
 ```squirrel
-local data = 
-    {"temperature" : convertReading(reading),
-     "temperatureLimit" : tempThresh,
-     "temperatureAlert" : 0}; 
+// Create data table to send to agent
+local data = { "temperature"      : temp,
+               "temperatureLimit" : tempThresh,
+               "temperatureAlert" : alert };
 ```
 
 5. Add **temperature** to the device template: 
@@ -195,14 +195,14 @@ local data =
 
 ![Telemetry Form](./imgs/MS_IoTCentral_DeviceConnectionStringPopUp.png)
 
-5. Open the impCentral code editor and paste the **Primary connection string** into the agent code **DEVICE_CONNECTION_STRING** constant. (TODO: update with line number when code edit is tested)
+5. Open the impCentral code editor and paste the **Primary connection string** into the agent code **DEVICE_CONNECTION_STRING** constant on line 147 of the example agent code.
 
 ```squirrel
-////////// Application Variables //////////
-const DEVICE_CONNECTION_STRING = "HostName=saas-iothub-5428cf2a-c98c-411e-9e11-187e77941f50.azure-devices.net;DeviceId=1uu3d46;SharedAccessKey=UmtN3B+pHF8Hzm6RcPIMuXputsfTQTwVgy5e12J6CuE=";
-
+// Connection string from IoT Central
+const DEVICE_CONNECTION_STRING = "<YOUR_DEVICE_CONNECTION_STRING_HERE>";
 
 // Start the Application
-Application(DEVICE_CONNECTION_STRING);
+IoTHubTempMonitor(DEVICE_CONNECTION_STRING);
 ```
-6. Click **Build and Force Restart** to launch the your application.
+
+6. Click **Build and Force Restart** to start running your application.
