@@ -4,7 +4,7 @@ This is a collection of examples written for the Electric Imp platform.  Not all
 
 ## [Microsoft Azure Examples](./Microsoft_Azure_Examples)
 
-### [MS_IoTCentral_Temp_Stack_Light_PLC_Demo](./Microsoft_Azure_Examples)
+### [MS_IoTCentral_Temp_Stack_Light_PLC_Demo](./Microsoft_Azure_Examples/MS_IoTCentral_Temp_Stack_Light_PLC_Demo)
 
 ## Recent Examples
 
