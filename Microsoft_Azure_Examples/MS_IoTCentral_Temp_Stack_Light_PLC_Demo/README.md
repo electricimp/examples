@@ -199,7 +199,7 @@ local data =
 
 ```squirrel
 ////////// Application Variables //////////
-const DEVICE_CONNECTION_STRING = "HostName=saas-iothub-5428cf2a-c98c-411e-9e11-187e77941f50.azure-devices.net;DeviceId=1uu3d46;SharedAccessKey=UmtN3B+pHF8Hzm6RcPIMuXputsfTQTwVgy5e12J6CuE=";
+const DEVICE_CONNECTION_STRING = "";
 
 
 // Start the Application
