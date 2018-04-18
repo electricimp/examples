@@ -46,7 +46,7 @@ In this example, you begin by learning the basics of working with Electric Imp. 
 - 10k Resistor (Red Wire) -> Power Supply **24V**
 - 10k Resistor (Yellow Wire) -> PLC analog in **AD1 I** 
 
-<img src="./imgs/Therm_Fritzing_updated.png" width="160"><img src="./imgs/Therm_PLC_WiringCloseup.jpg" width="500">
+<img src="./imgs/Therm_Fritzing.png" width="160"><img src="./imgs/Therm_PLC_WiringCloseup.jpg" width="500">
 
 3. Connect Stack Light to Click PLC.
 - Green Wire -> PLC **Y1** 
@@ -131,7 +131,7 @@ With impCentral Electric Imp provides all the tools you need to write and deploy
 
 2. Enter the name for your device template. For this example I'll use the name *Fieldbus-PLC*, since my devices will be Fieldbus Gateways with PLCs attached:
 
-![Name Device Template](./imgs/MS_IoTCentral_Create_Dev_Template.png)
+![Name Device Template](./imgs/MS_IoTCentral_Create_Dev_Template_updated.png)
 
 3. After creating a device template your first simulated device will be automatically created. You can edit the device name and upload a photo if desired.
 
