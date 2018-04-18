@@ -70,7 +70,7 @@ Assembled, the hardware should look like this:
 
 <img src="./imgs/Setup_Overview.jpg" width="800">
 
-## Step by step instructions
+## Configure Fieldbus Gateway
 
 To get started with a impAccelerator™ Fieldbus Gateway follow the steps below, or for more detailed instructions you can visit our DevCenter's [Getting Started Guide](https://developer.electricimp.com/hardware/fieldbusgateway/intro).
 
@@ -104,6 +104,8 @@ With impCentral Electric Imp provides all the tools you need to write and deploy
 7. Copy and paste the application code from GitHub into the code editor. 
     - [Agent Code](./MS_IoTCentral_PLC_Temp_Stack_Demo.agent.nut) should be placed in the *Agent Code* window to the left in the code editor.
     - [Device Code](./MS_IoTCentral_PLC_Temp_Stack_Demo.device.nut) should be placed in the *Device Code* window to the right in the code editor.
+
+## Azure IoT Central Set Up 
 
 ### Create an IoT Central Application
 
