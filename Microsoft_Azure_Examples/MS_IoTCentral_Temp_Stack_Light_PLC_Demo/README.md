@@ -180,9 +180,21 @@ local data =
 ### Connect your Imp to IoT Central
 
 1. Navigate to the Device Explorer tab.
+
+![Telemetry Form](./imgs/MS_IoTCentral_SideBar.png)
+
 2. Click **+ New** from the menu options, and select **Real**.
+
+![Telemetry Form](./imgs/MS_IoTCentral_CreateNewDevice_wDropdown.png)
+
 3. Click **Connect the device** from the top right just under the account info.
+
+![Telemetry Form](./imgs/MS_IoTCentral_ConnectDeviceButton.png .png)
+
 4. Copy the **Primary connection string** from the pop-up.
+
+![Telemetry Form](./imgs/MS_IoTCentral_DeviceConnectionStringPopUp.png)
+
 5. Open the impCentral code editor and paste the **Primary connection string** into the agent code **DEVICE_CONNECTION_STRING** constant. (TODO: update with line number when code edit is tested)
 
 ```squirrel
