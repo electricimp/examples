@@ -44,6 +44,7 @@ In this example, you begin by learning the basics of working with Electric Imp. 
     - Thermisotr -> 10k Resistor
     - 10k Resistor (Red Wire) -> Power Supply **24V**
     - 10k Resistor (Yellow Wire) -> PLC analog in **AD1 I** 
+    
 <img src="./imgs/Therm_Fritzing.png" width="200"><img src="./imgs/Therm_PLC_WiringCloseup.jpg" width="500">
 
 - Connect Stack Light to Click PLC.
