@@ -189,7 +189,7 @@ local data = { "temperature"      : temp,
 
 3. Click **Connect the device** from the top right just under the account info.
 
-![Telemetry Form](./imgs/MS_IoTCentral_ConnectDeviceButton.png .png)
+![Telemetry Form](./imgs/MS_IoTCentral_ConnectDeviceButton.png)
 
 4. Copy the **Primary connection string** from the pop-up.
 
