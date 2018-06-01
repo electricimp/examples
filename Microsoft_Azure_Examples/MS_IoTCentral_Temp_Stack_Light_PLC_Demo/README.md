@@ -206,3 +206,5 @@ IoTHubTempMonitor(DEVICE_CONNECTION_STRING);
 ```
 
 6. Click **Build and Force Restart** to start running your application.
+
+IoT Central will take about 10-15 seconds to start updating the telemetry data plot, at which point you will see the telemetry data coming from the Fieldbus Gateway.
