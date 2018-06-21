@@ -89,7 +89,7 @@ Open the Electric Imp mobile app on your smartphone to configure your device.
 
 The Electric Imp Platform has two main components: the imp-enabled device and the impCloud&trade;. The imp-enabled device runs the device code, which in this use case consolidates the data gathered from the temperature sensor via the Click PLC. Each device is paired one-to-one with its own online assistant &mdash; or, as we call it, an ‘agent’ &mdash; in the impCloud and which runs the agent code. The device sends this data to its agent. In this example, the agent code relays the data to the Azure IoT Central cloud. Here’s a broad overview of this flow:
 
-![System Overview](./imgs/EmbWorld-Cypress-MSFT-PLC-Demo-Diagram.png)
+![System Overview](./imgs/PLC-Demo-Diagram-Rev-061818.png)
 
 With impCentral Electric Imp provides all the tools you need to write and deploy the software (to the device and to its agent) that will control your imp-enabled connected product. impCental runs in a desktop web browser and communicates between the device and cloud solutions.
 
