@@ -247,7 +247,7 @@ class SX1509 {
         _callbacks[gpio] = _callback;
         
         // Initialize the interrupt Pin
-        hardware.pin1.configure(DIGITAL_IN_PULLUP, fire_callback.bindenv(this));
+        _int_pin.configure(DIGITAL_IN_PULLUP, fire_callback.bindenv(this));
     }
 
     // finds and executes the callback after the irq pin (pin 1) fires
