@@ -279,7 +279,7 @@ class SX1509 {
         writeReg(BANK_B.REGDATA, 0xFF);
         writeReg(BANK_B.REGPULLUP, 0x00);
         writeReg(BANK_B.REGPULLDN, 0x00);
-        writeReg(BANK_A.REGINTMASK, 0xFF);
+        writeReg(BANK_B.REGINTMASK, 0xFF);
         writeReg(BANK_B.REGSNSHI, 0x00);
         writeReg(BANK_B.REGSNSLO, 0x00);
     }
