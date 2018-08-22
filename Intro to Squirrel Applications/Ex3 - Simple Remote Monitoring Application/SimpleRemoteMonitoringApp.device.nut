@@ -6,17 +6,17 @@
 // Libraries must be required before all other code
 
 // Accelerometer Library
-#require "LIS3DH.class.nut:1.3.0"
+#require "LIS3DH.device.lib.nut:2.0.2"
 // Temperature Humidity sensor Library
 #require "HTS221.device.lib.nut:2.0.1"
 // Air Pressure sensor Library
-#require "LPS22HB.class.nut:1.0.0"
+#require "LPS22HB.device.lib.nut:2.0.0"
 
 
 // HARDWARE ABSTRACTION LAYER
 // ---------------------------------------------------
-// HAL's are tables that map human readable names to 
-// the hardware objects used in the application. 
+// HAL's are tables that map human readable names to
+// the hardware objects used in the application.
 
 // Copy and Paste Your HAL here
 // YOUR_HAL <- {...}
@@ -25,7 +25,7 @@
 // REMOTE MONITORING APPLICATION CODE
 // ---------------------------------------------------
 // Application code, take readings from our sensors
-// and send the data to the agent 
+// and send the data to the agent
 
 class Application {
 
@@ -46,20 +46,27 @@ class Application {
     accel = null;
 
     constructor() {
-        // Power save mode will reduce power consumption when the 
-        // radio is idle. This adds latency when sending data. 
-        imp.setpowersave(true);
+        // Power save mode will reduce power consumption when the radio
+        // is idle, a good first step for saving power for battery
+        // powered devices. Power save mode will add latency when
+        // sending data. Power save mode is not supported on impC001
+        // and is recommended for imp004m, so don't set for those types
+        // of imps.
+        local type = imp.info().type;
+        if (type != "imp004m" && type != "impC001") {
+            imp.setpowersave(true);
+        }
         initializeSensors();
     }
 
     function run() {
         // Set up the reading table with a timestamp
         local reading = { "time" : time() };
-        
+
         // Add a pressure reading
         local result = pressure.read();
         if ("pressure" in result) reading.pressure <- result.pressure;
-        
+
         // Add temperature and humidity readings
         result = tempHumid.read();
         if ("temperature" in result) reading.temperature <- result.temperature;
@@ -100,7 +107,7 @@ class Application {
 }
 
 
-// RUNTIME 
+// RUNTIME
 // ---------------------------------------------------
 server.log("Device running...");
 

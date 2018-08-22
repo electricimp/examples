@@ -1,25 +1,29 @@
 // Power Efficient Remote Monitoring Application Device Code
 // ---------------------------------------------------
+// NOTE: This code doesn't support imp004m or imp005 devices,
+// since it makes use of nv table
+// See developer docs - https://developer.electricimp.com/api/nv
 
 // SENSOR LIBRARIES
 // ---------------------------------------------------
 // Libraries must be required before all other code
 
 // Accelerometer Library
-#require "LIS3DH.class.nut:1.3.0"
+#require "LIS3DH.device.lib.nut:2.0.2"
 // Temperature Humidity sensor Library
 #require "HTS221.device.lib.nut:2.0.1"
 // Air Pressure sensor Library
-#require "LPS22HB.class.nut:1.0.0"
+#require "LPS22HB.device.lib.nut:2.0.0"
 // Library to help with asynchonous programming
 #require "promise.class.nut:3.0.1"
+// #require "promise.lib.nut:4.0.0"
 // Library to manage agent/device communication
-#require "MessageManager.lib.nut:2.0.0"
+#require "MessageManager.lib.nut:2.2.0"
 
 // HARDWARE ABSTRACTION LAYER
 // ---------------------------------------------------
-// HAL's are tables that map human readable names to 
-// the hardware objects used in the application. 
+// HAL's are tables that map human readable names to
+// the hardware objects used in the application.
 
 // Copy and Paste Your HAL here
 // YOUR_HAL <- {...}
@@ -28,7 +32,7 @@
 // POWER EFFICIENT REMOTE MONITORING APPLICATION CODE
 // ---------------------------------------------------
 // Application code, take readings from our sensors
-// and send the data to the agent 
+// and send the data to the agent
 
 class Application {
 
@@ -57,60 +61,67 @@ class Application {
 
     // Message Manager variable
     mm = null;
-    
+
     // Flag to track first disconnection
     _boot = false;
 
     constructor() {
-        // Power save mode will reduce power consumption when the 
-        // radio is idle. This adds latency when sending data. 
-        imp.setpowersave(true);
+        // Power save mode will reduce power consumption when the radio
+        // is idle, a good first step for saving power for battery
+        // powered devices. Power save mode will add latency when
+        // sending data. Power save mode is not supported on impC001
+        // and is recommended for imp004m, so don't set for those types
+        // of imps.
+        local type = imp.info().type;
+        if (type != "impC001") {
+            imp.setpowersave(true);
+        }
 
-        // Change default connection policy, so our application 
-        // continues to run even if the WiFi connection fails
+        // Change default connection policy, so our application
+        // continues to run even if the connection fails
         server.setsendtimeoutpolicy(RETURN_ON_ERROR, WAIT_TIL_SENT, 10);
 
         // Configure message manager for device/agent communication
         mm = MessageManager();
-        // Message Manager allows us to call a function when a message  
+        // Message Manager allows us to call a function when a message
         // has been delivered. We will use this to know when it is ok
-        // to disconnect from WiFi
+        // to disconnect
         mm.onAck(readingsAckHandler.bindenv(this));
-        // Message Manager allows us to call a function if a message  
-        // fails to be delivered. We will use this to recover data 
+        // Message Manager allows us to call a function if a message
+        // fails to be delivered. We will use this to condense data
         mm.onFail(sendFailHandler.bindenv(this));
 
         // Initialize sensors
         initializeSensors();
 
-        // Configure different behavior based on the reason the 
-        // hardware rebooted 
+        // Configure different behavior based on the reason the
+        // hardware rebooted
         checkWakeReason();
     }
 
     function checkWakeReason() {
-        // We can configure different behavior based on 
-        // the reason the hardware rebooted. 
+        // We can configure different behavior based on
+        // the reason the hardware rebooted.
         switch (hardware.wakereason()) {
             case WAKEREASON_TIMER :
                 // We woke up after sleep timer expired.
-                // No extra config needed.    
+                // No extra config needed.
                 break;
             case WAKEREASON_PIN :
                 // We woke up because an interrupt pin was triggered.
                 // No extra config needed.
                 break;
-            case WAKEREASON_SNOOZE : 
+            case WAKEREASON_SNOOZE :
                 // We woke up after connection timeout.
                 // No extra config needed.
                 break;
             default :
                 // We pushed new code or just rebooted the device, etc. Lets
-                // congigure everything. 
+                // congigure everything.
                 server.log("Device running...");
-                                
-                // NV can persist data when the device goes into sleep mode 
-                // Set up the table with defaults - note this method will 
+
+                // NV can persist data when the device goes into sleep mode
+                // Set up the table with defaults - note this method will
                 // erase stored data, so we only want to call it when the
                 // application is starting up.
                 configureNV();
@@ -133,25 +144,25 @@ class Application {
     }
 
     function takeReadings() {
-        // Take readings by building an array of functions that all  
-        // return promises. 
+        // Take readings by building an array of functions that all
+        // return promises.
         local series = [takeTempHumidReading(), takePressureReading(), takeAccelReading()];
-        
-        // The all method executes the series of promises in parallel 
-        // and resolves when they are all done. It Returns a promise 
+
+        // The all method executes the series of promises in parallel
+        // and resolves when they are all done. It Returns a promise
         // that resolves with an array of the resolved promise values.
         Promise.all(series)
             .then(function(results) {
                 // Create a table to store the results from the sensor readings
-                // Add a timestamp 
+                // Add a timestamp
                 local reading = {"time" : time()};
                 // Add all successful readings
                 if ("temperature" in results[0]) reading.temperature <- results[0].temperature;
                 if ("humidity" in results[0]) reading.humidity <- results[0].humidity;
                 if ("pressure" in results[1]) reading.pressure <- results[1].pressure;
-                if ("x" in results[2]) reading.accel_x <- results[2].x; 
-                if ("y" in results[2]) reading.accel_y <- results[2].y; 
-                if ("z" in results[2]) reading.accel_z <- results[2].z; 
+                if ("x" in results[2]) reading.accel_x <- results[2].x;
+                if ("y" in results[2]) reading.accel_y <- results[2].y;
+                if ("z" in results[2]) reading.accel_z <- results[2].z;
                 // Add table to the readings array for storage til next connection
                 nv.readings.push(reading);
 
@@ -163,15 +174,15 @@ class Application {
 
                 // Update the next reading time varaible
                 setNextReadTime(now);
-                
+
                 // Only send readings if we have some and are either
                 // already connected to WiFi or if it is time to connect
                 if (nv.readings.len() > 0 && (server.isconnected() || timeToConnect())) {
-                    
+
                     // Update the next connection time varaible
                     setNextConnectTime(now);
 
-                    // We changed the default connection policy, so we need to 
+                    // We changed the default connection policy, so we need to
                     // use this method to connect
                     server.connect(function(reason) {
                         if (reason == SERVER_CONNECTED) {
@@ -179,7 +190,7 @@ class Application {
                             sendReadings();
                         } else {
                             // We were not able to connect
-                            // Let's make sure we don't run out 
+                            // Let's make sure we don't run out
                             // of meemory with our stored readings
                             failHandler();
                         }
@@ -218,34 +229,33 @@ class Application {
     }
 
     function sendReadings() {
-        // Send readings to the agent          
+        // Send readings to the agent
         mm.send("readings", nv.readings);
-        // Clear readings we just sent, we can recover
-        // the data if the message send fails
-        nv.readings.clear();
 
         // If this message is acknowleged by the agent
         // the readingsAckHandler will be triggered
-        
-        // If the message fails to send we will handle 
+
+        // If the message fails to send we will handle
         // in the sendFailHandler handler
     }
 
     function readingsAckHandler(msg) {
         // We connected successfully & sent data
+        // Clear readings we just sent
+        nv.readings.clear();
 
         // Reset numFailedConnects
         nv.numFailedConnects <- 0;
-        
+
         // Disconnect from server
         powerDown();
     }
 
     function sendFailHandler(msg, error, retry) {
-        // Readings did not send, pass them the 
-        // the connection failed handler, so they
-        // can be condensed and stored
-        failHandler(msg.payload.data);
+        // Readings did not send, call the
+        // connection failed handler, so readings
+        // can be condensed and re-stored
+        failHandler();
     }
 
     function powerDown() {
@@ -254,8 +264,8 @@ class Application {
 
         // Calculate how long before next reading time
         local timer = nv.nextReadTime - time();
-        
-        // Check that we did not just boot up and are 
+
+        // Check that we did not just boot up and are
         // not about to take a reading
         if (!_boot && timer > 2) {
             // Go to sleep
@@ -289,22 +299,19 @@ class Application {
         accel.enable(true);
     }
 
-    function failHandler(readings = null) {
+    function failHandler() {
         // We are having connection issues
         // Let's condense and re-store the data
 
         // Find the number of times we have failed
-        // to connect (use this to determine new readings 
-        // previously condensed readings) 
+        // to connect (use this to determine new readings
+        // vs. previously condensed readings)
         local failed = nv.numFailedConnects;
-        
-        // Connection failed before we could send
-        if (readings == null) {
-            // Make a copy of the stored readings
-            readings = nv.readings.slice(0);
-            // Clear stored readings
-            nv.readings.clear();
-        }
+
+        // Make a copy of the stored readings
+        readings = nv.readings.slice(0);
+        // Clear stored readings
+        nv.readings.clear();
 
         // Create an array to store condensed readings
         local condensed = [];
@@ -315,9 +322,9 @@ class Application {
             condensed.push( readings.remove(i) );
         }
 
-        // Condense and add the new readings 
+        // Condense and add the new readings
         condensed.push(getAverage(readings));
-        
+
         // Drop old readings if we are running out of space
         while (condensed.len() >= MAX_NUM_STORED_READINGS) {
             condensed.remove(0);
@@ -364,11 +371,11 @@ class Application {
         }
 
         // Grab the last value from the readings array
-        // This we allow us to keep the last accelerometer 
+        // This we allow us to keep the last accelerometer
         // reading and time stamp
         local last = readings.top();
 
-        // Update the other values with an average 
+        // Update the other values with an average
         last.temperature <- tempTotal / tCount;
         last.humidity <- humidTotal / hCount;
         last.pressure <- pressTotal / pCount;
@@ -382,7 +389,7 @@ class Application {
         if (!("nv" in root)) root.nv <- {};
 
         local now = time();
-        setNextConnectTime(now); 
+        setNextConnectTime(now);
         setNextReadTime(now);
         nv.readings <- [];
         nv.numFailedConnects <- 0;
@@ -397,7 +404,7 @@ class Application {
     }
 
     function timeToConnect() {
-        // return a boolean - if it is time to connect based on 
+        // return a boolean - if it is time to connect based on
         // the current time
         return (time() >= nv.nextConectTime);
     }
@@ -424,7 +431,7 @@ class Application {
 }
 
 
-// RUNTIME 
+// RUNTIME
 // ---------------------------------------------------
 
 // Initialize application to start readings loop

@@ -8,17 +8,17 @@
 // Initial State Library
 #require "InitialState.class.nut:1.0.0"
 // Library to manage agent/device communication
-#require "MessageManager.lib.nut:2.0.0"
+#require "MessageManager.lib.nut:2.2.0"
 
 // POWER EFFICIENT REFRIGERATOR MONITOR APPLICATION CODE
 // -------------------------------------------------------
 // Application code, listen for readings from device,
-// when a reading is received send the data to Initial 
-// State 
+// when a reading is received send the data to Initial
+// State
 
 class Application {
 
-    // On Intial State website navigate to "my account" 
+    // On Intial State website navigate to "my account"
     // page find/create a "Streaming Access Key"
     // Paste it into the variable below
     static STREAMING_ACCESS_KEY = "";
@@ -34,8 +34,8 @@ class Application {
         // Configure message manager for device/agent communication
         mm = MessageManager();
 
-        // The Initial State library will create a bucket  
-        // using the agent ID 
+        // The Initial State library will create a bucket
+        // using the agent ID
         agentID = split(http.agenturl(), "/").top();
         // Let's log the agent ID here
         server.log("Agent ID: " + agentID);
@@ -44,9 +44,9 @@ class Application {
     }
 
     function dataHandler(msg, reply) {
-        // Log the data from the device. The data is a 
+        // Log the data from the device. The data is a
         // table, so use JSON encodeing method convert to a string
-        // server.log(http.jsonencode(msg.data)); 
+        // server.log(http.jsonencode(msg.data));
 
         // Initial State requires the data in a specific structre
         // Build an array with the data from our reading.
@@ -56,7 +56,7 @@ class Application {
         server.log("Door is open: " + msg.data.doorOpen);
         events.push({"key" : "doorOpen", "value" : msg.data.doorOpen});
 
-        // Add readings 
+        // Add readings
         if ("readings" in msg.data) {
             server.log(http.jsonencode(msg.data.readings));
             foreach (reading in msg.data.readings) {

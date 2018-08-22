@@ -12,6 +12,10 @@ This example uses an impAccelerator Fielbus Gateway and the Electric Imp Modbus 
 
 ## Recent Examples
 
+### [Intro to Squirrel Applications](./Intro%20to%20Squirrel%20Applications)
+A series of eight examples for use with the sensors on the impExplorer Developer Kit, impAccelerator Battery Powered Sensor Node or impC001 Breakout Board Kit. These examples range from simple to advanced programming.  Each example builds on the skills learned in the previous example. Please note that the first few examples are not power efficient and will drain battery powered devices quickly.
+##### Updated August 18, 2018
+
 ### [impMonitor](./impMonitor)
 This example demonstrates the use of the impCentral™ API to retrieve information about your development devices and use that data to generate a live web-based status readout via HTML, JavaScript and jQuery.
 ##### Updated March 01, 2018
@@ -36,12 +40,8 @@ This is example code for using the imp with Google Calendar. The example provide
 Examples for use with the Imp005 EZ Eval board.
 ##### Updated June 30, 2017
 
-### [Intro to Squirrel Applications](./Intro%20to%20Squirrel%20Applications)
-A series of eight examples for use with the sensors on the impExplorer Developer Kit or impAccelerator Battery Powered Sensor Node. These examples range from simple to advanced programming.  Each example builds on the skills learned in the previous example. Please note that the first few examples are not power efficient and will drain battery powered devices quickly. 
-##### Updated June 29, 2017
-
 ### [SensorNode_BatteryCheck](./SensorNode_BatteryCheck/)
-This example was written for the Battery Powered Sensor Node to determine the battery voltage. The battery class included in this example can be used for other devices as long as there is an analog pin that is connected directly to the battery. **Please note** this code is not usable for determining the battery voltage on the impExplorer Developer Kit, since no analog pins are connected directly to the battery.  
+This example was written for the Battery Powered Sensor Node to determine the battery voltage. The battery class included in this example can be used for other devices as long as there is an analog pin that is connected directly to the battery. **Please note** this code is not usable for determining the battery voltage on the impExplorer Developer Kit, since no analog pins are connected directly to the battery.
 ##### Updated June 21, 2017
 
 ### [FieldbusGateway_TempPLC](./FieldbusGateway_TempPLC/)

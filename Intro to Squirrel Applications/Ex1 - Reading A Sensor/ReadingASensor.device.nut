@@ -12,31 +12,32 @@
 // SETUP
 // ---------------------------------------------------
 // The HTS221 library uses the sensor's i2c interface
-// To initialize the library we need to configure the 
+// To initialize the library we need to configure the
 // i2c and pass in the 12c address for our hardware.
 
-// The i2c address for the Explorer Kits and the 
+// The i2c address for the Explorer Kits and the
 // Battery Powered Sensor Node are all 0xBE.
 const I2C_ADDR = 0xBE;
 
-// Find the i2c for your hardware from the list below. 
-// Paste the hardware.i2c for your hardware into the 
+// Find the i2c for your hardware from the list below.
+// Paste the hardware.i2c for your hardware into the
 // i2c variable on line 32.
 
 // impExplorer Dev Kit 001                     i2c = hardware.i2c89
 // impExplorer Dev Kit 004m                    i2c = hardware.i2cNM
 // impAccelerator Battery Powered Sensor Node  i2c = hardware.i2cAB
+// impC001 Cellular Breakout Board Kit         i2c = hardware.i2cKL
 
-// Configure i2c 
-// Paste your i2c hardware in the variable below 
-local i2c = hardware.i2c89; 
+// Configure i2c
+// Paste your i2c hardware in the variable below
+local i2c = hardware.i2c89;
 i2c.configure(CLOCK_SPEED_400_KHZ);
 
 // Initialize the temperature/humidity sensor
 local tempHumid = HTS221(i2c, I2C_ADDR);
 
-// Before we can take a reading we need to configure 
-// the sensor. Note: These steps vary for different 
+// Before we can take a reading we need to configure
+// the sensor. Note: These steps vary for different
 // sensors. This sensor we just need to set the mode.
 
 // We are going to set up the sensor to take a single
@@ -65,7 +66,7 @@ function loop() {
     }
 
     // Schedule next reading in 10sec
-    // Change the first parameter to imp.wakeup to 
+    // Change the first parameter to imp.wakeup to
     // adjust the loop time
     imp.wakeup(10, loop);
 }

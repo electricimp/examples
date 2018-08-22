@@ -8,17 +8,17 @@
 // Initial State Library
 #require "InitialState.class.nut:1.0.0"
 // Library to manage agent/device communication
-#require "MessageManager.lib.nut:2.0.0"
+#require "MessageManager.lib.nut:2.2.0"
 
 // REFRIGERATOR MONTOR APPLICATION CODE
 // ---------------------------------------------------
 // Application code, listen for readings from device,
-// when a reading is received send the data to Initial 
-// State 
+// when a reading is received send the data to Initial
+// State
 
 class SmartFridge {
 
-    // On Intial State website navigate to "my account" 
+    // On Intial State website navigate to "my account"
     // page find/create a "Streaming Access Key"
     // Paste it into the variable below
     static STREAMING_ACCESS_KEY = "";
@@ -34,8 +34,8 @@ class SmartFridge {
         // Configure message manager for device/agent communication
         mm = MessageManager();
 
-        // The Initial State library will create a bucket  
-        // using the agent ID 
+        // The Initial State library will create a bucket
+        // using the agent ID
         agentID = split(http.agenturl(), "/").top();
         // Let's log the agent ID here
         server.log("Agent ID: " + agentID);
@@ -49,7 +49,7 @@ class SmartFridge {
         local events = [];
 
         foreach (reading in msg.data) {
-            // Log the reading from the device. The reading is a 
+            // Log the reading from the device. The reading is a
             // table, so use JSON encodeing method convert to a string
             server.log(http.jsonencode(reading));
 

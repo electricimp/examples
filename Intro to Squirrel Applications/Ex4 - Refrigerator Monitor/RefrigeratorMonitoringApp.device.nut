@@ -8,12 +8,12 @@
 // Temperature Humidity sensor Library
 #require "HTS221.device.lib.nut:2.0.1"
 // Library to manage agent/device communication
-#require "MessageManager.lib.nut:2.0.0"
+#require "MessageManager.lib.nut:2.2.0"
 
 // HARDWARE ABSTRACTION LAYER
 // ---------------------------------------------------
-// HAL's are tables that map human readable names to 
-// the hardware objects used in the application. 
+// HAL's are tables that map human readable names to
+// the hardware objects used in the application.
 
 // Copy and Paste Your HAL here
 // YOUR_HAL <- {...}
@@ -22,16 +22,16 @@
 // REFRIGERATOR MONITOR APPLICATION CODE
 // ---------------------------------------------------
 // Application code, take readings from our temperature
-// humidity and light sensors. Use the light level to 
+// humidity and light sensors. Use the light level to
 // determine if the door is open (true or false) and send
-// the door status, temperature and humidity to the agent 
+// the door status, temperature and humidity to the agent
 
 class SmartFridge {
 
     // Time in seconds to wait between readings
     static READING_INTERVAL_SEC     = 5;
     // Time in seconds to wait between connections
-    static REPORTING_INTERVAL_SEC   = 300; 
+    static REPORTING_INTERVAL_SEC   = 300;
     // Time to wait after boot before turning off WiFi
     static BOOT_TIMER_SEC           = 60;
 
@@ -57,32 +57,39 @@ class SmartFridge {
 
     // Varaible to track when to connect
     nextConnectTime = null;
-    
+
     // Flag to track first disconnection
     _boot = true;
 
     constructor() {
-        // Power save mode will reduce power consumption when the 
-        // radio is idle. This adds latency when sending data. 
-        imp.setpowersave(true);
+        // Power save mode will reduce power consumption when the radio
+        // is idle, a good first step for saving power for battery
+        // powered devices. Power save mode will add latency when
+        // sending data. Power save mode is not supported on impC001
+        // and is recommended for imp004m, so don't set for those types
+        // of imps.
+        local type = imp.info().type;
+        if (type != "imp004m" && type != "impC001") {
+            imp.setpowersave(true);
+        }
 
-        // Use the current time and the REPORTING_INTERVAL_SEC 
+        // Use the current time and the REPORTING_INTERVAL_SEC
         // to set a timestamp, so we know when we should connect
         // to WiFi and send the stored readings
         setNextConnectTime();
 
         // Configure message manager for device/agent communication
         mm = MessageManager();
-        // Message Manager allows us to call a function when a message  
+        // Message Manager allows us to call a function when a message
         // has been delivered. We will use this to know when it is ok
-        // to delete locally stored readings and disconnect from WiFi
+        // to delete locally stored readings and disconnect
         mm.onAck(readingsAckHandler.bindenv(this));
 
         initializeSensors();
 
         // We want to make sure we can always blinkUp a device
         // when it is first powered on, so we do not want to
-        // immediately disconnect from WiFi after boot
+        // immediately disconnect after boot
         // Set up first disconnect
         imp.wakeup(BOOT_TIMER_SEC, function() {
             _boot = false;
@@ -100,7 +107,7 @@ class SmartFridge {
             if ("temperature" in result) reading.temperature <- result.temperature;
             if ("humidity" in result) reading.humidity <- result.humidity;
 
-            // Check door status using internal LX sensor to 
+            // Check door status using internal LX sensor to
             // determine if the door is open
             reading.doorOpen <- (hardware.lightlevel() > LX_THRESHOLD);
 
@@ -117,14 +124,14 @@ class SmartFridge {
             // update current door status
             currentDoorOpenStatus = reading.doorOpen;
             // Schedule the next reading
-            imp.wakeup(READING_INTERVAL_SEC, run.bindenv(this));    
+            imp.wakeup(READING_INTERVAL_SEC, run.bindenv(this));
         }.bindenv(this));
     }
 
     function sendReadings() {
+        // Connect device
+        server.connect();
         // Send readings to the agent
-        // This method calls agent.send, which will 
-        // force the server to connect to WiFi            
         mm.send("readings", readings);
         // Update the next connection time varaible
         setNextConnectTime();
@@ -142,7 +149,7 @@ class SmartFridge {
     }
 
     function timeToConnect() {
-        // return a boolean - if it is time to connect based on 
+        // return a boolean - if it is time to connect based on
         // the current time
         return (time() >= nextConnectTime);
     }
@@ -160,12 +167,12 @@ class SmartFridge {
         tempHumid = HTS221(i2c, tempHumidAddr);
 
         // Configure sensor to take readings
-        tempHumid.setMode(HTS221_MODE.ONE_SHOT); 
-    }    
+        tempHumid.setMode(HTS221_MODE.ONE_SHOT);
+    }
 }
 
 
-// RUNTIME 
+// RUNTIME
 // ---------------------------------------------------
 server.log("Device running...");
 

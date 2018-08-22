@@ -6,20 +6,21 @@
 // Libraries must be required before all other code
 
 // Accelerometer Library
-#require "LIS3DH.class.nut:1.3.0"
+#require "LIS3DH.device.lib.nut:2.0.2"
 // Temperature Humidity sensor Library
 #require "HTS221.device.lib.nut:2.0.1"
 // Air Pressure sensor Library
-#require "LPS22HB.class.nut:1.0.0"
+#require "LPS22HB.device.lib.nut:2.0.0"
 // Library to help with asynchonous programming
 #require "promise.class.nut:3.0.1"
+// #require "promise.lib.nut:4.0.0"
 // Library to manage agent/device communication
-#require "MessageManager.lib.nut:2.0.0"
+#require "MessageManager.lib.nut:2.2.0"
 
 // HARDWARE ABSTRACTION LAYER
 // ---------------------------------------------------
-// HAL's are tables that map human readable names to 
-// the hardware objects used in the application. 
+// HAL's are tables that map human readable names to
+// the hardware objects used in the application.
 
 // Copy and Paste Your HAL here
 // YOUR_HAL <- {...}
@@ -28,7 +29,7 @@
 // REMOTE MONITORING APPLICATION CODE
 // ---------------------------------------------------
 // Application code, take readings from our sensors
-// and send the data to the agent 
+// and send the data to the agent
 
 class Application {
 
@@ -60,27 +61,34 @@ class Application {
 
     // Varaible to track when to connect
     nextConnectTime = null;
-    
+
     // Flag to track first disconnection
     _boot = true;
 
     constructor() {
-        // Power save mode will reduce power consumption when the 
-        // radio is idle. This adds latency when sending data. 
-        imp.setpowersave(true);
+        // Power save mode will reduce power consumption when the radio
+        // is idle, a good first step for saving power for battery
+        // powered devices. Power save mode will add latency when
+        // sending data. Power save mode is not supported on impC001
+        // and is recommended for imp004m, so don't set for those types
+        // of imps.
+        local type = imp.info().type;
+        if (type != "imp004m" && type != "impC001") {
+            imp.setpowersave(true);
+        }
 
-        // Use the current time and the REPORTING_INTERVAL_SEC 
+        // Use the current time and the REPORTING_INTERVAL_SEC
         // to set a timestamp, so we know when we should connect
         // to WiFi and send the stored readings
         setNextConnectTime();
 
         // Configure message manager for device/agent communication
         mm = MessageManager();
-        // Message Manager allows us to call a function when a message  
+        // Message Manager allows us to call a function when a message
         // has been delivered. We will use this to know when it is ok
         // to delete locally stored readings and disconnect from WiFi
         mm.onAck(readingsAckHandler.bindenv(this));
-        
+
         initializeSensors();
 
         // We want to make sure we can always blinkUp a device
@@ -94,25 +102,25 @@ class Application {
     }
 
     function run() {
-        // Take readings by building an array of functions that all  
-        // return promises. 
+        // Take readings by building an array of functions that all
+        // return promises.
         local series = [takeTempHumidReading(), takePressureReading(), takeAccelReading()];
-        
-        // The all method executes the series of promises in parallel 
-        // and resolves when they are all done. It Returns a promise 
+
+        // The all method executes the series of promises in parallel
+        // and resolves when they are all done. It Returns a promise
         // that resolves with an array of the resolved promise values.
         Promise.all(series)
             .then(function(results) {
                 // Create a table to store the results from the sensor readings
-                // Add a timestamp 
+                // Add a timestamp
                 local reading = {"time" : time()};
                 // Add all successful readings
                 if ("temperature" in results[0]) reading.temperature <- results[0].temperature;
                 if ("humidity" in results[0]) reading.humidity <- results[0].humidity;
                 if ("pressure" in results[1]) reading.pressure <- results[1].pressure;
-                if ("x" in results[2]) reading.accel_x <- results[2].x; 
-                if ("y" in results[2]) reading.accel_y <- results[2].y; 
-                if ("z" in results[2]) reading.accel_z <- results[2].z; 
+                if ("x" in results[2]) reading.accel_x <- results[2].x;
+                if ("y" in results[2]) reading.accel_y <- results[2].y;
+                if ("z" in results[2]) reading.accel_z <- results[2].z;
                 // Add table to the readings array for storage til next connection
                 readings.push(reading);
 
@@ -155,9 +163,9 @@ class Application {
     }
 
     function sendReadings() {
+        // Connect device
+        server.connect();
         // Send readings to the agent
-        // This method calls agent.send, which will 
-        // force the server to connect to WiFi            
         mm.send("readings", readings);
         // Update the next connection time varaible
         setNextConnectTime();
@@ -175,7 +183,7 @@ class Application {
     }
 
     function timeToConnect() {
-        // return a boolean - if it is time to connect based on 
+        // return a boolean - if it is time to connect based on
         // the current time
         return (time() >= nextConnectTime);
     }
@@ -207,7 +215,7 @@ class Application {
 }
 
 
-// RUNTIME 
+// RUNTIME
 // ---------------------------------------------------
 server.log("Device running...");
 

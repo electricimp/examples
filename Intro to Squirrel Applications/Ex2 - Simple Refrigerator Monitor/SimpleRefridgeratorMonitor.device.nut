@@ -11,8 +11,8 @@
 
 // HARDWARE ABSTRACTION LAYER
 // ---------------------------------------------------
-// HAL's are tables that map human readable names to 
-// the hardware objects used in the application. 
+// HAL's are tables that map human readable names to
+// the hardware objects used in the application.
 
 // Copy and Paste Your HAL here
 // YOUR_HAL <- {...}
@@ -21,9 +21,9 @@
 // REFRIGERATOR MONITOR APPLICATION CODE
 // ---------------------------------------------------
 // Application code, take readings from our temperature
-// humidity and light sensors. Use the light level to 
+// humidity and light sensors. Use the light level to
 // determine if the door is open (true or false) and send
-// the door status, temperature and humidity to the agent 
+// the door status, temperature and humidity to the agent
 
 class SmartFridge {
 
@@ -41,22 +41,29 @@ class SmartFridge {
     tempHumid = null;
 
     constructor() {
-        // Power save mode will reduce power consumption when the 
-        // radio is idle. This adds latency when sending data. 
-        imp.setpowersave(true);
+        // Power save mode will reduce power consumption when the radio
+        // is idle, a good first step for saving power for battery
+        // powered devices. Power save mode will add latency when
+        // sending data. Power save mode is not supported on impC001
+        // and is recommended for imp004m, so don't set for those types
+        // of imps.
+        local type = imp.info().type;
+        if (type != "imp004m" && type != "impC001") {
+            imp.setpowersave(true);
+        }
         initializeSensors();
     }
 
     function run() {
         // Set up the reading table with a timestamp
         local reading = { "time" : time() };
-        
+
         // Add temperature and humidity readings
         local result = tempHumid.read();
         if ("temperature" in result) reading.temperature <- result.temperature;
         if ("humidity" in result) reading.humidity <- result.humidity;
 
-        // Check door status using internal LX sensor to 
+        // Check door status using internal LX sensor to
         // determine if the door is open
         reading.doorOpen <- (hardware.lightlevel() > LX_THRESHOLD);
 
@@ -75,12 +82,12 @@ class SmartFridge {
         tempHumid = HTS221(i2c, tempHumidAddr);
 
         // Configure sensor to take readings
-        tempHumid.setMode(HTS221_MODE.ONE_SHOT); 
+        tempHumid.setMode(HTS221_MODE.ONE_SHOT);
     }
 }
 
 
-// RUNTIME 
+// RUNTIME
 // ---------------------------------------------------
 server.log("Device running...");
 
