@@ -517,10 +517,8 @@ class Application {
         // Variables to help us track readings we want to average
         local tempTotal = 0;
         local humidTotal = 0;
-        local pressTotal = 0;
         local tCount = 0;
         local hCount = 0;
-        local pCount = 0;
 
         // Loop through the readings to get a total
         foreach(reading in readings) {
@@ -532,10 +530,6 @@ class Application {
                 humidTotal += reading.humidity;
                 hCount++;
             }
-            if ("pressure" in reading) {
-                pressTotal += reading.pressure;
-                pCount++;
-            }
         }
 
         // Grab the last value from the readings array
@@ -546,7 +540,6 @@ class Application {
         // Update the other values with an average
         last.temperature <- tempTotal / tCount;
         last.humidity <- humidTotal / hCount;
-        last.pressure <- pressTotal / pCount;
 
         // return the condensed single value
         return last
@@ -637,8 +630,8 @@ class Application {
     function configureSensors() {
         // Configure sensors to take readings
         tempHumid.setMode(HTS221_MODE.ONE_SHOT);
-        accel.init();
-        accel.setLowPower(true);
+        accel.reset();
+        accel.setMode(LIS3DH_MODE_LOW_POWER);
         accel.setDataRate(ACCEL_DATARATE);
         accel.enable(true);
         // Configure accelerometer click interrupt

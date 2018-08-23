@@ -450,8 +450,8 @@ class Application {
     function configureSensors() {
         // Configure sensors to take readings
         tempHumid.setMode(HTS221_MODE.ONE_SHOT);
-        accel.init();
-        accel.setLowPower(true);
+        accel.reset();
+        accel.setMode(LIS3DH_MODE_LOW_POWER);
         accel.setDataRate(ACCEL_DATARATE);
         accel.enable(true);
         // Configure accelerometer freefall interrupt
