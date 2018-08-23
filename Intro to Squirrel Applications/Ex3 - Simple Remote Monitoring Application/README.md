@@ -82,12 +82,10 @@ class Application {
     // Hardware variables
     i2c             = ExplorerKit_001.SENSOR_AND_GROVE_I2C;
     tempHumidAddr   = ExplorerKit_001.TEMP_HUMID_I2C_ADDR;
-    pressureAddr    = ExplorerKit_001.PRESSURE_I2C_ADDR;
     accelAddr       = ExplorerKit_001.ACCEL_I2C_ADDR;
 
     // Sensor variables
     tempHumid = null;
-    pressure = null;
     accel = null;
 
     constructor() {...}

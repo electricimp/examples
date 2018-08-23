@@ -12,7 +12,7 @@
 // WEBSERVICE WRAPPER CLASSES
 // ---------------------------------------------------
 // Not all webservices behave in the same way. These classes will
-// register this device with the webservice if needed. They also 
+// register this device with the webservice if needed. They also
 // configure the data before sending.
 
 class IState {
@@ -31,7 +31,6 @@ class IState {
         local events = [];
         events.push({"key" : "temperature", "value" : data.temperature, "epoch" : data.time});
         events.push({"key" : "humidity", "value" : data.humidity, "epoch" : data.time});
-        events.push({"key" : "pressure", "value" : data.pressure, "epoch" : data.time});
         events.push({"key" : "accel_x", "value" : data.accel_x, "epoch" : data.time});
         events.push({"key" : "accel_y", "value" : data.accel_y, "epoch" : data.time});
         events.push({"key" : "accel_z", "value" : data.accel_z, "epoch" : data.time});
@@ -171,8 +170,8 @@ class Watson {
 // REMOTE MONITORING APPLICATION CODE
 // ---------------------------------------------------
 // Application code, listen for readings from device,
-// when a reading is received send the data to Initial 
-// State 
+// when a reading is received send the data to Initial
+// State
 
 class Application {
 
@@ -182,8 +181,8 @@ class Application {
     agentID = null;
 
     constructor(iStateKey, watsonAPIKey, watsonAuthToken, watsonOrgID) {
-        // The Initial State library will create a bucket  
-        // using the agent ID 
+        // The Initial State library will create a bucket
+        // using the agent ID
         agentID = split(http.agenturl(), "/").top();
         // Let's log the agent ID here
         server.log("Agent ID: " + agentID);
@@ -198,11 +197,11 @@ class Application {
     }
 
     function readingHandler(reading) {
-        // Log the reading from the device. The reading is a 
+        // Log the reading from the device. The reading is a
         // table, so use JSON encodeing method convert to a string
         server.log(http.jsonencode(reading));
 
-        // Send reading to the webservices 
+        // Send reading to the webservices
         iState.send(reading);
         watson.send(reading);
     }
@@ -214,7 +213,7 @@ class Application {
 // ---------------------------------------------------
 server.log("Agent running...");
 
-// On Intial State website navigate to "my account" 
+// On Intial State website navigate to "my account"
 // page find/create a "Streaming Access Key"
 // Paste it into the variable below
 const IS_STREAMING_ACCESS_KEY = "<YOUR STREAMING ACCESS KEY>";

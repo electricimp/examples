@@ -57,7 +57,6 @@ class Application {
             foreach (reading in msg.data.readings) {
                 events.push({"key" : "temperature", "value" : reading.temperature, "epoch" : reading.time});
                 events.push({"key" : "humidity", "value" : reading.humidity, "epoch" : reading.time});
-                events.push({"key" : "pressure", "value" : reading.pressure, "epoch" : reading.time});
                 events.push({"key" : "accel_x", "value" : reading.accel_x, "epoch" : reading.time});
                 events.push({"key" : "accel_y", "value" : reading.accel_y, "epoch" : reading.time});
                 events.push({"key" : "accel_z", "value" : reading.accel_z, "epoch" : reading.time});

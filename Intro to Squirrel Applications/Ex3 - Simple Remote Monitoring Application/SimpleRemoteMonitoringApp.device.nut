@@ -9,8 +9,6 @@
 #require "LIS3DH.device.lib.nut:2.0.2"
 // Temperature Humidity sensor Library
 #require "HTS221.device.lib.nut:2.0.1"
-// Air Pressure sensor Library
-#require "LPS22HB.device.lib.nut:2.0.0"
 
 
 // HARDWARE ABSTRACTION LAYER
@@ -37,12 +35,10 @@ class Application {
     // Hardware variables
     i2c             = null; // Replace with your sensori2c
     tempHumidAddr   = null; // Replace with your tempHumid i2c addr
-    pressureAddr    = null; // Replace with your pressure i2c addr
     accelAddr       = null; // Replace with your accel i2c addr
 
     // Sensor variables
     tempHumid = null;
-    pressure = null;
     accel = null;
 
     constructor() {
@@ -62,10 +58,6 @@ class Application {
     function run() {
         // Set up the reading table with a timestamp
         local reading = { "time" : time() };
-
-        // Add a pressure reading
-        local result = pressure.read();
-        if ("pressure" in result) reading.pressure <- result.pressure;
 
         // Add temperature and humidity readings
         result = tempHumid.read();
@@ -91,14 +83,10 @@ class Application {
 
         // Initialize sensors
         tempHumid = HTS221(i2c, tempHumidAddr);
-        pressure = LPS22HB(i2c, pressureAddr);
         accel = LIS3DH(i2c, accelAddr);
 
         // Configure sensors to take readings
         tempHumid.setMode(HTS221_MODE.ONE_SHOT);
-        pressure.softReset();
-        pressure.enableLowCurrentMode(true);
-        pressure.setMode(LPS22HB_MODE.ONE_SHOT);
         accel.init();
         accel.setLowPower(true);
         accel.setDataRate(ACCEL_DATARATE);

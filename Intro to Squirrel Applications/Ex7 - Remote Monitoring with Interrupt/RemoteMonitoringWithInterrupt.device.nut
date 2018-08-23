@@ -12,8 +12,6 @@
 #require "LIS3DH.device.lib.nut:2.0.2"
 // Temperature Humidity sensor Library
 #require "HTS221.device.lib.nut:2.0.1"
-// Air Pressure sensor Library
-#require "LPS22HB.device.lib.nut:2.0.0"
 // Library to help with asynchonous programming
 #require "promise.class.nut:3.0.1"
 // #require "promise.lib.nut:4.0.0"
@@ -50,13 +48,11 @@ class Application {
     // Hardware variables
     i2c             = null; // Replace with your sensori2c
     tempHumidAddr   = null; // Replace with your tempHumid i2c addr
-    pressureAddr    = null; // Replace with your pressure i2c addr
     accelAddr       = null; // Replace with your accel i2c addr
     wakePin         = null; // Replace with your wake pin
 
     // Sensor variables
     tempHumid = null;
-    pressure = null;
     accel = null;
 
     // Message Manager variable
@@ -160,10 +156,9 @@ class Application {
                 // Add all successful readings
                 if ("temperature" in results[0]) reading.temperature <- results[0].temperature;
                 if ("humidity" in results[0]) reading.humidity <- results[0].humidity;
-                if ("pressure" in results[1]) reading.pressure <- results[1].pressure;
-                if ("x" in results[2]) reading.accel_x <- results[2].x;
-                if ("y" in results[2]) reading.accel_y <- results[2].y;
-                if ("z" in results[2]) reading.accel_z <- results[2].z;
+                if ("x" in results[1]) reading.accel_x <- results[1].x;
+                if ("y" in results[1]) reading.accel_y <- results[1].y;
+                if ("z" in results[1]) reading.accel_z <- results[1].z;
                 // Add table to the readings array for storage til next connection
                 nv.readings.push(reading);
 
@@ -369,10 +364,8 @@ class Application {
         // Variables to help us track readings we want to average
         local tempTotal = 0;
         local humidTotal = 0;
-        local pressTotal = 0;
         local tCount = 0;
         local hCount = 0;
-        local pCount = 0;
 
         // Loop through the readings to get a total
         foreach(reading in readings) {
@@ -384,10 +377,6 @@ class Application {
                 humidTotal += reading.humidity;
                 hCount++;
             }
-            if ("pressure" in reading) {
-                pressTotal += reading.pressure;
-                pCount++;
-            }
         }
 
         // Grab the last value from the readings array
@@ -398,7 +387,6 @@ class Application {
         // Update the other values with an average
         last.temperature <- tempTotal / tCount;
         last.humidity <- humidTotal / hCount;
-        last.pressure <- pressTotal / pCount;
 
         // return the condensed single value
         return last
@@ -456,16 +444,12 @@ class Application {
 
         // Initialize sensors
         tempHumid = HTS221(i2c, tempHumidAddr);
-        pressure = LPS22HB(i2c, pressureAddr);
         accel = LIS3DH(i2c, accelAddr);
     }
 
     function configureSensors() {
         // Configure sensors to take readings
         tempHumid.setMode(HTS221_MODE.ONE_SHOT);
-        pressure.softReset();
-        pressure.enableLowCurrentMode(true);
-        pressure.setMode(LPS22HB_MODE.ONE_SHOT);
         accel.init();
         accel.setLowPower(true);
         accel.setDataRate(ACCEL_DATARATE);

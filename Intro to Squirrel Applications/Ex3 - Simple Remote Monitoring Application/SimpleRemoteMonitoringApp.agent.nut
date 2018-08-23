@@ -12,12 +12,12 @@
 // REMOTE MONITORING APPLICATION CODE
 // ---------------------------------------------------
 // Application code, listen for readings from device,
-// when a reading is received send the data to Initial 
-// State 
+// when a reading is received send the data to Initial
+// State
 
 class Application {
 
-    // On Intial State website navigate to "my account" 
+    // On Intial State website navigate to "my account"
     // page find/create a "Streaming Access Key"
     // Paste it into the variable below
     static STREAMING_ACCESS_KEY = "";
@@ -30,8 +30,8 @@ class Application {
         // Initialize Initial State
         iState = InitialState(STREAMING_ACCESS_KEY);
 
-        // The Initial State library will create a bucket  
-        // using the agent ID 
+        // The Initial State library will create a bucket
+        // using the agent ID
         agentID = split(http.agenturl(), "/").top();
         // Let's log the agent ID here
         server.log("Agent ID: " + agentID);
@@ -40,7 +40,7 @@ class Application {
     }
 
     function readingHandler(reading) {
-        // Log the reading from the device. The reading is a 
+        // Log the reading from the device. The reading is a
         // table, so use JSON encodeing method convert to a string
         server.log(http.jsonencode(reading));
 
@@ -49,7 +49,6 @@ class Application {
         local events = [];
         events.push({"key" : "temperature", "value" : reading.temperature, "epoch" : reading.time});
         events.push({"key" : "humidity", "value" : reading.humidity, "epoch" : reading.time});
-        events.push({"key" : "pressure", "value" : reading.pressure, "epoch" : reading.time});
         events.push({"key" : "accel_x", "value" : reading.accel_x, "epoch" : reading.time});
         events.push({"key" : "accel_y", "value" : reading.accel_y, "epoch" : reading.time});
         events.push({"key" : "accel_z", "value" : reading.accel_z, "epoch" : reading.time});
