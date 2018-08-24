@@ -43,10 +43,10 @@ class SmartFridge {
     constructor() {
         // Power save mode will reduce power consumption when the radio
         // is idle, a good first step for saving power for battery
-        // powered devices. Power save mode will add latency when
-        // sending data. Power save mode is not supported on impC001
-        // and is recommended for imp004m, so don't set for those types
-        // of imps.
+        // powered devices.
+        // NOTE: Power save mode will add latency when sending data.
+        // Power save mode is not supported on impC001 and is not
+        // recommended for imp004m, so don't set for those types of imps.
         local type = imp.info().type;
         if (type != "imp004m" && type != "impC001") {
             imp.setpowersave(true);

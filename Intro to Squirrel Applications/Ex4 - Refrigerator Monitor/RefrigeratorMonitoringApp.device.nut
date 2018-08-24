@@ -32,7 +32,8 @@ class SmartFridge {
     static READING_INTERVAL_SEC     = 5;
     // Time in seconds to wait between connections
     static REPORTING_INTERVAL_SEC   = 300;
-    // Time to wait after boot before turning off WiFi
+    // Time to wait after boot before first disconection
+    // This allows time for blinkup recovery on cold boots
     static BOOT_TIMER_SEC           = 60;
 
     // The lx level at which we know the door is open
@@ -64,10 +65,10 @@ class SmartFridge {
     constructor() {
         // Power save mode will reduce power consumption when the radio
         // is idle, a good first step for saving power for battery
-        // powered devices. Power save mode will add latency when
-        // sending data. Power save mode is not supported on impC001
-        // and is recommended for imp004m, so don't set for those types
-        // of imps.
+        // powered devices.
+        // NOTE: Power save mode will add latency when sending data.
+        // Power save mode is not supported on impC001 and is not
+        // recommended for imp004m, so don't set for those types of imps.
         local type = imp.info().type;
         if (type != "imp004m" && type != "impC001") {
             imp.setpowersave(true);

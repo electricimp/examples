@@ -39,7 +39,8 @@ class Application {
     static REPORTING_INTERVAL_SEC = 300;
     // Max number of stored readings
     static MAX_NUM_STORED_READINGS = 23;
-    // Time to wait after boot before turning off WiFi
+    // Time to wait after boot before first disconection
+    // This allows time for blinkup recovery on cold boots
     static BOOT_TIMER_SEC = 60;
     // Accelerometer data rate in Hz
     static ACCEL_DATARATE = 1;
@@ -63,10 +64,10 @@ class Application {
     constructor() {
         // Power save mode will reduce power consumption when the radio
         // is idle, a good first step for saving power for battery
-        // powered devices. Power save mode will add latency when
-        // sending data. Power save mode is not supported on impC001
-        // and is recommended for imp004m, so don't set for those types
-        // of imps.
+        // powered devices.
+        // NOTE: Power save mode will add latency when sending data.
+        // Power save mode is not supported on impC001 and is not
+        // recommended for imp004m, so don't set for those types of imps.
         local type = imp.info().type;
         if (type != "impC001") {
             imp.setpowersave(true);
@@ -85,9 +86,6 @@ class Application {
         // Message Manager allows us to call a function if a message
         // fails to be delivered. We will use this to condense data
         mm.onFail(sendFailHandler.bindenv(this));
-
-        // Initialize sensors
-        initializeSensors();
 
         // Configure different behavior based on the reason the
         // hardware rebooted
@@ -133,7 +131,7 @@ class Application {
         }
 
         // Configure Sensors to take readings
-        configureSensors();
+        initializeSensors();
         // Start readings loop
         takeReadings();
     }
@@ -176,20 +174,24 @@ class Application {
                     // Update the next connection time varaible
                     setNextConnectTime(now);
 
-                    // We changed the default connection policy, so we need to
-                    // use this method to connect
-                    server.connect(function(reason) {
-                        if (reason == SERVER_CONNECTED) {
-                            // We connected let's send readings
-                            sendReadings();
-                        } else {
-                            // We were not able to connect
-                            // Let's make sure we don't run out
-                            // of meemory with our stored readings
-                            failHandler();
-                        }
-                    });
-
+                    if (server.isconnected()) {
+                        // We connected let's send readings
+                        sendReadings();
+                    } else {
+                        // We changed the default connection policy, so we need to
+                        // use this method to connect
+                        server.connect(function(reason) {
+                            if (reason == SERVER_CONNECTED) {
+                                // We connected let's send readings
+                                sendReadings();
+                            } else {
+                                // We were not able to connect
+                                // Let's make sure we don't run out
+                                // of meemory with our stored readings
+                                failHandler();
+                            }
+                        }.bindenv(this));
+                    }
                 } else {
                     // Not time to connect, let's sleep until
                     // next reading time
