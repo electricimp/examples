@@ -60,7 +60,7 @@ class Application {
         local reading = { "time" : time() };
 
         // Add temperature and humidity readings
-        result = tempHumid.read();
+        local result = tempHumid.read();
         if ("temperature" in result) reading.temperature <- result.temperature;
         if ("humidity" in result) reading.humidity <- result.humidity;
 
