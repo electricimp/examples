@@ -13,8 +13,7 @@
 // Temperature Humidity sensor Library
 #require "HTS221.device.lib.nut:2.0.1"
 // Library to help with asynchonous programming
-#require "promise.class.nut:3.0.1"
-// #require "promise.lib.nut:4.0.0"
+#require "promise.lib.nut:4.0.0"
 // Library to manage agent/device communication
 #require "MessageManager.lib.nut:2.2.0"
 
@@ -143,7 +142,7 @@ class Application {
     function takeReadings() {
         // Take readings by building an array of functions that all
         // return promises.
-        local series = [takeTempHumidReading(), takePressureReading(), takeAccelReading()];
+        local series = [takeTempHumidReading(), takeAccelReading()];
 
         // The all method executes the series of promises in parallel
         // and resolves when they are all done. It Returns a promise
@@ -170,14 +169,6 @@ class Application {
     function takeTempHumidReading() {
         return Promise(function(resolve, reject) {
             tempHumid.read(function(result) {
-                return resolve(result);
-            }.bindenv(this))
-        }.bindenv(this))
-    }
-
-    function takePressureReading() {
-        return Promise(function(resolve, reject) {
-            pressure.read(function(result) {
                 return resolve(result);
             }.bindenv(this))
         }.bindenv(this))
