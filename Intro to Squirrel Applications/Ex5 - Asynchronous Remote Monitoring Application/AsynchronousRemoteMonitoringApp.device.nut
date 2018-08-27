@@ -75,21 +75,21 @@ class Application {
 
         // Use the current time and the REPORTING_INTERVAL_SEC
         // to set a timestamp, so we know when we should connect
-        // to WiFi and send the stored readings
+        // and send the stored readings
         setNextConnectTime();
 
         // Configure message manager for device/agent communication
         mm = MessageManager();
         // Message Manager allows us to call a function when a message
         // has been delivered. We will use this to know when it is ok
-        // to delete locally stored readings and disconnect from WiFi
+        // to delete locally stored readings and disconnect
         mm.onAck(readingsAckHandler.bindenv(this));
 
         initializeSensors();
 
         // We want to make sure we can always blinkUp a device
         // when it is first powered on, so we do not want to
-        // immediately disconnect from WiFi after boot
+        // immediately disconnect after boot
         // Set up first disconnect
         imp.wakeup(BOOT_TIMER_SEC, function() {
             _boot = false;
@@ -120,7 +120,7 @@ class Application {
                 readings.push(reading);
 
                 // Only send readings if we have some and are either
-                // already connected to WiFi or if it is time to connect
+                // already connected or if it is time to connect
                 if (readings.len() > 0 && (server.isconnected() || timeToConnect())) {
                     sendReadings();
                 }

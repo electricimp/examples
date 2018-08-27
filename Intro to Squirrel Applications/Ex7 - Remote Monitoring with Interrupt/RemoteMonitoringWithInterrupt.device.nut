@@ -61,6 +61,9 @@ class Application {
     // Flag to track first disconnection
     _boot = false;
 
+    // Flag to track if imp is trying to connect
+    _connecting = false;
+
     constructor() {
         // Power save mode will reduce power consumption when the radio
         // is idle, a good first step for saving power for battery
@@ -74,14 +77,14 @@ class Application {
         }
 
         // Change default connection policy, so our application
-        // continues to run even if the WiFi connection fails
+        // continues to run even if the connection fails
         server.setsendtimeoutpolicy(RETURN_ON_ERROR, WAIT_TIL_SENT, 10);
 
         // Configure message manager for device/agent communication
         mm = MessageManager();
         // Message Manager allows us to call a function when a message
         // has been delivered. We will use this to know when it is ok
-        // to disconnect from WiFi
+        // to disconnect
         mm.onAck(readingsAckHandler.bindenv(this));
         // Message Manager allows us to call a function if a message
         // fails to be delivered. We will use this to recover data
@@ -125,7 +128,7 @@ class Application {
 
                 // We want to make sure we can always blinkUp a device
                 // when it is first powered on, so we do not want to
-                // immediately disconnect from WiFi after boot
+                // immediately disconnect after boot
                 // Set up first disconnect
                 _boot = true;
                 imp.wakeup(BOOT_TIMER_SEC, function() {
@@ -137,7 +140,6 @@ class Application {
         // Configure Sensors to take readings
         configureSensors();
         takeReadings();
-
     }
 
     function takeReadings() {
@@ -190,37 +192,54 @@ class Application {
         // Update the next reading time varaible
         setNextReadTime(now);
 
-        local connected = server.isconnected();
-        // Only send if we are already connected
-        // to WiFi or if it is time to connect
-        if (connected || timeToConnect()) {
+        // If we are not currently tring to connect, check if we
+        // should connect, send data, or power down
+        if (!_connecting) {
 
-            // Update the next connection time varaible
-            setNextConnectTime(now);
+            local connected = server.isconnected();
+            // Send if we are connected or if it is
+            // time to connect
+            if (connected || timeToConnect()) {
 
-            // We changed the default connection policy, so we need to
-            // use this method to connect
-            if (connected) {
-                sendData();
+                // Update the next connection time varaible
+                setNextConnectTime(now);
+
+                if (connected) {
+                    sendData();
+                } else {
+                    // Toggle connecting flag
+                    _connecting = true;
+
+                    // We changed the default connection policy, so we need to
+                    // use this method to connect
+                    server.connect(function(reason) {
+                        // Connect handler called, we are no longer tring to
+                        // connect, so set connecting flag to false
+                        _connecting = false;
+                        if (reason == SERVER_CONNECTED) {
+                            // We connected let's send readings
+                            sendData();
+                        } else {
+                            // We were not able to connect
+                            // Let's make sure we don't run out
+                            // of memory with our stored readings
+                            failHandler();
+                        }
+                    }.bindenv(this));
+                }
             } else {
-                server.connect(function(reason) {
-                    if (reason == SERVER_CONNECTED) {
-                        // We connected let's send readings
-                        sendData();
-                    } else {
-                        // We were not able to connect
-                        // Let's make sure we don't run out
-                        // of meemory with our stored readings
-                        failHandler();
-                    }
-                }.bindenv(this));
+                // Not time to connect & we are not currently
+                // trying to send data, so let's sleep until
+                // next reading time
+                powerDown();
             }
-
         } else {
-            // Not time to connect, let's sleep until
-            // next reading time
-            powerDown();
+            // Calculate how long before next reading time
+            local timer = nv.nextReadTime - now;
+            // Schedule next reading
+            imp.wakeup(timer, takeReadings.bindenv(this));
         }
+
     }
 
     function sendData() {
@@ -350,6 +369,8 @@ class Application {
 
         // Update the number of failed connections
         nv.numFailedConnects <- failed++;
+
+        powerDown();
     }
 
     function getAverage(readings) {
@@ -416,9 +437,8 @@ class Application {
 
         // Configure wake pin
         wakePin.configure(DIGITAL_IN_WAKEUP, function() {
-            if (wakePin.read()) {
-                checkInterrupt();
-                checkConnetionTime();
+            if (wakePin.read() && checkInterrupt()) {
+                takeReadings();
             }
         }.bindenv(this));
     }
@@ -428,6 +448,7 @@ class Application {
         if (interrupt.int1) {
             nv.alerts.push({"msg" : "Freefall Detected", "time": time()});
         }
+        return interrupt.int1;
     }
 
     function initializeSensors() {

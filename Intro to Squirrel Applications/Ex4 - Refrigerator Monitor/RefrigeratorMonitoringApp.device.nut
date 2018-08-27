@@ -76,7 +76,7 @@ class SmartFridge {
 
         // Use the current time and the REPORTING_INTERVAL_SEC
         // to set a timestamp, so we know when we should connect
-        // to WiFi and send the stored readings
+        // and send the stored readings
         setNextConnectTime();
 
         // Configure message manager for device/agent communication
@@ -116,8 +116,8 @@ class SmartFridge {
             readings.push(reading);
 
             // Only send readings if we have some and are either already
-            // connected to WiFi, there is a change in the door status or
-            // if it is time to connect
+            // connected, there is a change in the door status or if it
+            // is time to connect
             if (readings.len() > 0 && (server.isconnected() || currentDoorOpenStatus != reading.doorOpen || timeToConnect())) {
                 sendReadings();
             }

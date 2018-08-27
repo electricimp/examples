@@ -86,7 +86,7 @@ class Application {
     static REPORTING_INTERVAL_SEC = 300;
     // Max number of stored readings
     static MAX_NUM_STORED_READINGS = 20;
-    // Time to wait after boot before turning off WiFi
+    // Time to wait after boot before disconnecting
     static BOOT_TIMER_SEC = 60;
     // Time to wait between checks if door is open
     static DOOR_OPEN_INTERVAL_SEC = 1;

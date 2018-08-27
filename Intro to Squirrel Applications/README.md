@@ -22,11 +22,11 @@ In this example we will create an simple remote monitoring application that take
 
 ### [Example 4 - Refrigerator Monitor](Ex4%20-%20Refrigerator%20Monitor)
 
-In this example we will create a refrigerator monitoring application that takes an asynchronous reading from the temperature/humidity senor. We will use the internal light senor to determine if the refrigerator door is open. We will conserve power by turning off the WiFi and taking readings while offline then connecting periodically to send the readings we have collected to the cloud. This code can be easily configured for use with an impExplorer Developer Kit, impAccelerator Battery Powered Sensor Node or impC001 Breakout Board Kit.
+In this example we will create a refrigerator monitoring application that takes an asynchronous reading from the temperature/humidity senor. We will use the internal light senor to determine if the refrigerator door is open. We will conserve power by disconnecting from WiFi or cellular network and taking readings while offline then connecting periodically to send the readings we have collected to the cloud. This code can be easily configured for use with an impExplorer Developer Kit, impAccelerator Battery Powered Sensor Node or impC001 Breakout Board Kit.
 
 ### [Example 5 - Asynchronous Remote Monitoring Application](Ex5%20-%20Asynchronous%20Remote%20Monitoring%20Application)
 
-In this example we will create a remote monitoring application that takes asynchronous sensor readings using the Promise libary. We will conserve power by turning off the WiFi and taking readings while offline then connecting periodically to send the readings we have collected. This code can be easily configured for use with an impExplorer Developer Kit, impAccelerator Battery Powered Sensor Node or impC001 Breakout Board Kit.
+In this example we will create a remote monitoring application that takes asynchronous sensor readings using the Promise libary. We will conserve power by disconnecting from WiFi or cellular network and taking readings while offline then connecting periodically to send the readings we have collected. This code can be easily configured for use with an impExplorer Developer Kit, impAccelerator Battery Powered Sensor Node or impC001 Breakout Board Kit.
 
 ## Advanced Applications
 
@@ -40,7 +40,7 @@ In this example we will create a remote monitoring application that takes asynch
 
 ### [Example 8 - Power Efficient Refrigerator Monitor](Ex8%20-%20Power%20Efficient%20Refrigerator%20Monitor)
 
-In this example we will create a refirgerator monitoring application. The application monitors the temperature and humdity of the refrigerator and sends alerts if the temperature or humidity is higher than a set threshold for too long. The application also monitors the refrigerator door using the accelerometer to wake on motion and the internal light sensor to determine the door status. The application saves power by sleeping between readings when the door is closed, and only connecting to WiFi periodically to upload readings or when an alert is triggered. This code can be easily configured for use with an impExplorer Developer Kit (imp001 model only), impAccelerator Battery Powered Sensor Node or impC001 Breakout Board Kit.
+In this example we will create a refirgerator monitoring application. The application monitors the temperature and humdity of the refrigerator and sends alerts if the temperature or humidity is higher than a set threshold for too long. The application also monitors the refrigerator door using the accelerometer to wake on motion and the internal light sensor to determine the door status. The application saves power by sleeping between readings when the door is closed, and only connecting to the WiFi or cellular network periodically to upload readings or when an alert is triggered. This code can be easily configured for use with an impExplorer Developer Kit (imp001 model only), impAccelerator Battery Powered Sensor Node or impC001 Breakout Board Kit.
 
 ## Adding Webservices
 

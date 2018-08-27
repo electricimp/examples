@@ -83,6 +83,9 @@ class Application {
     // Variable to track next action timer
     _nextActTimer = null;
 
+    // Flag to track if imp is trying to connect
+    _connecting = false;
+
     constructor() {
         // Power save mode will reduce power consumption when the radio
         // is idle, a good first step for saving power for battery
@@ -96,14 +99,14 @@ class Application {
         }
 
         // Change default connection policy, so our application
-        // continues to run even if the WiFi connection fails
+        // continues to run even if the connection fails
         server.setsendtimeoutpolicy(RETURN_ON_ERROR, WAIT_TIL_SENT, 10);
 
         // Configure message manager for device/agent communication
         mm = MessageManager();
         // Message Manager allows us to call a function when a message
         // has been delivered. We will use this to know when it is ok
-        // to disconnect from WiFi.
+        // to disconnect.
         mm.onAck(readingsAckHandler.bindenv(this));
         // Message Manager allows us to call a function if a message
         // is not ackknowledged.  We want to treat this the same as
@@ -156,7 +159,7 @@ class Application {
 
                 // We want to make sure we can always blinkUp a device
                 // when it is first powered on, so we do not want to
-                // immediately disconnect from WiFi after boot
+                // immediately disconnect after boot
                 // Set up first disconnect
                 _boot = true;
                 imp.wakeup(BOOT_TIMER_SEC, function() {
@@ -331,35 +334,56 @@ class Application {
         // Update the next reading time varaible
         if (resetReadingTime) setNextReadTime(now);
 
-        local connected = server.isconnected();
-        // Only send if we are already connected
-        // to WiFi or if it is time to connect
-        if (connected || timeToConnect()) {
+        // If we are not currently tring to connect, check if we
+        // should connect, send data, or power down
+        if (!_connecting) {
 
-            // Update the next connection time varaible
-            setNextConnectTime(now);
+            local connected = server.isconnected();
+            // Only send if we are already connected
+            // or if it is time to connect
+            if (connected || timeToConnect()) {
 
-            // We changed the default connection policy, so we need to
-            // use this method to connect
-            if (connected) {
-                sendData();
+                // Update the next connection time varaible
+                setNextConnectTime(now);
+
+                // We changed the default connection policy, so we need to
+                // use this method to connect
+                if (connected) {
+                    sendData();
+                } else {
+                    // Toggle connecting flag
+                    _connecting = true;
+
+                    server.connect(function(reason) {
+                        // Connect handler called, we are no longer tring to
+                        // connect, so set connecting flag to false
+                        _connecting = false;
+                        if (reason == SERVER_CONNECTED) {
+                            // We connected let's send readings
+                            sendData();
+                        } else {
+                            // We were not able to connect
+                            // Let's make sure we don't run out
+                            // of memory with our stored readings
+                            failHandler();
+                        }
+                    }.bindenv(this));
+                }
+
             } else {
-                server.connect(function(reason) {
-                    if (reason == SERVER_CONNECTED) {
-                        // We connected let's send readings
-                        sendData();
-                    } else {
-                        // We were not able to connect
-                        // Let's make sure we don't run out
-                        // of meemory with our stored readings
-                        failHandler();
-                    }
-                }.bindenv(this));
+                // Not time to connect, let's power down
+                powerDown();
             }
-
         } else {
-            // Not time to connect, let's power down
-            powerDown();
+            local timer = nv.nextReadTime - time();
+            // Schedule next reading, but don't go to sleep
+            _nextActTimer = imp.wakeup(timer, function() {
+                if (_nextActTimer != null) {
+                    imp.cancelwakeup(_nextActTimer);
+                    _nextActTimer = null;
+                }
+                run();
+            }.bindenv(this));
         }
     }
 
@@ -408,7 +432,7 @@ class Application {
     }
 
     // Puts sensor into power down mode, then determines whether
-    // to sleep or just disconnect from WiFi til next reading time
+    // to sleep or just disconnect til next reading time
     // or door open check time
     function powerDown() {
         // Power Down sensors
@@ -431,7 +455,7 @@ class Application {
                 imp.deepsleepfor(timer);
             }
         } else {
-            // Turn off WiFi if we didn't just boot
+            // Disconnect if we didn't just boot
             if (!_boot && server.isconnected()) server.disconnect();
 
             // Schedule next action, but don't go to sleep
@@ -511,6 +535,8 @@ class Application {
 
         // Update the number of failed connections
         nv.numFailedConnects <- failed++;
+
+        powerDown();
     }
 
     // Calculate and return the average of stored readings

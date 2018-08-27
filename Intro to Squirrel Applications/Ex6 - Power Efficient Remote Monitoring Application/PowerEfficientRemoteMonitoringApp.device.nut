@@ -61,6 +61,9 @@ class Application {
     // Flag to track first disconnection
     _boot = false;
 
+    // Flag to track if imp is trying to connect
+    _connecting = false;
+
     constructor() {
         // Power save mode will reduce power consumption when the radio
         // is idle, a good first step for saving power for battery
@@ -121,7 +124,7 @@ class Application {
 
                 // We want to make sure we can always blinkUp a device
                 // when it is first powered on, so we do not want to
-                // immediately disconnect from WiFi after boot
+                // immediately disconnect after boot
                 // Set up first disconnect
                 _boot = true;
                 imp.wakeup(BOOT_TIMER_SEC, function() {
@@ -167,35 +170,48 @@ class Application {
                 // Update the next reading time varaible
                 setNextReadTime(now);
 
-                // Only send readings if we have some and are either
-                // already connected to WiFi or if it is time to connect
-                if (nv.readings.len() > 0 && (server.isconnected() || timeToConnect())) {
+                if (!_connecting) {
+                    // Only send readings if we have some and are either
+                    // already connected or if it is time to connect
+                    if (nv.readings.len() > 0 && (server.isconnected() || timeToConnect())) {
 
-                    // Update the next connection time varaible
-                    setNextConnectTime(now);
+                        // Update the next connection time varaible
+                        setNextConnectTime(now);
 
-                    if (server.isconnected()) {
-                        // We connected let's send readings
-                        sendReadings();
+                        if (server.isconnected()) {
+                            // We connected let's send readings
+                            sendReadings();
+                        } else {
+                            // Toggle connecting flag
+                            _connecting = true;
+
+                            // We changed the default connection policy, so we need to
+                            // use this method to connect
+                            server.connect(function(reason) {
+                                // Connect handler called, we are no longer tring to
+                                // connect, so set connecting flag to false
+                                _connecting = false;
+                                if (reason == SERVER_CONNECTED) {
+                                    // We connected let's send readings
+                                    sendReadings();
+                                } else {
+                                    // We were not able to connect
+                                    // Let's make sure we don't run out
+                                    // of meemory with our stored readings
+                                    failHandler();
+                                }
+                            }.bindenv(this));
+                        }
                     } else {
-                        // We changed the default connection policy, so we need to
-                        // use this method to connect
-                        server.connect(function(reason) {
-                            if (reason == SERVER_CONNECTED) {
-                                // We connected let's send readings
-                                sendReadings();
-                            } else {
-                                // We were not able to connect
-                                // Let's make sure we don't run out
-                                // of meemory with our stored readings
-                                failHandler();
-                            }
-                        }.bindenv(this));
+                        // Not time to connect, let's sleep until
+                        // next reading time
+                        powerDown();
                     }
                 } else {
-                    // Not time to connect, let's sleep until
-                    // next reading time
-                    powerDown();
+                    // Calculate how long before next reading time
+                    local timer = nv.nextReadTime - now;
+                    // Schedule next reading
+                    imp.wakeup(timer, takeReadings.bindenv(this));
                 }
             }.bindenv(this))
     }
@@ -295,6 +311,7 @@ class Application {
         // to connect (use this to determine new readings
         // vs. previously condensed readings)
         local failed = nv.numFailedConnects;
+        local readings;
 
         // Make a copy of the stored readings
         readings = nv.readings.slice(0);
@@ -331,6 +348,8 @@ class Application {
 
         // Update the number of failed connections
         nv.numFailedConnects <- failed++;
+
+        powerDown();
     }
 
     function getAverage(readings) {
