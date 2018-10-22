@@ -317,9 +317,9 @@ class Application {
     function _onMethod(name, params) {
         server.log("Direct Method called. Name: " + name);
         _printTable(params);
-        // do something
+        device.send("restart", true);
         local responseStatusCode = 200; 
-        local responseBody = {"example" : "val"};
+        local responseBody = {"restart" : "done"};
         return AzureIoTHub.DirectMethodResponse(responseStatusCode, responseBody);
     }
     
@@ -417,7 +417,7 @@ class Application {
 
 ////////// Application Variables //////////
 
-softwareVersion <- 5;
+softwareVersion <- "3.2.3";
 
 // IoT Central now uses SAS for device authentication
 // To create a deviceConnectionString, use the dps_cstr command

@@ -318,6 +318,7 @@ class Application {
         agent.on("color", setColor.bindenv(this));
         agent.on("reporting", setReportingInterval.bindenv(this));
         agent.on("ping", ping.bindenv(this));
+        agent.on("restart", restart.bindenv(this));
 
         // Give the agent some time to connect to Azure, then start the loops
         _sendLoopTimer = imp.wakeup(10, _sendLoop.bindenv(this));
@@ -402,6 +403,12 @@ class Application {
     // For connection status check
     function ping(time) {
         agent.send("pong", time);
+    }
+    
+    // Restart the device
+    function restart(param) {
+        server.log("Restarting device ...");
+        server.restart();
     }
 
     // Set reporting interval
