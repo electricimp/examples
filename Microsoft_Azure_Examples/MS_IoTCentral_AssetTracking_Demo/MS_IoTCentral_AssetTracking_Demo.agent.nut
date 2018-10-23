@@ -9,7 +9,7 @@
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
+// furnished to do so, subject to the following conditions: 
 //
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
@@ -36,8 +36,7 @@ class Application {
     static RED = 0x00;
     static YELLOW = 0x01;
     static GREEN = 0x02;
-    
-    static GOOGLE_API_KEY = "AIzaSyDk1e0Yu9bgGEsE5MwIiZ0vEKS9SbxvW7Y";
+    static DEVICE_CONNECT_DELAY = 15;
     
     _client = null;
     // registry = null;
@@ -49,7 +48,7 @@ class Application {
     _deviceConnected = null;
     _prevDeviceConnected = null;
     
-    constructor(connectionString, deviceConnectionString = null) {
+    constructor(gmapsKey, connectionString, deviceConnectionString = null) {
         _agentID = split(http.agenturl(), "/").pop();
         _deviceID = imp.configparams.deviceid;
 
@@ -64,19 +63,26 @@ class Application {
             // registerDevice();
         }
 
-        _gmaps = GoogleMaps(GOOGLE_API_KEY);
+        _gmaps = GoogleMaps(gmapsKey);
 
         device.on("telemetry", telemetryHandler.bindenv(this));
         device.on("location", locationHandler.bindenv(this));
         device.on("pong", pongHandler.bindenv(this));
-        
-        if (imp.wakeup(10, _statusLoop.bindenv(this)) == null) {
+        device.on("network", networkHandler.bindenv(this));
+
+        // Give device time to connect
+        if (imp.wakeup(DEVICE_CONNECT_DELAY, _statusLoop.bindenv(this)) == null) {
             server.error("_statusLoop timer fail");
         }
         
         _blinkColor = YELLOW;
         _deviceConnected = false;
         _prevDeviceConnected = false;
+    }
+    
+    // Run the application
+    function run() {
+        // nothing to do here: Application is driven by timers and messages from device 
     }
 
     // function registerDevice() {
@@ -159,14 +165,13 @@ class Application {
         _deviceConnected = true;
     }
     
-    
     // Check connection status
     function _statusCheck() {
 
         _deviceConnected = false;
         device.send("ping", time());
         
-        if (imp.wakeup(5, _statusHandler.bindenv(this)) == null) {
+        if (imp.wakeup(10, _statusHandler.bindenv(this)) == null) {
             server.error("_statusHandler timer fail");
         }
         
@@ -226,6 +231,79 @@ class Application {
         }
     }
 
+    // Send network info to IoT Hub
+    function networkHandler(networkInfo) {
+        if (networkInfo.network == "cellular") {
+            _setCarrierInfo(networkInfo.mcc, networkInfo.mnc);
+        } else {
+            _setWifiInfo(networkInfo.ssid);
+        }
+ 
+        // Retrieve current properties on connect
+        _retrieveTwinProperties();
+
+    }
+    
+    // For WiFi, set network info
+    function _setWifiInfo(ssid) {
+        local networkString = "WiFi: " + ssid;
+        // server.log("networkString: " + networkString);
+        _updateNetwork(networkString);
+    }
+
+    // Update network info Device Twin property
+    function _updateNetwork(networkInfo) {
+        local networkProp = { "network" : networkInfo };
+
+        if (_client.isConnected()) {
+                server.log("Updating network info as: " + http.jsonencode(networkProp));
+                _client.updateTwinProperties(networkProp, _onTwinUpdated.bindenv(this)); 
+        } else {
+            server.log("Not connected to Azure: Not sending network info")
+        }
+
+    }
+
+    // For cellular, set network info
+    function _setCarrierInfo(mcc, mnc) {
+        
+        // Load csv file with mcc/mnc information to find network country and carrier name
+        local request = http.get("https://raw.githubusercontent.com/musalbas/mcc-mnc-table/master/mcc-mnc-table.csv");
+        request.sendasync(function(response) {
+            
+            local carrier = null;
+            local country = null;
+           
+            if (response.statuscode == 200) {
+                // Search the response for the place with the right mcc and mnc 
+                local expr = regexp(mcc + ",.+," + mnc + ",.+\\n");
+                local result = expr.search(response.body);
+                if (result != null) {
+                    // Get the entry and break it into substrings to get country and carrier
+                    local entry = response.body.slice(result.begin, result.end)
+                    local expr2 = regexp(@"(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)(.+)");
+                    local results = expr2.capture(entry);
+                    if (results) {
+                        foreach (idx, value in results) {
+                            local subString = entry.slice(value.begin, value.end-1)
+                            if (idx == 6) { country = subString };
+                            if (idx == 8) { carrier = subString };
+                        }
+                        local networkString = "Cellular: " + country + ", " + carrier;
+                        // server.log("networkString: " + networkString);
+                        _updateNetwork(networkString);
+                    }
+                } else {
+                    server.log("Carrier info not found");
+                    return null;
+                }
+            } else {
+                server.error("Carrier info http request: " + response.statuscode);
+            }
+        }.bindenv(this)); 
+        
+    } 
+    
     // Triggered by Device: Azure view of properties to device
     function _onTwinRetrieved(err, repProps, desProps) {
         if (err != 0) {
@@ -235,8 +313,12 @@ class Application {
         server.log("Reported twin properties:");
         _printTable(repProps);
         
-        server.log("Desired twin properties");
-        _printTable(desProps);
+        // server.log("Desired twin properties:");
+        // _printTable(desProps);
+
+        // Make sure device updates itself with desired properties
+        _onTwinRequest(desProps);
+
     }
     
     // Triggered by Azure: Desired properties to device
@@ -245,7 +327,7 @@ class Application {
         server.log("Desired twin properties:");
         _printTable(props);
 
-        // update device accordingly
+        // update device accordingly 
         foreach (key, value in props) {
             
             if (key == "reportingInterval") {
@@ -289,20 +371,17 @@ class Application {
             local prop = {"softwareVersion" : softwareVersion };
             _client.updateTwinProperties(prop, _onTwinUpdated.bindenv(this));
 
-            //deleteProperty();  // Delete a property
+            // deleteProperty();  // If there is a property to delete, do it here
 
-            // Retrieve all properties on start-up
-            if (imp.wakeup(3, _retrieveTwinProperties.bindenv(this)) == null) {
-                server.error("_retrieveTwinProperties timer fail");
-            }
+            // Don't retrieve current properties here, will be done when device connects
         }
     } 
     
-    // function deleteProperty() {
-    //     // Used to delete properties
-    //     prop = {"prop" : null };
-    //     _client.updateTwinProperties(prop, _onTwinUpdated.bindenv(this));
-    // }
+    function deleteProperty() {
+        // Used to delete properties
+        local prop = {"example" : null };
+        _client.updateTwinProperties(prop, _onTwinUpdated.bindenv(this));
+    }
     
     // Called when direct method functionality has been enabled
     function _onMethodDone(err) {
@@ -412,11 +491,14 @@ class Application {
         local d = date();
         return format("%04d-%02d-%02d %02d:%02d:%02d", d.year, (d.month+1), d.day, d.hour, d.min, d.sec);
     }
+
+
     
 } // Application
 
 ////////// Application Variables //////////
 
+GOOGLE_API_KEY <- "<add key>";
 softwareVersion <- "3.2.3";
 
 // IoT Central now uses SAS for device authentication
@@ -424,15 +506,16 @@ softwareVersion <- "3.2.3";
 // https://docs.microsoft.com/en-us/azure/iot-central/concepts-connectivity#getting-device-connection-string
 deviceConnectionString <- null;
 
-if (http.agenturl() == "<impC breakout tracker agenturl>") { 
+if (http.agenturl() == "<add url>") { 
     server.log("*** Agent starting for impC Breakout Tracker ..."); 
-    deviceConnectionString = "<impC breakout tracker connectionString>";
-} else if (http.agenturl() == "impExplorer Tracker agenturl") {
+    deviceConnectionString = "<add connection string>";
+} else if (http.agenturl() == "<add url>") {
     server.log("*** Agent starting for impExplorer Tracker ..."); 
-    deviceConnectionString = "<impExplorer tracker connectionString";
+    deviceConnectionString = "<add connection string>";
 } else {
     server.error("unknown device");  
 } 
 
 // Start the Application
-Application(null, deviceConnectionString);
+app <- Application(GOOGLE_API_KEY, null, deviceConnectionString);
+app.run()

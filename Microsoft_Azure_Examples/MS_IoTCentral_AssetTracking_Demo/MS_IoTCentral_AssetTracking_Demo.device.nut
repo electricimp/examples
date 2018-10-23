@@ -296,6 +296,7 @@ class Application {
     static LAT_STUB = 37.3952694;   // Electric Imp HQ
     static DEFAULT_REPORTING = 10;
     static ACCEL_LIMIT = 1.2;
+    static AGENT_STARTUP_DELAY = 10;
     
     _reportingInterval = 0;
     _blinkColor = 0;
@@ -321,16 +322,16 @@ class Application {
         agent.on("restart", restart.bindenv(this));
 
         // Give the agent some time to connect to Azure, then start the loops
-        _sendLoopTimer = imp.wakeup(10, _sendLoop.bindenv(this));
+        _sendLoopTimer = imp.wakeup(AGENT_STARTUP_DELAY, _sendLoop.bindenv(this));
         if (_sendLoopTimer == null) {
             server.error("_sendLoopTimer fail");
+        }
+        if (imp.wakeup(AGENT_STARTUP_DELAY, _locationLoop.bindenv(this)) == null) {
+            server.error("_locationLoop timer fail");
         }
         _accelLoopTimer = imp.wakeup(5, _accelLoop.bindenv(this));
         if (_accelLoopTimer == null) {
             server.error("_accelLoopTimer fail");
-        }
-        if (imp.wakeup(20, _locationLoop.bindenv(this)) == null) {
-            server.error("_locationLoop timer fail");
         }
     }
 
@@ -399,12 +400,76 @@ class Application {
         }
 
     }
+    
+    // Run the application
+    function run() {
+        
+        // Give the agent some time to connect to IoT Hub, then send network info
+        if (imp.wakeup(AGENT_STARTUP_DELAY, _sendNetworkInfo.bindenv(this)) == null) {
+            server.error("_locationLoop timer fail");
+        }
+        
+        // All other functionality is driven by timers and events from agent
+
+    }
+
+    function _sendNetworkInfo() {
+        local networkInfo = {};
+        
+        if (impType == TYPE_IMPEXPLORER) {
+
+            local netData = imp.net.info();
+            if ("active" in netData) {
+                local type = netData.interface[netData.active].type;
+                // We have an active network connection
+                if (type == "wifi") {
+                    // The imp is on a wifi connection
+                    local ssid = netData.interface[netData.active].ssid;
+                    server.log("WiFi info: " + ssid);
+                    networkInfo = { "network" : "wifi", "ssid" : ssid };
+                    agent.send("network", networkInfo);
+                }
+            }
+        
+        } else {
+
+            // if impC, print connection info
+            local netData = imp.net.info();
+            if ("active" in netData) {
+                local type = netData.interface[netData.active].type;
+                // We have an active network connection
+                if (type == "cell") {
+                    // The imp is on a cellular connection
+                    local mcc = null;
+                    local mnc = null;
+                    local cellinfo = netData.interface[netData.active].cellinfo;
+                    local rssi = netData.interface[netData.active].rssi;
+                    server.log("Cellinfo: " + cellinfo);
+                    // Break the cellinfo string into substrings to get the mcc and mnc
+                    local expr = regexp(@"(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)");
+                    local results = expr.capture(cellinfo);
+                    if (results) {
+                        foreach (idx, value in results) {
+                            local subString = cellinfo.slice(value.begin, value.end-1)
+                            if (idx == 7) { mcc = subString };
+                            if (idx == 8) { mnc = subString };
+                        }
+                        server.log("Cellular MCC: " + mcc + ", MNC: " + mnc);
+                        networkInfo = { "network" : "cellular", "mcc" : mcc, "mnc" : mnc };
+                        agent.send("network", networkInfo);
+                    } 
+                    //server.log("Cellular RSSI " + rssi);
+                }
+            }
+        } 
+
+    }
 
     // For connection status check
     function ping(time) {
         agent.send("pong", time);
     }
-    
+
     // Restart the device
     function restart(param) {
         server.log("Restarting device ...");
@@ -486,15 +551,28 @@ class Application {
         local telemetryData = null;
         server.log("Sending telemetry data");
         
+        // Read temp and humidity and process asynchronously
         _tempHumid.read(function(result) {
             if ("error" in result) {
                 server.error(result.error);
             } else {
                 telemetryData = result;
+                
+                // add acceleration data and alert
                 telemetryData.acceleration <- _getMaxAccel();
                 if (telemetryData.acceleration > ACCEL_LIMIT) {
                     telemetryData.acclerationAlert <- "true";
                 }
+                
+                // add light level
+                // reading needs a bit of time to stabilize, so read, wait a bit, and read again
+                // local level = 0;
+                // hardware.lightlevel();
+                // imp.sleep(10);
+                // level = hardware.lightlevel();
+                // // server.log("Light level: " + level);
+                // telemetryData.light <- level;
+
                 _blinkLED();
                 agent.send("telemetry", telemetryData)
             }
@@ -538,7 +616,7 @@ class Application {
         }
         agent.send("location", locationData);
     }
-     
+    
     // Set blink color
     function setColor(color) {
         _blinkColor = color;
@@ -599,18 +677,8 @@ if (impType == TYPE_IMPEXPLORER) {
 } else {
     server.log("*** Device starting (impC001) ...");
     server.log(imp.getsoftwareversion());
-    // if impC, print connection info
-    local netData = imp.net.info();
-    if ("active" in netData) {
-        local type = netData.interface[netData.active].type;
-        // We have an active network connection
-        if (type == "cell") {
-            // The imp is on a cellular connection
-            server.log("Cellinfo " + netData.interface[netData.active].cellinfo);
-            server.log("Cellular RSSI " + netData.interface[netData.active].rssi);
-        }
-    }
 } 
 
 // Start the Application 
-Application();
+app <- Application();
+app.run();
