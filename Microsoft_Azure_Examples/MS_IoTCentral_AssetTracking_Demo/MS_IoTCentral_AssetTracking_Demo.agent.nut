@@ -414,7 +414,7 @@ class Application {
                 server.error("_delayedReconnect timer fail");
             }
         }
-        server.log("Device connected to Azure");
+        server.log("Connected to Azure");
         
         // Enable required features
         _client.enableIncomingMessages(_receiveHandler.bindenv(this));
@@ -433,13 +433,13 @@ class Application {
         
         //server.log("onDisconnected");  
         if (err != 0) {
-            server.error("Device disconnected from Azure unexpectedly with code: " + err);
+            server.error("Disconnected from Azure unexpectedly with code: " + err);
             // Reconnect if disconnection is not initiated by application
             if (imp.wakeup(10, _delayedReconnect.bindenv(this)) == null) {
                 server.error("_delayedReconnect timer fail");
             }
         } else {
-            server.log("Device disconnected from Azure by application");
+            server.log("Disconnected from Azure by application");
         }
     }
     
