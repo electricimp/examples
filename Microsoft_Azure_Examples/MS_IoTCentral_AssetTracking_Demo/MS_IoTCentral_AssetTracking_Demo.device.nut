@@ -69,6 +69,9 @@ class LocationMonitor {
         // Use to reduce niose, so gps isn't jumping around when asset is not moving
         const LOC_THRESHOLD    = 0.00030;
 
+        // delay a bit to ensure any previous I2C transactions have completed
+        // as Pixhawk may corrupt I2C transactions during power-on
+        imp.sleep(0.5);
         HAL.POWER_GATE.configure(DIGITAL_OUT, 1);
         HAL.GPS_UART.setrxfifosize(GPS_RX_FIFO_SIZE);
         // Configure UART
@@ -568,9 +571,9 @@ class Application {
                 // reading needs a bit of time to stabilize, so read, wait a bit, and read again
                 // local level = 0;
                 // hardware.lightlevel();
-                // imp.sleep(10);
+                // imp.sleep(0.2);
                 // level = hardware.lightlevel();
-                // // server.log("Light level: " + level);
+                // server.log("Light level: " + level);
                 // telemetryData.light <- level;
 
                 _blinkLED();

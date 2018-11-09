@@ -22,7 +22,7 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-#require "GoogleMaps.agent.lib.nut:1.0.0"
+#require "GoogleMaps.agent.lib.nut:1.0.0" 
 
 // Azure IoT Hub 3.0.0 and above requires agent server with MQTT support
 #require "AzureIoTHub.agent.lib.nut:3.0.0"
@@ -323,7 +323,10 @@ class Application {
     
     // Triggered by Azure: Desired properties to device
     function _onTwinRequest(props) {
-        
+
+        local updated = false;
+        local updatedProps = {};
+
         server.log("Desired twin properties:");
         _printTable(props);
 
@@ -332,6 +335,13 @@ class Application {
             
             if (key == "reportingInterval") {
                 device.send("reporting", value.value);
+                updated = true;
+                updatedProps.reportingInterval <- { 
+                        "value" : value.value,
+                        "statusCode" : "200",
+                        "status" : "completed",
+                        "desiredVersion" : props["$version"]
+                    };
             }
             
             if (key == "ledColor") {
@@ -341,9 +351,25 @@ class Application {
                     case "GREEN": _blinkColor = GREEN; break;
                 }
                 device.send("color", _blinkColor);
+                updated = true;
+                updatedProps.ledColor <- { 
+                        "value" : value.value,
+                        "statusCode" : "200",
+                        "status" : "completed",
+                        "desiredVersion" : props["$version"]
+                    };
             }
         }
-
+        
+        if (updated) {
+            if (_client.isConnected()) {
+                server.log("Reporting desired props as: " + http.jsonencode(updatedProps));
+                _client.updateTwinProperties(updatedProps, _onTwinUpdated.bindenv(this));
+            } else {
+                server.log("Not connected to Azure: Not updating props")
+            }
+        }
+        
     }
     
     // Triggered by Device: Updated properties to Azure
@@ -371,7 +397,7 @@ class Application {
             local prop = {"softwareVersion" : softwareVersion };
             _client.updateTwinProperties(prop, _onTwinUpdated.bindenv(this));
 
-            // deleteProperty();  // If there is a property to delete, do it here
+            //deleteProperty();  // If there is a property to delete, do it here
 
             // Don't retrieve current properties here, will be done when device connects
         }
