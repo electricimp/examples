@@ -22,4 +22,5 @@ This repository uses an impC Breakout Board plus GPS and/or an impExplorer to im
 
 ## Limitations:
 * ~~The device always starts up with default settings for reporting interval and LED color rather than updating it's settings from the desired Device Twin Properties. To workaround, explicitly use the "Settings" tab to set the settings again.~~ FIXED
+* ~~Device settings that are changed in IoT Central are sent to the device, but not correctly confirmed back to IoT Central, so IoT Central doesn't show them as synced. FIXED~~
 * The device code is purposely kept simple and is not optimized for power consumption/battery life, minimizing communication volume, or more robust connectivity handling. A real asset tracking device application will be much more intelligent by entering power save modes based on application state, reducing radio time to minimize power, reduce communication volume (only send data when necessary), and handling different connectivity states (e.g. intermittent connectivity with batching of data, etc).
