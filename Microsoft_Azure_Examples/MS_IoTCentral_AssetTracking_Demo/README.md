@@ -208,13 +208,13 @@ The *Scope Id* can found on Microsoft's IoT Central's Application Adminiastation
 * **Click** the *Admin* icon in the sidebar
 * **Click** on the *Device Connection* tab in the Application Settings sidebar
 
-![Scope Id](./AdminDeviceConnection.png)
+![Scope Id](./imgs/AdminDeviceConnection.png)
 
 #### Device Id
 
 Your *Device Id* can be found in Electric Imp's impCentral ide. You will need this to create both the *Primary Device SAS Key* and the *Device Connection String*
 
-![Device Id](./IDE_deviceID.png)
+![Device Id](./imgs/IDE_deviceID.png)
 
 #### Primary Device SAS Key
 
@@ -223,7 +223,7 @@ To get a device SAS Key we will need to create a new *Real* device. Navigate to 
 * **Click** the *Explorer* icon in the sidebar
 * **Click** *+ New* and select *Real*
 
-![Create Device](./CreateDevice.png)
+![Create Device](./imgs/CreateDevice.png)
 
 A from will pop up.
 
@@ -234,11 +234,11 @@ You will be redirected to that device's details page.
 
 * **Click** *Connect*
 
-![Device Details](./DeviceDetail.png)
+![Device Details](./imgs/DeviceDetail.png)
 
 A pop-up will appear. Double check that the *Scope Id* and *Device Id* match the previous steps. Take note of the *Primary Key* - this is the *Primary Device SAS Key*.
 
-![Primary Device SAS Key](./PrimaryDeviceSASKey.png)
+![Primary Device SAS Key](./imgs/PrimaryDeviceSASKey.png)
 
 #### Generate Device Connection String
 
@@ -276,7 +276,7 @@ HostName=saas-iothub-<YOUR APPLICATION IOTHUB ID HERE>.azure-devices.net;DeviceI
 
 Open the impCentral code editor and paste the **Connection string** into the agent code **deviceConnectionString** variable found near the end of the agent code.
 
-![Add Connection String to Agent Code](./IDEConnecitonString.png)
+![Add Connection String to Agent Code](./imgs/IDEConnecitonString.png)
 
 Click **Build and Force Restart** to start running your application.
 
