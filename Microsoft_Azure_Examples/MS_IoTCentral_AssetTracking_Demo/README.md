@@ -124,11 +124,13 @@ With impCentral Electric Imp provides all the tools you need to write and deploy
 
 ![Name Device Template](./imgs/MS_IoTCentral_Create_Dev_Template.png)
 
-3. After creating a device template your first simulated device will be automatically created. You can edit the device name and upload a photo if desired.
+3. After creating a device template your first simulated device will be automatically created. You will automatically be redirected to the Device Details page for your your simulated device. You can edit the device name and upload a photo if desired.
 
-4. Next we need to match the data that the imp is sending via the application code with the device template we are creating. For this application our telemetry data will include *temperature*, *humidity*, and *acceleration*. We will also track device state and an *accelerationAlert*
+#### Create Device Template Measurements
 
-5. Add **temperature** to the device template:
+The Device Detail page will default to the **Measurements** tab. To configure the measurements we need to match the data that the imp is sending via the application code with our device template. For this application our measurements will include telemetry, state and event data. Our telemetry data will include *temperature*, *humidity*, and *acceleration*. We will track device online/offline state, and we will configure one event, *accelerationAlert*. Follow the steps below to configure the device template measurements.
+
+1. Add **temperature** to the device template:
  - Click **+ New Measurement**
  - Select **Telemetry**.
 
@@ -146,7 +148,7 @@ With impCentral Electric Imp provides all the tools you need to write and deploy
  - (Optional) **Decimal Places**, enter the number of decimal places your data should display. I have used a value of *1*.
  - At the top of the form click **Save**.
 
-6. Add **humidity** to the device template:
+2. Add **humidity** to the device template:
  - Click **+ New Measurement**
  - Select **Telemetry**.
  - Fill in Telemetry form:
@@ -158,7 +160,7 @@ With impCentral Electric Imp provides all the tools you need to write and deploy
     - (Optional) **Decimal Places**, enter the number of decimal places your data should display. I have used a value of *1*.
     - At the top of the form click **Save**.
 
-7. Add **acceleration** to the device template:
+3. Add **acceleration** to the device template:
  - Click **+ New Measurement**
  - Select **Telemetry**.
  - Fill in Telemetry form:
@@ -170,7 +172,7 @@ With impCentral Electric Imp provides all the tools you need to write and deploy
     - (Optional) **Decimal Places**, enter the number of decimal places your data should display. I have used a value of *1*.
     - At the top of the form click **Save**.
 
-8. Add **Device State** to the device template:
+4. Add **Device State** to the device template:
  - Click **+ New Measurement**
  - Select **State**.
  - Fill in Create State form:
@@ -186,13 +188,110 @@ With impCentral Electric Imp provides all the tools you need to write and deploy
         - Select a different color
     - At the top of the form click **Save**.
 
-9. Add **Event** to the device template:
+5. Add **Event** to the device template:
  - Click **+ New Measurement**
  - Select **Event**.
  - Fill in Create Event form:
     - Fill in the **Display Name**, this will be displayed in your application, I have used *AccelAlert*.
     - Fill in **Field Name**, this must match the code from your agent/device, so for this example this field must be *acclerationAlert*.
     - Select *Default Severity*, I have set this to *Warning*
+    - At the top of the form click **Save**.
+
+#### Create Device Template Settings
+
+In the settings we can configure the messages to be sent to the device. For this application we can configure how often the device reports telemetry data and the color of the LED.
+
+* Click on the **Settings** tab just under the device name.
+* Click on Edit Template
+
+![Device Template Nav](./imgs/DeviceTemplateNav.png)
+
+* In the **Library** sidebar select the following to bring up the settings forms.
+
+![Library Sidebar](./imgs/LibrarySidebar.png)
+
+1. Add **reportingInterval** setting to the device template:
+    - Click **Number**
+    - Fill in Configure Number form:
+        - Fill in the **Display Name**, this will be displayed in your application. I have used *Reporting Interval*
+        - Fill in **Field Name**,  this must match the code from your agent/device, so for this example this field must be *reportingInterval*.
+        - Fill in **Unit of Measurement**, the application code requires this setting to be seconds, *sec*.
+        - Fill in **Number of Decimal Places**, the application expects this to be an intger, so set this to *0*.
+        - Fill in **Minimum Value**, this must be a positive integer, so set this to *0*.
+        - Fill in **Maximum Value**, you should select a value that makes sense for your application, since we are not conserving battery life let's limit this to *100*.
+        - Fill in **Initial Value**, for testing let's set this to something pretty low so we can see data coming in, *10*.
+        - Fill in **Description**, I have used *Set reporting interval*.
+    - At the top of the form click **Save**.
+
+2. Add **LED Color** setting to the device template:
+    - Click **Text**
+    - Fill in Configure Text form:
+        - Fill in the **Display Name**, this will be displayed in your application. I have used *LED Color*
+        - Fill in **Field Name**,  this must match the code from your agent/device, so for this example this field must be *ledColor*.
+        - Fill in **Trim Leading Spaces**, set this toggle to *On*.
+        - Fill in **Trim Trailing Spaces**, set this toggle to *On*.
+        - Fill in **Case Sensitivity In Comparison**, set this toggle to *On*.
+        - Fill in **Case Sensitivity In Data Entry**, select *upper*.
+        - Fill in **Minimum Length**, this must be a positive integer, so set this to *0*.
+        - Fill in **Maximum Length**, the application only has 3 colors it will accept (RED, YELLOW, and GREEN), so it is safe to set this to *10*.
+        - Fill in **Initial Value**, the application only has 3 colors it will accept (RED, YELLOW, and GREEN), I have selecet *YELLOW* for the default.
+        - Fill in **Description**, I have used *Set LED Color*.
+    - At the top of the form click **Save**.
+
+#### Create Device Template Properties
+
+* Click on the **Properties** tab just under the device name.
+* Click on Edit Template
+* In the **Library** sidebar select the following to bring up the settings forms.
+
+1. Add **Device Online** setting to the device template:
+    - Click **Device Property**
+    - Fill in Configure Device Property form:
+        - Fill in the **Display Name**, this will be displayed in your application. I have used *Device Online*
+        - Fill in **Field Name**,  this must match the code from your agent/device, so for this example this field must be *online*.
+        - Fill in **Data Type**, select *text*.
+        - Fill in **Description**, I have used *Device Online*.
+    - At the top of the form click **Save**.
+
+2. Add **Network Info** setting to the device template:
+    - Click **Device Property**
+    - Fill in Configure Device Property form:
+        - Fill in the **Display Name**, this will be displayed in your application. I have used *Network Info*
+        - Fill in **Field Name**,  this must match the code from your agent/device, so for this example this field must be *network*.
+        - Fill in **Data Type**, select *text*.
+        - Fill in **Description**, I have used *Network Info*.
+    - At the top of the form click **Save**.
+
+3. Add **Device Software Version** setting to the device template:
+    - Click **Device Property**
+    - Fill in Configure Device Property form:
+        - Fill in the **Display Name**, this will be displayed in your application. I have used *Device Software Version*
+        - Fill in **Field Name**,  this must match the code from your agent/device, so for this example this field must be *softwareVersion*.
+        - Fill in **Data Type**, select *text*.
+        - Fill in **Description**, I have used *Device Software Version*.
+    - At the top of the form click **Save**.
+
+4. Add **Device Location** setting to the device template:
+    - Click **Device Property**
+    - Fill in Configure Device Property form:
+        - Fill in the **Display Name**, this will be displayed in your application. I have used *Device Location*
+        - Fill in **Field Name**,  this must match the code from your agent/device, so for this example this field must be *location*.
+        - Fill in **Data Type**, select *location*.
+        - Fill in **Description**, I have used *Device Location*.
+    - At the top of the form click **Save**.
+
+#### Create Device Template Commands
+
+* Click on the **Commands** tab just under the device name.
+* Click on Edit Template
+
+1. Click **+ New Commnad***
+    - Fill in Configure Command form:
+        - Fill in the **Display Name**, this will be displayed in your application. I have used *Restart Device*
+        - Fill in **Field Name**,  this must match the code from your agent/device, so for this example this field must be *restart*.
+        - Fill in **Default Timeout**, leave the default *30*.
+        - Fill in **Data Type**, select *text*.
+        - Fill in **Description**, I have used *Restart Device*.
     - At the top of the form click **Save**.
 
 ### Registering Your Device with Azure IoT Central
@@ -286,3 +385,8 @@ IoT Central will take about 10-15 seconds to start updating the telemetry data p
 
 If you want location data from a Wifi Imp (ie the impExplorer) you will need to add a Google API key to the agent code. You can apply for an API key on the [Google Developer Console](https://console.developers.google.com/apis/credentials). Once you have obtained an API key enter it into the *GOOGLE_API_KEY* constant and click **Build and Force Restart** update your application.
 
+### Next Steps
+
+Now that your device is configured and connected you can explore how to use IoT central feature to visualize your data. You can configure dashboards and shortcuts to your application home page.
+
+![Dashboard](./imgs/Dashboard.png)
