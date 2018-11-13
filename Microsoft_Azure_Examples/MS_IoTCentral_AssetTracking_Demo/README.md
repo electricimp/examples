@@ -242,13 +242,13 @@ A pop-up will appear. Double check that the *Scope Id* and *Device Id* match the
 
 #### Generate Device Connection String
 
-We will now use the command line and npm to download a key generation tool and binary file. The binary file can be found in Github in the following (repo)[https://github.com/Azure/dps-keygen/tree/master/bin]. Select the folder for your OS and download the `dps_cstr` file.
+We will now use the command line and npm to download a key generation tool and binary file. The binary file can be found in Github in the following [repo](https://github.com/Azure/dps-keygen/tree/master/bin). Select the folder for your OS and download the **dps_cstr** file.
 
-Open your command line navigate to where the `dps_cstr` file was downloaded. Make sure the `dps_cstr` file is an executable. This can be checked with the following cmd:
+Open your command line navigate to where the **dps_cstr** file was downloaded. Make sure the **dps_cstr** file is an executable. This can be checked with the following cmd:
 
 `ls -la`
 
-Find the line that contains the info for `dps_cstr`. It should look something like the following:
+Find the line that contains the info for **dps_cstr**. It should look something like the following:
 
 `-rwxr-xr-x@  1 electricimp  staff   649K Nov 12 13:05 dps_cstr`
 
@@ -256,7 +256,7 @@ If it is not run the following cmd:
 
 `sudo chmod -x dps_cstr`
 
-Once you are sure the `dps_cstr` file is configured correctly, run the following command to install the dps key generation package:
+Once you are sure the **dps_cstr** file is configured correctly, run the following command to install the dps key generation package:
 
 `npm i -g dps-keygen`
 
