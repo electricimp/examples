@@ -18,7 +18,7 @@ In this example, you begin by learning the basics of working with Electric Imp. 
 
 ## What You Do
 
-* Configure your impAccelerator™ Fieldbus Gateway with BlinkUp&trade;.
+* Configure your impC Breakout Board or impExplorer with BlinkUp&trade;.
 * Create an Azure IoT Central application.
 * Register your device in IoT Central.
 * Run a sample application using the impCentral to send data to Azure IoT Central.
@@ -36,7 +36,7 @@ In this example, you begin by learning the basics of working with Electric Imp. 
 
 1. A computer with a web browser.
 2. A smartphone with the Electric Imp app ([iOS](https://itunes.apple.com/us/app/electric-imp/id547133856) or [Android](https://play.google.com/store/apps/details?id=com.electricimp.electricimp)).
-3. A free [Electric Imp Account](https://impcentral.electricimp.com/login).
+3. A free [Electric Imp Account](https://impcentral.electricimp.com/login). Note: If your impC Breakout Board module features an Azure logo then you must create a [Electric Imp Azure Account](https://impcentral-azure.electricimp.com/login).
 4. A [Microsoft Account](https://login.microsoftonline.com).
 5. Imp Hardware
     * [impExplorer](https://store.electricimp.com/collections/getting-started/products/impexplorer-developer-kit?variant=31118866130)
@@ -65,18 +65,20 @@ Open the Electric Imp mobile app on your smartphone to configure your device.
 
 3. Select **Wireless**
 4. Enter your 2.4GHz 802.11bgn WiFi credentials, then click **Next**
-5. Follow the instructions in the app to configure your device.
+5. Follow the instructions in the app to configure your device. Note: Blink up to your Electric Imp AWS account (not Azure).
 
 ### impC Breakout Board
 
 3. Select **Cellular**
-4. Follow the instructions in the app to configure your device.
+4. Follow the instructions in the app to configure your device. Note: Blink up to your Electric Imp AWS account, unless your impC Breakout Board module features the Azure logo - in which case you need to blink up to your Electric Imp Azure account. 
 
-If you have any trouble here is a [link](https://electricimp.com/docs/hardware/fieldbusgateway/blinkup/) to the DevCenter's BlinkUp instructions.
+If you have any trouble here are links to the DevCenter's BlinkUp instructions:
+* [impExplorer BlinkUp](https://developer.electricimp.com/gettingstarted/explorer/blinkup)
+* [impC Breakout Board BlinkUp](https://developer.electricimp.com/gettingstarted/impc001breakoutboard)
 
 ### How Electric Imp’s IoT Connectivity Platform Works
 
-The Electric Imp Platform has two main components: the imp-enabled device and the impCloud&trade;. The imp-enabled device runs the device code, which in this use case consolidates the data gathered from the temperature sensor via the Click PLC. Each device is paired one-to-one with its own online assistant &mdash; or, as we call it, an ‘agent’ &mdash; in the impCloud and which runs the agent code. The device sends this data to its agent. In this example, the agent code relays the data to the Azure IoT Central cloud. Here’s a broad overview of this flow:
+The Electric Imp Platform has two main components: the imp-enabled device and the impCloud&trade;. The imp-enabled device runs the device code, which in this use case uses the data gathered from the temperature and humidity sensors as well as the accelerometer on the board. Each device is paired one-to-one with its own online assistant &mdash; or, as we call it, an ‘agent’ &mdash; in the impCloud and which runs the agent code. The device sends this data to its agent. In this example, the agent code relays the data to the Azure IoT Central cloud. Here’s a broad overview of this flow:
 
 ![System Overview](./imgs/SystemOverview.png)
 
@@ -84,7 +86,7 @@ With impCentral Electric Imp provides all the tools you need to write and deploy
 
 ### Working With impCentral
 
-1. Open your web browser and log in to the [impCentral](https://impcentral.electricimp.com/login).
+1. Open your web browser and log in to the [impCentral](https://impcentral.electricimp.com/login). Note: If you created your Electric Imp account on Azure, use [impCentral Azure](https://impcentral-azure.electricimp.com/login)
 2. Click the **+ Create New Product** button to create a new Electric Imp application.
 3. In the pop-up panel, name your **Product** and **Development Device Group** and click **Create**. A code editor will automatically open.
 4. Next you will need to assign your device to the Device Group you just created. In the bottom section of the code editor click the **Assign devices** button.
@@ -296,7 +298,7 @@ In the settings we can configure the messages to be sent to the device. For this
 
 ### Registering Your Device with Azure IoT Central
 
-**Note:** We will soon be able to register devices progamatically, but until then please follow the steps below to register your device manually.
+**Note:** We will soon be able to register devices programatically, but until then please follow the steps below to register your device manually.
 
 To register a device we will need to generate a device connection string and copy and paste it into the agent code. For more information see [Getting a Device Connection String](https://docs.microsoft.com/en-us/azure/iot-central/concepts-connectivity#getting-device-connection-string). We will need the following id's and keys: *Scope ID*, *Device ID*, and the *Primary Device SAS Key*, and a command line npm key generation tool to generate a device connection string.
 
@@ -389,4 +391,4 @@ If you want location data from a Wifi Imp (ie the impExplorer) you will need to 
 
 Now that your device is configured and connected you can explore how to use IoT central feature to visualize your data. You can configure dashboards and shortcuts to your application home page.
 
-![Dashboard](./imgs/Dashboard.png)
+![Dashboard](./imgs/Dashboard-new.png)
