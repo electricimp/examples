@@ -389,6 +389,8 @@ If you want location data from a Wifi Imp (ie the impExplorer) you will need to 
 
 ### Next Steps
 
-Now that your device is configured and connected you can explore how to use IoT central feature to visualize your data. You can configure dashboards and shortcuts to your application home page.
+Now that your device is configured and connected you can explore how to use IoT central feature to visualize your data. You can configure dashboards and shortcuts to your application home page. Here is an example dashboard:
 
 ![Dashboard](./imgs/Dashboard-new.png)
+
+Also try out the other device tabs, for example, viewing telemetry data, changing device settings, viewing properties, or creating rules.
