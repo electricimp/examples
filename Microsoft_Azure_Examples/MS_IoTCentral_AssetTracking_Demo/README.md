@@ -36,7 +36,7 @@ In this example, you begin by learning the basics of working with Electric Imp. 
 
 1. A computer with a web browser.
 2. A smartphone with the Electric Imp app ([iOS](https://itunes.apple.com/us/app/electric-imp/id547133856) or [Android](https://play.google.com/store/apps/details?id=com.electricimp.electricimp)).
-3. A free [Electric Imp Account](https://impcentral.electricimp.com/login). Note: If your impC Breakout Board module features an Azure logo then you must create a [Electric Imp Azure Account](https://impcentral-azure.electricimp.com/login).
+3. A free [Electric Imp Account](https://impcentral.electricimp.com/login). **Note:** If your impC Breakout Board module features an Azure logo then you must create a [Electric Imp Azure Account](https://impcentral-azure.electricimp.com/login).
 4. A [Microsoft Account](https://login.microsoftonline.com).
 5. Imp Hardware
     * [impExplorer](https://store.electricimp.com/collections/getting-started/products/impexplorer-developer-kit?variant=31118866130)
@@ -65,12 +65,12 @@ Open the Electric Imp mobile app on your smartphone to configure your device.
 
 3. Select **Wireless**
 4. Enter your 2.4GHz 802.11bgn WiFi credentials, then click **Next**
-5. Follow the instructions in the app to configure your device. Note: Blink up to your Electric Imp AWS account (not Azure).
+5. Follow the instructions in the app to configure your device. **Note:** Blink up to Amazon AWS (not Microsoft Azure).
 
 ### impC Breakout Board
 
 3. Select **Cellular**
-4. Follow the instructions in the app to configure your device. Note: Blink up to your Electric Imp AWS account, unless your impC Breakout Board module features the Azure logo - in which case you need to blink up to your Electric Imp Azure account. 
+4. Follow the instructions in the app to configure your device. **Note:** Blink up to Amazon AWS, unless your impC Breakout Board module features the Azure logo - in which case you need to blink up to Microsoft Azure. 
 
 If you have any trouble here are links to the DevCenter's BlinkUp instructions:
 * [impExplorer BlinkUp](https://developer.electricimp.com/gettingstarted/explorer/blinkup)
