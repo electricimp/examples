@@ -393,4 +393,9 @@ Now that your device is configured and connected you can explore how to use IoT 
 
 ![Dashboard](./imgs/Dashboard-new.png)
 
-Also try out the other device tabs, for example, viewing telemetry data, changing device settings, viewing properties, or creating rules.
+Also try out the other device tabs:
+* Measurements: View telemetry data
+* Settings: View and change device settings and sync them back to the device
+* Properties: View device and application properties
+* Commands: Execute device restart command
+* Rules: Create business rules and orchestrations
