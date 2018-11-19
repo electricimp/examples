@@ -36,7 +36,7 @@ In this example, you begin by learning the basics of working with Electric Imp. 
 
 1. A computer with a web browser.
 2. A smartphone with the Electric Imp app ([iOS](https://itunes.apple.com/us/app/electric-imp/id547133856) or [Android](https://play.google.com/store/apps/details?id=com.electricimp.electricimp)).
-3. A free [Electric Imp Account](https://impcentral.electricimp.com/login). **Note:** If your impC Breakout Board module features an Azure logo then you must create a [Electric Imp Azure Account](https://impcentral-azure.electricimp.com/login).
+3. A free [Electric Imp Account](https://impcentral.electricimp.com/login). **NOTE:** If your impC Breakout Board module features an Azure logo then you must create a [Electric Imp Azure Account](https://impcentral-azure.electricimp.com/login).
 4. A [Microsoft Account](https://login.microsoftonline.com).
 5. Imp Hardware
     * [impExplorer](https://store.electricimp.com/collections/getting-started/products/impexplorer-developer-kit?variant=31118866130)
@@ -65,12 +65,12 @@ Open the Electric Imp mobile app on your smartphone to configure your device.
 
 3. Select **Wireless**
 4. Enter your 2.4GHz 802.11bgn WiFi credentials, then click **Next**
-5. Follow the instructions in the app to configure your device. **Note:** Blink up to Amazon AWS (not Microsoft Azure).
+5. Follow the instructions in the app to configure your device. **NOTE:** Blink up to Amazon AWS (not Microsoft Azure).
 
 ### impC Breakout Board
 
 3. Select **Cellular**
-4. Follow the instructions in the app to configure your device. **Note:** Blink up to Amazon AWS, unless your impC Breakout Board module features the Azure logo - in which case you need to blink up to Microsoft Azure. 
+4. Follow the instructions in the app to configure your device. **NOTE:** Blink up to Amazon AWS, unless your impC Breakout Board module features the Azure logo - in which case you need to blink up to Microsoft Azure. 
 
 If you have any trouble here are links to the DevCenter's BlinkUp instructions:
 * [impExplorer BlinkUp](https://developer.electricimp.com/gettingstarted/explorer/blinkup)
@@ -86,7 +86,7 @@ With impCentral Electric Imp provides all the tools you need to write and deploy
 
 ### Working With impCentral
 
-1. Open your web browser and log in to the [impCentral](https://impcentral.electricimp.com/login). Note: If you created your Electric Imp account on Azure, use [impCentral Azure](https://impcentral-azure.electricimp.com/login)
+1. Open your web browser and log in to the [impCentral](https://impcentral.electricimp.com/login). **NOTE:** If you created your Electric Imp account on Azure, use [impCentral Azure](https://impcentral-azure.electricimp.com/login)
 2. Click the **+ Create New Product** button to create a new Electric Imp application.
 3. In the pop-up panel, name your **Product** and **Development Device Group** and click **Create**. A code editor will automatically open.
 4. Next you will need to assign your device to the Device Group you just created. In the bottom section of the code editor click the **Assign devices** button.
@@ -110,7 +110,7 @@ With impCentral Electric Imp provides all the tools you need to write and deploy
 
  - Select an application template: **Custom Application**.
 
- - Enter an Application Name: **YOUR APPLICATION NAME**. For this example I'll use the name: *EI Asset Tracking Monitor*. Note: The URL field will auto poplutate to match the Application name.
+ - Enter an Application Name: **YOUR APPLICATION NAME**. For this example I'll use the name: *EI Asset Tracking Monitor*. **Note:** The URL field will auto poplutate to match the Application name.
 
  - Click **Create** button. You will be redirected to your Applicaation's home page.
 
