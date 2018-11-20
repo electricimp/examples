@@ -2,7 +2,7 @@
 
 In this example, you begin by learning the basics of working with Electric Imp. We will use Electric Imp Libraries to seamlessly connect imp-enabled hardware to Azure IoT Central. Your imp-enabled hardware device will report telemetry and location data through the Electric Imp impCloud into Azure IoT Central. This example uses an [impC Breakout Board](https://store.electricimp.com/collections/breakout-boards/products/impc001-breakout-board-kit-preorder?variant=7599263973399) plus [Pixhawk GPS](https://www.amazon.com/dp/B01KK9A8QG/ref=cm_sw_r_cp_apip_Cmj3DOu4gUMIv) and/or an [impExplorer](https://store.electricimp.com/collections/getting-started/products/impexplorer-developer-kit?variant=31118866130) to implement a Asset Tracking demo with IoT Central.
 
-**NOTE:** The purpose of this example is to show basic concepts and works reliably. The device code is purposely kept simple and is not optimized for power consumption/battery life, minimizing communication volume, or more robust connectivity handling. A real asset tracking device application will be much more intelligent by entering power save modes based on application state, reducing radio time to minimize power, reduce communication volume (only send data when necessary), and handling different connectivity states (e.g. intermittent connectivity with batching of data, etc).
+**NOTE:** The purpose of this example is to show basic concepts and works reliably. The device code is purposely kept simple and is not optimized for power consumption/battery life, minimizing communication volume, or more robust connectivity handling. A real asset tracking device application will be more advanced by entering power save modes based on application state, reducing radio time to minimize power, reduce communication volume (only send data when necessary), and handling different connectivity states (e.g. intermittent connectivity with batching of data, etc).
 
 ## Application Details
 
@@ -43,6 +43,10 @@ In this example, you begin by learning the basics of working with Electric Imp. 
     * [impC Breakout Board](https://store.electricimp.com/collections/breakout-boards/products/impc001-breakout-board-kit-preorder?variant=7599263973399)
 6. If using an impExplorer you will need a 2.4GHz 802.11bgn WiFi network *name* (SSID) and *password*.
 7. If using an impC Breakout Board you can add a [Pixhawk GPS](https://www.amazon.com/dp/B01KK9A8QG/ref=cm_sw_r_cp_apip_Cmj3DOu4gUMIv).
+
+**NOTE:** 
+
+If you are using a (non-Azure) Electric Imp account (i.e. your device does **not** have an Azure logo, as in step #3 above) you need to [sign up](https://connect.electricimp.com/azure-mqtt-integration-signup) for our MQTT integration first as your device needs to be assigned to a server with MQTT support. For Electric Imp Microsoft Azure accounts this is already the case, so nothing needs to be done.
 
 ## Hardware Setup
 
