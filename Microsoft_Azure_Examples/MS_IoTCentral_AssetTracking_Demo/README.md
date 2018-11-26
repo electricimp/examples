@@ -1,6 +1,10 @@
 # Microsoft Azure IoT Central Asset Tracking Demo
 
-In this example, you will create a complete end-to-end Asset Tracking application by combining Electric Imp and Microsoft Azure IoT Central. Your imp-enabled hardware device will report telemetry and location data through the Electric Imp impCloud into IoT Central where data is visualized, you can create business rules, and make changes to device settings in IoT Central that are synced back to the device in real time. This example uses an [impC Breakout Board](https://store.electricimp.com/collections/breakout-boards/products/impc001-breakout-board-kit-preorder?variant=7599263973399) plus [Pixhawk GPS](https://www.amazon.com/dp/B01KK9A8QG/ref=cm_sw_r_cp_apip_Cmj3DOu4gUMIv) and/or an [impExplorer](https://store.electricimp.com/collections/getting-started/products/impexplorer-developer-kit?variant=31118866130).
+In this example, you will create a complete end-to-end Asset Tracking application by combining Electric Imp and Microsoft Azure IoT Central. Your imp-enabled hardware device will report telemetry and location data through the Electric Imp impCloud into IoT Central where data is visualized, you can create business rules, and make changes to device settings in IoT Central that are synced back to the device in real time. imp hardware supported by this example:
+* [impC Breakout Board](https://store.electricimp.com/collections/breakout-boards/products/impc001-breakout-board-kit-preorder?variant=7599263973399) plus [Pixhawk GPS](https://www.amazon.com/dp/B01KK9A8QG/ref=cm_sw_r_cp_apip_Cmj3DOu4gUMIv)
+* [impExplorer](https://store.electricimp.com/collections/getting-started/products/impexplorer-developer-kit?variant=31118866130)
+
+![Dashboard](./imgs/Dashboard-new.png)
 
 **NOTE:** The purpose of this example is to show basic concepts and works reliably. The device code is purposely kept simple and is not optimized for power consumption/battery life, minimizing communication volume, or more robust connectivity handling. A real asset tracking device application will be more advanced by entering power save modes based on application state, reducing radio time to minimize power, reduce communication volume (only send data when necessary), and handling different connectivity states (e.g. intermittent connectivity with batching of data, etc).
 
@@ -9,12 +13,14 @@ In this example, you will create a complete end-to-end Asset Tracking applicatio
 * Cloud agents connect to the respective IoT Central IoT Hub via MQTT, see [Azure IoT Hub integration](https://github.com/electricimp/AzureIoTHub)
 * Register Devices in IoT Central
 * Once started, the cloud agent connects to IoT Hub and enables direct sending of data (for telemetry measurements), Device Twins (for device properties and device settings), and Direct Methods (for device restarts)
-* Telemetry measurements: The device periodically sends temperature, humidity, and acceleration data (from onboard sensors) to IoT Central. Note that eventhough IoT Hub receives the data almost immediately from the cloud agent it typically takes IoT Central 15 to 20 seconds to update the visualization, so telemetry data appears sluggish.
+* Telemetry measurements: The device periodically sends temperature, humidity, and acceleration data (from onboard sensors) to IoT Central. Note that eventhough IoT Hub receives the data almost immediately from the cloud agent it typically takes IoT Central 15 to 20 seconds to update the visualization as the data flows through Azure Time Series Insights, so telemetry data appears sluggish.
 * Shock alert: When the accleration exceeds a certain value the device triggers a shock alert and immediately sends the telemetry data
 * Device properties: The device sends via Device Twin Properies the location coordinates, device online/offline state, networking information (carrier name or WiFi SSID) and software version which are displayed in the IoT Central "Properties" tab.
 * Device settings: Through the IoT Central "Settings" tab the user can make changes to the reporting interval and the LED color -- updated values are sent to the device via desired Device Twin properties
 * Direct methods: Through the IoT Central "Commands" tab the user can trigger a "Restart Device" command which results in the device rebooting the VM and restarting the application
-* Device location: The impC Breakout Board code uses the [Pixhawk GPS](https://www.amazon.com/dp/B01KK9A8QG/ref=cm_sw_r_cp_apip_Cmj3DOu4gUMIv) receiver for location, the impExplorer code uses the Google Maps/Places API to determine the location based on WiFi
+* Device location:
+  * The impC Breakout Board code will detect and use an attached Pixhawk GPS receiver for location. If the Pixhawk GPS receiver is not connected or has no GPS fix, the code uses (less accurate) cell tower information and the Google Maps/Places API to determine location 
+  * The impExplorer code uses a WiFi network scan and the Google Maps/Places API to determine the location
 
 ## What You Do
 
