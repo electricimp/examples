@@ -9,7 +9,7 @@
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
+// furnished to do so, subject to the following conditions: 
 //
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
@@ -295,8 +295,6 @@ class Application {
     static GREEN = 0x02;
 
     static BLINK_SEC = 0.5;
-    static LNG_STUB = -122.1044972; // Electric Imp HQ
-    static LAT_STUB = 37.3952694;   // Electric Imp HQ
     static DEFAULT_REPORTING = 10;
     static ACCEL_LIMIT = 1.2;
     static AGENT_STARTUP_DELAY = 10;
@@ -324,18 +322,6 @@ class Application {
         agent.on("ping", ping.bindenv(this));
         agent.on("restart", restart.bindenv(this));
 
-        // Give the agent some time to connect to Azure, then start the loops
-        _sendLoopTimer = imp.wakeup(AGENT_STARTUP_DELAY, _sendLoop.bindenv(this));
-        if (_sendLoopTimer == null) {
-            server.error("_sendLoopTimer fail");
-        }
-        if (imp.wakeup(AGENT_STARTUP_DELAY, _locationLoop.bindenv(this)) == null) {
-            server.error("_locationLoop timer fail");
-        }
-        _accelLoopTimer = imp.wakeup(5, _accelLoop.bindenv(this));
-        if (_accelLoopTimer == null) {
-            server.error("_accelLoopTimer fail");
-        }
     }
 
     // Populate Hardware Abstraction Layer based on imp type
@@ -406,66 +392,31 @@ class Application {
     
     // Run the application
     function run() {
+
+        // Start periodic _sendLoop
+        _sendLoopTimer = imp.wakeup(AGENT_STARTUP_DELAY, _sendLoop.bindenv(this));
+        if (_sendLoopTimer == null) {
+            server.error("_sendLoopTimer fail");
+        }
         
-        // Give the agent some time to connect to IoT Hub, then send network info
-        if (imp.wakeup(AGENT_STARTUP_DELAY, _sendNetworkInfo.bindenv(this)) == null) {
+        // Start periodic _locationLoop
+        if (imp.wakeup(AGENT_STARTUP_DELAY, _locationLoop.bindenv(this)) == null) {
             server.error("_locationLoop timer fail");
         }
         
-        // All other functionality is driven by timers and events from agent
-
-    }
-
-    function _sendNetworkInfo() {
-        local networkInfo = {};
+        // Start periodic _accelLoop
+        _accelLoopTimer = imp.wakeup(5, _accelLoop.bindenv(this));
+        if (_accelLoopTimer == null) {
+            server.error("_accelLoopTimer fail");
+        }
         
-        if (impType == TYPE_IMPEXPLORER) {
-
-            local netData = imp.net.info();
-            if ("active" in netData) {
-                local type = netData.interface[netData.active].type;
-                // We have an active network connection
-                if (type == "wifi") {
-                    // The imp is on a wifi connection
-                    local ssid = netData.interface[netData.active].ssid;
-                    server.log("WiFi info: " + ssid);
-                    networkInfo = { "network" : "wifi", "ssid" : ssid };
-                    agent.send("network", networkInfo);
-                }
-            }
+        // Send info when connected
+        if (imp.wakeup(AGENT_STARTUP_DELAY, function() {
+                agent.send("connect", imp.net.info());
+            }.bindenv(this)) == null) {
+            server.error("_sendNetworkInfo timer fail");
+        }
         
-        } else {
-
-            // if impC, print connection info
-            local netData = imp.net.info();
-            if ("active" in netData) {
-                local type = netData.interface[netData.active].type;
-                // We have an active network connection
-                if (type == "cell") {
-                    // The imp is on a cellular connection
-                    local mcc = null;
-                    local mnc = null;
-                    local cellinfo = netData.interface[netData.active].cellinfo;
-                    local rssi = netData.interface[netData.active].rssi;
-                    server.log("Cellinfo: " + cellinfo);
-                    // Break the cellinfo string into substrings to get the mcc and mnc
-                    local expr = regexp(@"(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)");
-                    local results = expr.capture(cellinfo);
-                    if (results) {
-                        foreach (idx, value in results) {
-                            local subString = cellinfo.slice(value.begin, value.end-1)
-                            if (idx == 7) { mcc = subString };
-                            if (idx == 8) { mnc = subString };
-                        }
-                        server.log("Cellular MCC: " + mcc + ", MNC: " + mnc);
-                        networkInfo = { "network" : "cellular", "mcc" : mcc, "mnc" : mnc };
-                        agent.send("network", networkInfo);
-                    } 
-                    //server.log("Cellular RSSI " + rssi);
-                }
-            }
-        } 
-
     }
 
     // For connection status check
@@ -567,14 +518,8 @@ class Application {
                     telemetryData.acclerationAlert <- "true";
                 }
                 
-                // add light level
-                // reading needs a bit of time to stabilize, so read, wait a bit, and read again
-                // local level = 0;
-                // hardware.lightlevel();
-                // imp.sleep(0.2);
-                // level = hardware.lightlevel();
-                // server.log("Light level: " + level);
-                // telemetryData.light <- level;
+                // Uncomment if you want to send add light level as well
+                // telemetryData.light <- readLightLevel();
 
                 _blinkLED();
                 agent.send("telemetry", telemetryData)
@@ -607,17 +552,30 @@ class Application {
             locationData.type <- "wifi";
             locationData.networks <- imp.scanwifinetworks();
         } else {
-        // else, use GPS location
-            locationData.type <- "gps";
+            // cellular ...
             local gpsLoc = _pixhawkGps.getLocation();
+            // If we have a gps fix, then that, else do cellular triangulation
             if (gpsLoc.lng == null) {
-                server.log("no GPS fix, using default location")
-                locationData.coord <- { "lng" : LNG_STUB, "lat" : LAT_STUB };
+                local netInfo = imp.net.info();
+                local cellinfo = netInfo.interface[netInfo.active].cellinfo;
+                locationData.type <- "cell";
+                locationData.cellinfo <- cellinfo;
             } else {
-                locationData.coord <- { "lng" : gpsLoc.lng.tofloat(), "lat" : gpsLoc.lat.tofloat() };
-            }
+                locationData.type <- "gps";
+                locationData.location <- { "lng" : gpsLoc.lng.tofloat(), "lat" : gpsLoc.lat.tofloat() };
+            } 
         }
         agent.send("location", locationData);
+    }
+
+    // Read level of onboard light sensor
+    function readLightLevel() {
+            // reading needs a bit of time to stabilize, so read, wait a bit, and read again
+            local level = hardware.lightlevel();
+            imp.sleep(0.2);
+            level = hardware.lightlevel();
+            server.log("Light level: " + level);
+            return level;
     }
     
     // Set blink color

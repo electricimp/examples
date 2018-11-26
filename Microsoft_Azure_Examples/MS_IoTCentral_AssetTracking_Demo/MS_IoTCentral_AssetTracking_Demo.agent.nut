@@ -10,7 +10,7 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions: 
-//
+// 
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
 //
@@ -23,10 +23,11 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 
 #require "GoogleMaps.agent.lib.nut:1.0.0" 
+#require "utilities.lib.nut:2.0.0"
 
 // Azure IoT Hub 3.0.0 and above requires agent server with MQTT support
-#require "AzureIoTHub.agent.lib.nut:3.0.0"
-
+#require "AzureIoTHub.agent.lib.nut:4.0.0"
+ 
 // Agent code for IoT Central Asset Tracking demo
 //
 // Note: This code is demo quality
@@ -47,6 +48,8 @@ class Application {
     _gmaps = null;
     _deviceConnected = null;
     _prevDeviceConnected = null;
+    _cellUtils = null;
+    
     
     constructor(gmapsKey, connectionString, deviceConnectionString = null) {
         _agentID = split(http.agenturl(), "/").pop();
@@ -64,17 +67,13 @@ class Application {
         }
 
         _gmaps = GoogleMaps(gmapsKey);
+        _cellUtils = CellUtils(gmapsKey);
 
         device.on("telemetry", telemetryHandler.bindenv(this));
         device.on("location", locationHandler.bindenv(this));
         device.on("pong", pongHandler.bindenv(this));
-        device.on("network", networkHandler.bindenv(this));
+        device.on("connect", connectHandler.bindenv(this));
 
-        // Give device time to connect
-        if (imp.wakeup(DEVICE_CONNECT_DELAY, _statusLoop.bindenv(this)) == null) {
-            server.error("_statusLoop timer fail");
-        }
-        
         _blinkColor = YELLOW;
         _deviceConnected = false;
         _prevDeviceConnected = false;
@@ -82,7 +81,12 @@ class Application {
     
     // Run the application
     function run() {
-        // nothing to do here: Application is driven by timers and messages from device 
+
+        // Give device time to connect
+        if (imp.wakeup(DEVICE_CONNECT_DELAY, _statusLoop.bindenv(this)) == null) {
+            server.error("_statusLoop timer fail");
+        }
+        
     }
 
     // function registerDevice() {
@@ -119,7 +123,7 @@ class Application {
         local message = AzureIoTHub.Message(http.jsonencode(telemetryData));
 
         if (_client.isConnected()) {
-            _client.sendMessage(message, function(msg, err) {
+            _client.sendMessage(message, function(err, msg) {
                 if (err) { 
                      server.error("Failed to send message to Azure IoT Hub: " + err);
                 } else {
@@ -138,27 +142,46 @@ class Application {
         local locationProp = { "location" : { "lon" : 0, "lat" : 0 } };
 
         if (_client.isConnected()) {
-            if (locationData.type == "wifi") {
-                _gmaps.getGeolocation(locationData.networks, function(error, resp) {
-                    if (error != null) {
-                        server.error(error);
-                    } else {
-                        locationProp.location.lon = resp.location.lng;
-                        locationProp.location.lat = resp.location.lat;
+            switch (locationData.type) {
+                case "wifi":
+                    server.log("using WiFi location");
+                    _gmaps.getGeolocation(locationData.networks, function(error, resp) {
+                        if (error != null) {
+                            server.error(error);
+                        } else {
+                            locationProp.location.lon = resp.location.lng;
+                            locationProp.location.lat = resp.location.lat;
+                            server.log("Updating location as: " + http.jsonencode(locationProp));
+                            _client.updateTwinProperties(locationProp, _onTwinUpdated.bindenv(this));
+                        }
+                    }.bindenv(this));
+                break;
+                case "cell":
+                    server.log("no GPS fix, using cellular location");
+                    _cellUtils.setCellStatus(locationData.cellinfo);
+                    // TODO: only need to compute this is the cell info has changed
+                    _cellUtils.getGeolocation(function(location) {
+                        locationProp.location.lon = location.lng;     
+                        locationProp.location.lat = location.lat;    
                         server.log("Updating location as: " + http.jsonencode(locationProp));
                         _client.updateTwinProperties(locationProp, _onTwinUpdated.bindenv(this));
-                    }
-                }.bindenv(this));
-            } else {
-                locationProp.location.lon = locationData.coord.lng;     
-                locationProp.location.lat = locationData.coord.lat;    
-                server.log("Updating location as: " + http.jsonencode(locationProp));
-                _client.updateTwinProperties(locationProp, _onTwinUpdated.bindenv(this));
-            }
+                    }.bindenv(this));
+                break;
+                case "gps":
+                    server.log("using GPS location");
+                    // TODO: only need to compute this is the gps location has changed
+                    locationProp.location.lon = locationData.location.lng;     
+                    locationProp.location.lat = locationData.location.lat;    
+                    server.log("Updating location as: " + http.jsonencode(locationProp));
+                    _client.updateTwinProperties(locationProp, _onTwinUpdated.bindenv(this));
+                break;
+            } // switch
+            
         } else {
             server.log("Not connected to Azure: Not sending location data")
         }
     }
+    
     
     // For connection status check
     function pongHandler(startTime) {
@@ -199,7 +222,7 @@ class Application {
         local message = AzureIoTHub.Message(http.jsonencode(telemetryData));
 
         if (_client.isConnected()) {
-            _client.sendMessage(message, function(msg, err) {
+            _client.sendMessage(message, function(err, msg) {
                 if (err) { 
                      server.error("Failed to send message to Azure IoT Hub: " + err);
                 } else {
@@ -231,28 +254,40 @@ class Application {
         }
     }
 
-    // Send network info to IoT Hub
-    function networkHandler(networkInfo) {
-        if (networkInfo.network == "cellular") {
-            _setCarrierInfo(networkInfo.mcc, networkInfo.mnc);
-        } else {
-            _setWifiInfo(networkInfo.ssid);
-        }
- 
+    // On connecting, do the following
+    function connectHandler(netInfo) {
+        
+        // Send network info to IoT Hub 
+        local info = netInfo.interface[netInfo.active];
+        local type = info.type;
+
+        switch(type) {
+            case "wifi":
+                // The imp is on a wifi connection: Get ssid
+                local networkString = "WiFi: " + info.ssid;
+                _updateNetwork(networkString);
+            break;
+            case "ethernet":
+                // Not really supporting Ethernet connections in this app 
+                server.log("Device on Ethernet");
+            break;
+            case "cell":
+                // The imp is on a cellular connection: Get mcc and mnc
+                _cellUtils.setCellStatus(info.cellinfo);
+                _cellUtils.getCarrierInfo(function(networkString) {
+                    _updateNetwork(networkString);
+                }.bindenv(this));
+            break;
+        } // switch
+        
         // Retrieve current properties on connect
         _retrieveTwinProperties();
 
     }
-    
-    // For WiFi, set network info
-    function _setWifiInfo(ssid) {
-        local networkString = "WiFi: " + ssid;
-        // server.log("networkString: " + networkString);
-        _updateNetwork(networkString);
-    }
 
     // Update network info Device Twin property
     function _updateNetwork(networkInfo) {
+        server.log("networkString: " + networkInfo);
         local networkProp = { "network" : networkInfo };
 
         if (_client.isConnected()) {
@@ -264,46 +299,6 @@ class Application {
 
     }
 
-    // For cellular, set network info
-    function _setCarrierInfo(mcc, mnc) {
-        
-        // Load csv file with mcc/mnc information to find network country and carrier name
-        local request = http.get("https://raw.githubusercontent.com/musalbas/mcc-mnc-table/master/mcc-mnc-table.csv");
-        request.sendasync(function(response) {
-            
-            local carrier = null;
-            local country = null;
-           
-            if (response.statuscode == 200) {
-                // Search the response for the place with the right mcc and mnc 
-                local expr = regexp(mcc + ",.+," + mnc + ",.+\\n");
-                local result = expr.search(response.body);
-                if (result != null) {
-                    // Get the entry and break it into substrings to get country and carrier
-                    local entry = response.body.slice(result.begin, result.end)
-                    local expr2 = regexp(@"(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)(.+)");
-                    local results = expr2.capture(entry);
-                    if (results) {
-                        foreach (idx, value in results) {
-                            local subString = entry.slice(value.begin, value.end-1)
-                            if (idx == 6) { country = subString };
-                            if (idx == 8) { carrier = subString };
-                        }
-                        local networkString = "Cellular: " + country + ", " + carrier;
-                        // server.log("networkString: " + networkString);
-                        _updateNetwork(networkString);
-                    }
-                } else {
-                    server.log("Carrier info not found");
-                    return null;
-                }
-            } else {
-                server.error("Carrier info http request: " + response.statuscode);
-            }
-        }.bindenv(this)); 
-        
-    } 
-    
     // Triggered by Device: Azure view of properties to device
     function _onTwinRetrieved(err, repProps, desProps) {
         if (err != 0) {
@@ -336,6 +331,7 @@ class Application {
             if (key == "reportingInterval") {
                 device.send("reporting", value.value);
                 updated = true;
+                // sync back to IoT Hub and IoT Central
                 updatedProps.reportingInterval <- { 
                         "value" : value.value,
                         "statusCode" : "200",
@@ -352,6 +348,7 @@ class Application {
                 }
                 device.send("color", _blinkColor);
                 updated = true;
+                // sync back to IoT Hub and IoT Central
                 updatedProps.ledColor <- { 
                         "value" : value.value,
                         "statusCode" : "200",
@@ -373,7 +370,7 @@ class Application {
     }
     
     // Triggered by Device: Updated properties to Azure
-    function _onTwinUpdated(props, err) {
+    function _onTwinUpdated(err, props) {
         if (err != 0) {
             server.error("Twin properties update failed: " + err);
         } else {
@@ -418,14 +415,14 @@ class Application {
         }
     }
     
-    // Called when direct method is triggered
-    function _onMethod(name, params) {
+    function _onMethod(name, params, reply) {
         server.log("Direct Method called. Name: " + name);
         _printTable(params);
         device.send("restart", true);
-        local responseStatusCode = 200; 
-        local responseBody = {"restart" : "done"};
-        return AzureIoTHub.DirectMethodResponse(responseStatusCode, responseBody);
+        local responseStatusCode = 200;  
+        local responseBody = {"restart" : "done"}; 
+        local data = AzureIoTHub.DirectMethodResponse(responseStatusCode, responseBody);
+        reply(data);
     }
     
     // Called when IoT Hub connection is established
@@ -517,15 +514,171 @@ class Application {
         local d = date();
         return format("%04d-%02d-%02d %02d:%02d:%02d", d.year, (d.month+1), d.day, d.hour, d.min, d.sec);
     }
-
-
     
 } // Application
+
+// Set of utility functions around cellular
+class CellUtils {
+    
+    _cellStatus = {
+        "time"   : 0,
+        "type"   : "na",
+        "earfcn" : 0,
+        "band"   : "-",
+        "dlbw"   : 0,
+        "ulbw"   : 0,
+        "mode"   : "na",
+        "mcc"    : "000",
+        "mnc"    : "000",
+        "tac"    : "na",
+        "cellid" : "-",
+        "physid" : "",
+        "srxlev" : "-",
+        "rsrp"   : "-",
+        "rsrq"   : "-",
+        "state"  : ""
+    };
+    
+    // Set cellular status based on cellinfo string
+    function setCellStatus(cellinfo) {
+        
+        try {
+            local str = split(cellinfo, ",");
+            _cellStatus.time = time();
+    
+            switch(str[0]) {
+                case "4G":
+                    _cellStatus.type    ="LTE";
+                    _cellStatus.earfcn  = str[1];
+                    _cellStatus.band    = str[2];
+                    _cellStatus.dlbw    = str[3];
+                    _cellStatus.ulbw    = str[4];
+                    _cellStatus.mode    = str[5];
+                    _cellStatus.mcc     = str[6];
+                    _cellStatus.mnc     = str[7];
+                    _cellStatus.tac     = str[8];
+                    _cellStatus.cellid  = str[9];
+                    _cellStatus.physid  = str[10];
+                    _cellStatus.srxlev  = str[11];
+                    _cellStatus.rsrp    = str[12];
+                    _cellStatus.rsrq    = str[13];
+                    _cellStatus.state   = str[14];
+                    break;
+    
+                case "3G":
+                    _cellStatus.type    ="HSPA";
+                    _cellStatus.earfcn  = str[1];
+                    _cellStatus.band    = "na";
+                    _cellStatus.dlbw    = "na";
+                    _cellStatus.ulbw    = "na";
+                    _cellStatus.mode    = "na";
+                    _cellStatus.mcc     = str[5];
+                    _cellStatus.mnc     = str[6];
+                    _cellStatus.tac     = str[7];
+                    _cellStatus.cellid  = str[8];
+                    _cellStatus.physid  = "na";
+                    _cellStatus.srxlev  = str[10];
+                    _cellStatus.rsrp    = str[4];
+                    _cellStatus.rsrq    = "na";
+                    _cellStatus.state   = "na";
+                    break;
+            }
+        } catch(err) {
+            server.log("Input: " + cellinfo);
+            server.err("Parse error: " + err);
+        }
+        
+    }
+    
+    // Get carrier name and country based on cellular info
+    function getCarrierInfo(cb) {
+        
+        // Load csv file with mcc/mnc information to find network country and carrier name
+        local request = http.get("https://raw.githubusercontent.com/musalbas/mcc-mnc-table/master/mcc-mnc-table.csv");
+        request.sendasync(function(response) {
+            
+            local carrier = null;
+            local country = null;
+           
+            if (response.statuscode == 200) {
+                // Search the response for the place with the right mcc and mnc 
+                local expr = regexp(_cellStatus.mcc + ",.+," + _cellStatus.mnc + ",.+\\n");
+                local result = expr.search(response.body);
+                if (result != null) {
+                    // Get the entry and break it into substrings to get country and carrier
+                    local entry = response.body.slice(result.begin, result.end)
+                    local expr2 = regexp(@"(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)(.+,)(.+)");
+                    local results = expr2.capture(entry);
+                    if (results) {
+                        foreach (idx, value in results) {
+                            local subString = entry.slice(value.begin, value.end-1)
+                            if (idx == 6) { country = subString };
+                            if (idx == 8) { carrier = subString };
+                        }
+                        local networkString = "Cellular: " + country + ", " + carrier;
+                        // server.log("networkString: " + networkString);
+                        cb(networkString);
+                    }
+                } else {
+                    server.log("Carrier info not found");
+                    return null;
+                }
+            } else {
+                server.error("Carrier info http request: " + response.statuscode);
+            }
+        }.bindenv(this)); 
+        
+    } 
+
+    // Get location based on cellular triangulation
+    function getGeolocation(cb) {
+        
+        // Explicitly calling Google Maps for now as the current library only supports WiFi, not cellular
+        local LOCATION_URL = "https://www.googleapis.com/geolocation/v1/geolocate?key=";
+
+        local cell = {
+            "cellId": utilities.hexStringToInteger(_cellStatus.cellid),
+            "locationAreaCode": utilities.hexStringToInteger(_cellStatus.tac),
+            "mobileCountryCode": _cellStatus.mcc,
+            "mobileNetworkCode": _cellStatus.mnc
+        };
+
+        // Build request
+        local url = format("%s%s", LOCATION_URL, GOOGLE_MAPS_KEY);
+        local headers = { "Content-Type" : "application/json" };
+        local body = {
+            "considerIp": "false",
+            "radioType": "lte",
+            "cellTowers": [cell]
+        };
+    
+        // send requst
+        local request = http.post(url, headers, http.jsonencode(body));
+        request.sendasync(function(res) {
+            local body;
+            try {
+                body = http.jsondecode(res.body);
+            } catch(e) {
+                server.err("Geolocation parsing error: " + e);
+            }
+    
+            if (res.statuscode == 200) {
+                // Update stored state variables
+                local lat = body.location.lat;
+                local lng = body.location.lng;
+                cb(body.location);
+            } else {
+                server.err("Geolocation unexpected reponse: " + res.statuscode);
+            }
+        }.bindenv(this));
+    }
+
+} // CellUtils
 
 ////////// Application Variables //////////
 
 GOOGLE_API_KEY <- "<add key>";
-softwareVersion <- "3.2.3";
+softwareVersion <- "4.1";
 
 // IoT Central now uses SAS for device authentication
 // To create a deviceConnectionString, use the dps_cstr command
