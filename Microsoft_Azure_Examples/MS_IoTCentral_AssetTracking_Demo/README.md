@@ -9,12 +9,16 @@ In this example, you will create a complete end-to-end Asset Tracking applicatio
 * Cloud agents connect to the respective IoT Central IoT Hub via MQTT, see [Azure IoT Hub integration](https://github.com/electricimp/AzureIoTHub)
 * Register Devices in IoT Central
 * Once started, the cloud agent connects to IoT Hub and enables direct sending of data (for telemetry measurements), Device Twins (for device properties and device settings), and Direct Methods (for device restarts)
-* Telemetry measurements: The device periodically sends temperature, humidity, and acceleration data (from onboard sensors) to IoT Central. Note that eventhough IoT Hub receives the data almost immediately from the cloud agent it typically takes IoT Central 15 to 20 seconds to update the visualization, so telemetry data appears sluggish.
+* Telemetry measurements: The device periodically sends temperature, humidity, and acceleration data (from onboard sensors) to IoT Central. Note that eventhough IoT Hub receives the data almost immediately from the cloud agent it typically takes IoT Central 15 to 20 seconds to update the visualization as the data flows through Azure Time Series Insights, so telemetry data appears sluggish.
 * Shock alert: When the accleration exceeds a certain value the device triggers a shock alert and immediately sends the telemetry data
 * Device properties: The device sends via Device Twin Properies the location coordinates, device online/offline state, networking information (carrier name or WiFi SSID) and software version which are displayed in the IoT Central "Properties" tab.
 * Device settings: Through the IoT Central "Settings" tab the user can make changes to the reporting interval and the LED color -- updated values are sent to the device via desired Device Twin properties
 * Direct methods: Through the IoT Central "Commands" tab the user can trigger a "Restart Device" command which results in the device rebooting the VM and restarting the application
-* Device location: The impC Breakout Board code uses the [Pixhawk GPS](https://www.amazon.com/dp/B01KK9A8QG/ref=cm_sw_r_cp_apip_Cmj3DOu4gUMIv) receiver for location, the impExplorer code uses the Google Maps/Places API to determine the location based on WiFi
+* Device location:
+  * The impC Breakout Board code uses the [Pixhawk GPS](https://www.amazon.com/dp/B01KK9A8QG/ref=cm_sw_r_cp_apip_Cmj3DOu4gUMIv) receiver for location. If the GPS receiver is not connected or has no GPS fix, the code will use the Google Maps/Places API to determine the location based on cellular triangulation
+  * The impExplorer code uses the Google Maps/Places API to determine the location based on WiFi
+
+![Dashboard](./imgs/Dashboard-new.png)
 
 ## What You Do
 
