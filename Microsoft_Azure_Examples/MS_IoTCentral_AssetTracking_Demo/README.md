@@ -2,7 +2,9 @@
 
 In this example, you will create a complete end-to-end Asset Tracking application by combining Electric Imp and Microsoft Azure IoT Central. Your imp-enabled hardware device will report telemetry and location data through the Electric Imp impCloud into IoT Central where data is visualized, you can create business rules, and make changes to device settings in IoT Central that are synced back to the device in real time. imp hardware supported by this example:
 * [impC Breakout Board](https://store.electricimp.com/collections/breakout-boards/products/impc001-breakout-board-kit-preorder?variant=7599263973399) plus [Pixhawk GPS](https://www.amazon.com/dp/B01KK9A8QG/ref=cm_sw_r_cp_apip_Cmj3DOu4gUMIv)
-* [impExplorer](https://store.electricimp.com/collections/getting-started/products/impexplorer-developer-kit?variant=31118866130).
+* [impExplorer](https://store.electricimp.com/collections/getting-started/products/impexplorer-developer-kit?variant=31118866130)
+
+![Dashboard](./imgs/Dashboard-new.png)
 
 **NOTE:** The purpose of this example is to show basic concepts and works reliably. The device code is purposely kept simple and is not optimized for power consumption/battery life, minimizing communication volume, or more robust connectivity handling. A real asset tracking device application will be more advanced by entering power save modes based on application state, reducing radio time to minimize power, reduce communication volume (only send data when necessary), and handling different connectivity states (e.g. intermittent connectivity with batching of data, etc).
 
@@ -19,8 +21,6 @@ In this example, you will create a complete end-to-end Asset Tracking applicatio
 * Device location:
   * The impC Breakout Board code will detect and use an attached Pixhawk GPS receiver for location. If the Pixhawk GPS receiver is not connected or has no GPS fix, the code uses (less accurate) cell tower information and the Google Maps/Places API to determine location 
   * The impExplorer code uses a WiFi network scan and the Google Maps/Places API to determine the location
-
-![Dashboard](./imgs/Dashboard-new.png)
 
 ## What You Do
 
