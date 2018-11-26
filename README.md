@@ -4,11 +4,23 @@ This is a collection of examples written for the Electric Imp platform.  Not all
 
 ## [Microsoft Azure Examples](./Microsoft_Azure_Examples)
 
+### [Microsoft Azure IoT Central Asset Tracking Demo](./Microsoft_Azure_Examples/MS_IoTCentral_AssetTracking_Demo)
+
+In this example, you begin by learning the basics of working with Electric Imp. We will use Electric Imp Libraries to seamlessly connect imp-enabled hardware to Azure IoT Central. Your imp-enabled hardware device will report telemetry and location data through the Electric Imp impCloud into Azure IoT Central. This example uses an [impC Breakout Board](https://store.electricimp.com/collections/breakout-boards/products/impc001-breakout-board-kit-preorder?variant=7599263973399) plus [Pixhawk GPS](https://www.amazon.com/dp/B01KK9A8QG/ref=cm_sw_r_cp_apip_Cmj3DOu4gUMIv) and/or an [impExplorer](https://store.electricimp.com/collections/getting-started/products/impexplorer-developer-kit?variant=31118866130) to implement a Asset Tracking demo with IoT Central.
+
+##### Updated Nov 12, 2018
+
 ### [MS_IoTCentral_Temp_Stack_Light_PLC_Demo](./Microsoft_Azure_Examples/MS_IoTCentral_Temp_Stack_Light_PLC_Demo)
 
 This example uses an impAccelerator Fielbus Gateway and the Electric Imp Modbus Library to monitor the temperature via a Click PLC. The temperature data is sent to Microsoft Azure using the Electic Imp [AzureIoTHub libray](https://github.com/electricimp/AzureIoTHub) and can be monitored using Azure IoT Central.
 
 ##### Updated April 16, 2018
+
+## [AzureTwins Library](./Microsoft_Azure_Examples/AzureTwins)
+
+AzureTwins is a library, that helps you work with [Azure Twins API](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-device-twins). It supports full set of operations provided by the service.
+
+##### Updated Feb 24, 2018
 
 ## Recent Examples
 
