@@ -20,8 +20,8 @@ AzureTwins is a library, that helps you work with [Azure Twins API](https://docs
 
 ### [BLE iBeacon](./BLE_iBeacon)
 
-This example shows how to use the imp API hardware.bluetooth to create iBeacon advertisers and listeners. This example uses 2 imp004m breakout boards with w1, w2, w5, and w7 connected to enable bluetooth. One imp004m creates an iBeacon formatted advertisement and broadcasts it via the imp API hardware.bluetooth. The other imp004m uses the imp API hardware.bluetooth to scan for iBeacons with the same UUID that the the first imp is broadcasting.
-##### Updated February 14, 2019
+These examples show how to use the imp API hardware.bluetooth to create iBeacon advertisers and listeners. These examples use 2 imp004m breakout boards with w1, w2, w5, and w7 connected to enable bluetooth. One imp004m creates an iBeacon formatted advertisement and broadcasts it via the imp API hardware.bluetooth. The other imp004m uses the imp API hardware.bluetooth to scan for iBeacons with the same UUID that the the first imp is broadcasting. One example shows a passive scan, the other uses an active scan to broadcast device state info using a scan response.
+##### Updated February 19, 2019
 
 ### [Intro to Squirrel Applications](./Intro%20to%20Squirrel%20Applications)
 A series of eight examples for use with the sensors on the impExplorer Developer Kit, impAccelerator Battery Powered Sensor Node or impC001 Breakout Board Kit. These examples range from simple to advanced programming.  Each example builds on the skills learned in the previous example. Please note that the first few examples are not power efficient and will drain battery powered devices quickly.
