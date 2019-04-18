@@ -18,6 +18,10 @@ AzureTwins is a library, that helps you work with [Azure Twins API](https://docs
 
 ## Recent Examples
 
+### [CellularAssetTrackerExample](https://github.com/electricimp/CellularAssetTrackerExample)
+This is software for a low power cellular asset tracker based on the impC001 breakout board. The tracker monitors for movement, and if movement has been detected it will report daily, otherwise the device will report once a week sending GPS location, battery status, and movement status.
+##### Updated April 18, 2019
+
 ### [RemoteTerminal](https://github.com/electricimp/RemoteTerminal)
 Example code for a secure remote serial console
 ##### Updated April 2, 2019
