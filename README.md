@@ -18,8 +18,23 @@ AzureTwins is a library, that helps you work with [Azure Twins API](https://docs
 
 ## Recent Examples
 
-### [BLE iBeacon](./BLE_iBeacon)
+### [RemoteTerminal](https://github.com/electricimp/RemoteTerminal)
+Example code for a secure remote serial console
+##### Updated April 2, 2019
 
+### [SWDFlasher-STM32](https://github.com/electricimp/SWDFlasher-STM32)
+SWDFlasher-STM32 is an imp application that can be used to flash the STM32F100 MCU. Its agent downloads a firmware image via HTTPS and then transmits it to the device, which uses the SWD protocol to program the MCU.
+##### Updated March 9, 2019
+
+### [Bluetooth BlinkUp](https://github.com/electricimp/SWDFlasher-STM32)
+Sample code demonstrating BlinkUp™ via Bluetooth LE on imp004m.
+##### Updated Oct 24, 2018
+
+### [Apple Watch](https://github.com/electricimp/AppleWatchExample)
+Control Electric Imp Platform-based Internet of Things devices from your Apple Watch.
+##### Updated Sep 6, 2018
+
+### [BLE iBeacon](./BLE_iBeacon)
 These examples show how to use the imp API hardware.bluetooth to create iBeacon advertisers and listeners. These examples use 2 imp004m breakout boards with w1, w2, w5, and w7 connected to enable bluetooth. One imp004m creates an iBeacon formatted advertisement and broadcasts it via the imp API hardware.bluetooth. The other imp004m uses the imp API hardware.bluetooth to scan for iBeacons with the same UUID that the the first imp is broadcasting. One example shows a passive scan, the other uses an active scan to broadcast device state info using a scan response.
 ##### Updated February 19, 2019
 
@@ -74,6 +89,10 @@ This example shows a low power application for the ImpAccelerator Battery Powere
 ### [FieldbusGateway_PumpPLC](./FieldbusGateway_PumpPLC/)
 This example uses an impAccelerator Fielbus Gateway and the Electric Imp Modbus Library to contol and monitor a pump via a Click PLC.
 ##### Updated May 25, 2017
+
+### [SX1509](https://github.com/electricimp/SX1509)
+The SX1509 class interfaces with the SX1509 IO expander. It sits on the I2C bus and data can be directed to the connected devices via its I2C address. Interrupts from the devices can be fed back to the imp via the configured imp hardware pin.
+##### Updated Aug 21, 2018
 
 ## Instructables Code
 
