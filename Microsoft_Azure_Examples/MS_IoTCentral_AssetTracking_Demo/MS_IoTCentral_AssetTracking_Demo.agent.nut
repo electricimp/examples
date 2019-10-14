@@ -3,7 +3,7 @@
 // Copyright 2015-2018 Electric Imp
 //
 // SPDX-License-Identifier: MIT
-//
+// 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -23,7 +23,7 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 
 #require "GoogleMaps.agent.lib.nut:1.0.0" 
-#require "utilities.lib.nut:2.0.0"
+#require "utilities.lib.nut:2.0.0" 
 
 // Azure IoT Hub 3.0.0 and above requires agent server with MQTT support
 #require "AzureIoTHub.agent.lib.nut:4.0.0"
@@ -273,7 +273,7 @@ class Application {
             break;
             case "cell":
                 // The imp is on a cellular connection: Get mcc and mnc
-                _cellUtils.setCellStatus(info.cellinfo);
+                _cellUtils.setCellStatus(netInfo.cellinfo);
                 _cellUtils.getCarrierInfo(function(networkString) {
                     _updateNetwork(networkString);
                 }.bindenv(this));
@@ -585,7 +585,7 @@ class CellUtils {
             }
         } catch(err) {
             server.log("Input: " + cellinfo);
-            server.err("Parse error: " + err);
+            server.error("Parse error: " + err);
         }
         
     }
@@ -659,7 +659,7 @@ class CellUtils {
             try {
                 body = http.jsondecode(res.body);
             } catch(e) {
-                server.err("Geolocation parsing error: " + e);
+                server.error("Geolocation parsing error: " + e);
             }
     
             if (res.statuscode == 200) {
@@ -668,7 +668,7 @@ class CellUtils {
                 local lng = body.location.lng;
                 cb(body.location);
             } else {
-                server.err("Geolocation unexpected reponse: " + res.statuscode);
+                server.error("Geolocation unexpected reponse: " + res.statuscode);
             }
         }.bindenv(this));
     }
@@ -677,7 +677,7 @@ class CellUtils {
 
 ////////// Application Variables //////////
 
-GOOGLE_API_KEY <- "<add key>";
+GOOGLE_MAPS_KEY <- "<add key>";
 softwareVersion <- "4.1";
 
 // IoT Central now uses SAS for device authentication
@@ -696,5 +696,5 @@ if (http.agenturl() == "<add url>") {
 } 
 
 // Start the Application
-app <- Application(GOOGLE_API_KEY, null, deviceConnectionString);
+app <- Application(GOOGLE_MAPS_KEY, null, deviceConnectionString);
 app.run()

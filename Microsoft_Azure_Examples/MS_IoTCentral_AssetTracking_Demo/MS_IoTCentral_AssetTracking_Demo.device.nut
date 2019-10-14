@@ -308,6 +308,7 @@ class Application {
     _sendLoopTimer = null;
     _accelLoopTimer = null;
     _pixhawkGps = null;
+    _cellinfo = null;
     
     constructor() {
         
@@ -393,6 +394,12 @@ class Application {
     // Run the application
     function run() {
 
+        if (imp.net.info().interface[imp.net.info().active].type == "cell") {
+            imp.net.getcellinfo(function(cellinfo) {
+                _cellinfo = cellinfo;
+            }.bindenv(this));
+        }
+
         // Start periodic _sendLoop
         _sendLoopTimer = imp.wakeup(AGENT_STARTUP_DELAY, _sendLoop.bindenv(this));
         if (_sendLoopTimer == null) {
@@ -412,8 +419,14 @@ class Application {
         
         // Send info when connected
         if (imp.wakeup(AGENT_STARTUP_DELAY, function() {
-                agent.send("connect", imp.net.info());
-            }.bindenv(this)) == null) {
+            
+            local netInfo = imp.net.info();
+            if (_cellinfo != null) {
+                netInfo.cellinfo <- _cellinfo;
+            }
+            agent.send("connect", netInfo);
+            
+        }.bindenv(this)) == null) {
             server.error("_sendNetworkInfo timer fail");
         }
         
@@ -555,17 +568,20 @@ class Application {
             // cellular ...
             local gpsLoc = _pixhawkGps.getLocation();
             // If we have a gps fix, then that, else do cellular triangulation
+            // Requires impOS 40 or above
             if (gpsLoc.lng == null) {
-                local netInfo = imp.net.info();
-                local cellinfo = netInfo.interface[netInfo.active].cellinfo;
-                locationData.type <- "cell";
-                locationData.cellinfo <- cellinfo;
+                imp.net.getcellinfo(function(cellinfo) {
+                    _cellinfo = cellinfo;
+                    locationData.type <- "cell";
+                    locationData.cellinfo <- cellinfo;
+                    agent.send("location", locationData);
+                }.bindenv(this));
             } else {
                 locationData.type <- "gps";
                 locationData.location <- { "lng" : gpsLoc.lng.tofloat(), "lat" : gpsLoc.lat.tofloat() };
-            } 
+                agent.send("location", locationData);
+           } 
         }
-        agent.send("location", locationData);
     }
 
     // Read level of onboard light sensor
