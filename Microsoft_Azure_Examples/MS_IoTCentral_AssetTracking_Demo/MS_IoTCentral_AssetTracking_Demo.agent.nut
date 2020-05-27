@@ -329,7 +329,7 @@ class Application {
         foreach (key, value in props) {
             
             if (key == "reportingInterval") {
-                device.send("reporting", value.value);
+                device.send("reporting", value.value.tointeger());
                 updated = true;
                 // sync back to IoT Hub and IoT Central
                 updatedProps.reportingInterval <- { 
@@ -417,7 +417,7 @@ class Application {
     
     function _onMethod(name, params, reply) {
         server.log("Direct Method called. Name: " + name);
-        _printTable(params);
+        //_printTable(params);
         device.send("restart", true);
         local responseStatusCode = 200;  
         local responseBody = {"restart" : "done"}; 
