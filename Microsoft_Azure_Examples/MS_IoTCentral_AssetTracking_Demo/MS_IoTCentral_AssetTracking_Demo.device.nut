@@ -564,6 +564,7 @@ class Application {
         if (impType == TYPE_IMPEXPLORER) {
             locationData.type <- "wifi";
             locationData.networks <- imp.scanwifinetworks();
+            agent.send("location", locationData);
         } else {
             // cellular ...
             local gpsLoc = _pixhawkGps.getLocation();
