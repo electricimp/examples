@@ -1,5 +1,8 @@
 # Microsoft Azure IoT Central Asset Tracking Demo
 
+**NOTE:**
+Microsoft has substantially updated the IoT Central UI, including the way of defining device telemetry data and properties. As a result, the below step-by-step instructions and screen shots for creating the Asset Tracking Demo application are no longer valid. We will update the instructions as soon as possible.
+
 In this example, you will create a complete end-to-end Asset Tracking application by combining Electric Imp and Microsoft Azure IoT Central. Your imp-enabled hardware device will report telemetry and location data through the Electric Imp impCloud into IoT Central where data is visualized, you can create business rules, and make changes to device settings in IoT Central that are synced back to the device in real time. imp hardware supported by this example:
 * [impC Breakout Board](https://store.electricimp.com/collections/breakout-boards/products/impc001-breakout-board-kit-preorder?variant=7599263973399) plus [Pixhawk GPS](https://www.amazon.com/dp/B01KK9A8QG/ref=cm_sw_r_cp_apip_Cmj3DOu4gUMIv)
 * [impExplorer](https://store.electricimp.com/collections/getting-started/products/impexplorer-developer-kit?variant=31118866130)
