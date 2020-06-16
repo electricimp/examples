@@ -25,6 +25,7 @@
 // Updated 20191021 with fixed xtermjs version; the API changed with v4
 //
 // Simple serial terminal using xtermjs
+// See https://connect.electricimp.com/blog/secure-web-based-serial-terminal
 #require "rocky.class.nut:2.0.2"
 
 debug <- false;

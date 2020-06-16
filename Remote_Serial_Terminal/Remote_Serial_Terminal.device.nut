@@ -22,6 +22,8 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
+// See https://connect.electricimp.com/blog/secure-web-based-serial-terminal
+
 uart <- hardware.uart1;
 uart.setrxfifosize(64*1024);
 
