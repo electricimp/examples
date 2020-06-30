@@ -1,6 +1,6 @@
 # Reading a sensor
 
-Begin by learning the basics of programming Electric Imp. We will use Electric Imp HTS221 library to take temperature and humidity readings from a sensor. We will also use the Initial State libary to send the data we collect from the sensor to the cloud. This code can be easily configured for use with an impExplorer Developer Kit, impAccelerator Battery Powered Sensor Node or impC001 Breakout Board Kit.
+Begin by learning the basics of programming Electric Imp. We will use Electric Imp HTS221 library to take temperature and humidity readings from a sensor. We will also use the Losant libary to send the data we collect from the sensor to the cloud. This code can be easily configured for use with an imp006 Breakout Board, impExplorer Developer Kit, impAccelerator Battery Powered Sensor Node or impC001 Breakout Board.
 
 ## Skill level
 
@@ -17,15 +17,16 @@ This example will focus on writing squirrel code. Please visit the [getting star
 
 ## What You Need
 
-* Your 2.4GHz 802.11bgn WiFi network name (SSID) and password (not needed for Cellular, impC001)
+* Your 2.4GHz 802.11bgn WiFi network name (SSID) and password (not needed for Cellular with imp006 or impC001)
 * A computer with a web browser
 * A smartphone with the Electric Imp app ([iOS](https://itunes.apple.com/us/app/electric-imp/id547133856) or [Android](https://play.google.com/store/apps/details?id=com.electricimp.electricimp))
 * A free [Electric Imp Developer Account](https://impcentral.electricimp.com/login)
 * A free [Initial State Account](https://www.initialstate.com/)
 * HTS221 temperature/humidity sensor wired to an imp enabled device. The hardware listed below has all the required hardware for this example.
+    * [imp006 Breakout Board Kit](https://store.electricimp.com/collections/breakout-boards/products/imp006-cellular-and-wifi-breakout-board-kit?variant=30294487924759)
     * [impExplorer Developer Kit](https://store.electricimp.com/collections/featured-products/products/impexplorer-developer-kit?variant=31118866130)
-    * [impAccelerator Battery Powered Sensor Node](https://store.electricimp.com/collections/featured-products/products/impaccelerator-battery-powered-sensor-node?variant=33499292818)
-    * [impC001 Cellular Breakout Board Kit](https://store.electricimp.com/collections/featured-products/products/impc001-breakout-board-kit-preorder?variant=7599263973399)
+    * [impAccelerator Battery Powered Sensor Node](https://developer.electricimp.com/hardware/resources/reference-designs/sensornode)
+    * [impC001 Cellular Breakout Board Kit](https://developer.electricimp.com/hardware/resources/reference-designs/impc001breakout)
 
 ## Instructions
 
@@ -33,7 +34,7 @@ This example will focus on writing squirrel code. Please visit the [getting star
 * Log into the [impCentral](https://impcentral.electricimp.com/login).
 * Create a new [Product](https://developer.electricimp.com/tools/impcentral/impcentralintroduction#app-products) and [Development Device Group](https://developer.electricimp.com/tools/impcentral/impcentralintroduction#app-development-devicegroup).
 * Copy and Paste the Device Code into the Device coding pane in the impCentral code editor.
-* Enter the [i2c hardware object](https://electricimp.com/docs/api/hardware/i2c/) for your device into the i2c variable on line 33.
+* Enter the [i2c hardware object](https://electricimp.com/docs/api/hardware/i2c/) for your device into the i2c variable on line 34.
 * Copy and paste the Agent Code into the Agent Code pane in the impCentral code editor.
 * Sign into [Initial State](https://app.initialstate.com/#/login/account).
 * Find your Streaming Access Key on the [My Account page](https://app.initialstate.com/#/account).
