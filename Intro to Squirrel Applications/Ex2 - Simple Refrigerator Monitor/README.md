@@ -1,6 +1,6 @@
 # Simple Refrigerator Monitor
 
-In this example we will create an simple refrigerator monitoring application that takes synchronous readings from the temperature/humidity sensor and the internal light sensor. The light reading is used to determine if the refrigerator door is open or closed. The door status, temperature and humidity readings are sent to the cloud using the Initial State webservice. We will use a Hardware Abstraction Layer (HAL) to reference all hardware objects, and to organize our application code we will use a class. This code can be easily configured for use with an impExplorer Developer Kit, impAccelerator Battery Powered Sensor Node or impC001 Breakout Board Kit.
+In this example we will create an simple refrigerator monitoring application that takes synchronous readings from the temperature/humidity sensor and the internal light sensor. The light reading is used to determine if the refrigerator door is open or closed. The door status, temperature and humidity readings are sent to the cloud using the Initial State webservice. We will use a Hardware Abstraction Layer (HAL) to reference all hardware objects, and to organize our application code we will use a class. This code can be easily configured for use with an imp006 Breakout Board, impExplorer Developer Kit, impAccelerator Battery Powered Sensor Node or impC001 Breakout Board.
 
 ## Skill level
 
@@ -25,9 +25,10 @@ This example will focus on writing squirrel code. Please visit the [getting star
 * A free [Electric Imp Developer Account](https://impcentral.electricimp.com/login)
 * A free [Initial State Account](https://www.initialstate.com/)
 * One of the imp hardware boards listed below
+    * [imp006 Breakout Board Kit](https://store.electricimp.com/collections/breakout-boards/products/imp006-cellular-and-wifi-breakout-board-kit?variant=30294487924759)
     * [impExplorer Developer Kit](https://store.electricimp.com/collections/featured-products/products/impexplorer-developer-kit?variant=31118866130)
-    * [impAccelerator Battery Powered Sensor Node](https://store.electricimp.com/collections/featured-products/products/impaccelerator-battery-powered-sensor-node?variant=33499292818)
-    * [impC001 Cellular Breakout Board Kit](https://store.electricimp.com/collections/featured-products/products/impc001-breakout-board-kit-preorder?variant=7599263973399)
+    * [impAccelerator Battery Powered Sensor Node](https://developer.electricimp.com/hardware/resources/reference-designs/sensornode)
+    * [impC001 Cellular Breakout Board Kit](https://developer.electricimp.com/hardware/resources/reference-designs/impc001breakout)
 
 
 ## Instructions
@@ -37,6 +38,7 @@ This example will focus on writing squirrel code. Please visit the [getting star
 * Create a new [Product](https://developer.electricimp.com/tools/impcentral/impcentralintroduction#app-products) and [Development Device Group](https://developer.electricimp.com/tools/impcentral/impcentralintroduction#app-development-devicegroup).
 * Copy and Paste the Device Code into the Device coding pane in the impCentral code editor.
 * Locate the HAL for your hardware. The HAL files can be found on Github in the repositories linked below. Find the `.HAL.nut` file in the repository that matches your hardware.
+    * [imp006 Breakout Board HAL](https://github.com/electricimp/imp006BreakoutBoardHAL)
     * [impExplorer Developer Kit HAL](https://github.com/electricimp/ExplorerKitHAL)
     * [impAccelerator Battery Powered Sensor Node](https://github.com/electricimp/SensorNodeHAL)
     * [impC001 Cellular Breakout Board](https://github.com/electricimp/CellularBreakoutHAL)

@@ -21,9 +21,10 @@ This example will focus on writing squirrel code. Please visit the [getting star
 * A free [Initial State Account](https://www.initialstate.com/)
 * A [IBM Bluemix account](https://console.ng.bluemix.net/registration/)
 * One of the imp hardware boards listed below
+    * [imp006 Breakout Board Kit](https://store.electricimp.com/collections/breakout-boards/products/imp006-cellular-and-wifi-breakout-board-kit?variant=30294487924759)
     * [impExplorer Developer Kit](https://store.electricimp.com/collections/featured-products/products/impexplorer-developer-kit?variant=31118866130)
-    * [impAccelerator Battery Powered Sensor Node](https://store.electricimp.com/collections/featured-products/products/impaccelerator-battery-powered-sensor-node?variant=33499292818)
-    * [impC001 Cellular Breakout Board Kit](https://store.electricimp.com/collections/featured-products/products/impc001-breakout-board-kit-preorder?variant=7599263973399)
+    * [impAccelerator Battery Powered Sensor Node](https://developer.electricimp.com/hardware/resources/reference-designs/sensornode)
+    * [impC001 Cellular Breakout Board Kit](https://developer.electricimp.com/hardware/resources/reference-designs/impc001breakout)
 
 ## Instructions
 
