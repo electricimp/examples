@@ -23,6 +23,7 @@ const I2C_ADDR = 0xBE;
 // Paste the hardware.i2c for your hardware into the
 // i2c variable on line 32.
 
+// imp006 Breakout Board Kit                   i2c = hardware.i2cLM
 // impExplorer Dev Kit 001                     i2c = hardware.i2c89
 // impExplorer Dev Kit 004m                    i2c = hardware.i2cNM
 // impAccelerator Battery Powered Sensor Node  i2c = hardware.i2cAB
@@ -30,7 +31,7 @@ const I2C_ADDR = 0xBE;
 
 // Configure i2c
 // Paste your i2c hardware in the variable below
-local i2c = hardware.i2c89;
+local i2c = hardware.i2cLM;
 i2c.configure(CLOCK_SPEED_400_KHZ);
 
 // Initialize the temperature/humidity sensor
@@ -50,6 +51,7 @@ tempHumid.setMode(HTS221_MODE.ONE_SHOT);
 // The sensor is now configured to taking readings.
 // Lets set up a loop to take readings and send the
 // result to the agent.
+
 function loop() {
     // Take a reading
     local result = tempHumid.read();
