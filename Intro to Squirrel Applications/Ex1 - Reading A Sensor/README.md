@@ -36,8 +36,8 @@ This example will focus on writing squirrel code. Please visit the [getting star
 * Copy and Paste the Device Code into the Device coding pane in the impCentral code editor.
 * Enter the [i2c hardware object](https://electricimp.com/docs/api/hardware/i2c/) for your device into the i2c variable on line 34.
 * Copy and paste the Agent Code into the Agent Code pane in the impCentral code editor.
-* Sign into [Initial State](https://app.initialstate.com/#/login/account).
-* Find your Streaming Access Key on the [My Account page](https://app.initialstate.com/#/account).
+* Sign into [Initial State](https://api.init.st/auth/#/login/).
+* Find your Streaming Access Key on the [My Account page](https://iot.app.initialstate.com/#/account).
 * Navigate back to the [impCentral](https://impcentral.electricimp.com/).
 * In the Agent code enter your Initial State Streaming Access Key into the STREAMING_ACCESS_KEY constant on line 19.
 * Hit Build and Force Restart button to start the code.

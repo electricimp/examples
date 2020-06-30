@@ -97,8 +97,8 @@ class Application {
 ```
 
 * Copy and paste the Agent Code into the Agent Code pane in the impCentral code editor.
-* Sign into [Initial State](https://app.initialstate.com/#/login/account).
-* Find your Streaming Access Key on the [My Account page](https://app.initialstate.com/#/account).
+* Sign into [Initial State](https://api.init.st/auth/#/login/).
+* Find your Streaming Access Key on the [My Account page](https://iot.app.initialstate.com/#/account).
 * Navigate back to the [impCentral](https://impcentral.electricimp.com/).
 * In the Agent code enter your Initial State Streaming Access Key into the Application class static STREAMING_ACCESS_KEY variable on line 23.
 * Hit Build and Force Restart button to start the code.
