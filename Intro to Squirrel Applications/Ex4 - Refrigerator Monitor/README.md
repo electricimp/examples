@@ -1,50 +1,50 @@
 # Refrigerator Monitor Application
 
-In this example we will create a refrigerator monitoring application that takes an asynchronous reading from the temperature/humidity senor. We will use the internal light senor to determine if the refrigerator door is open. We will conserve power by turning off the WiFi or cellular connection and taking readings while offline then connecting periodically to send the readings we have collected to the cloud. This code can be easily configured for use with an imp006 Breakout Board, impExplorer Developer Kit, impAccelerator Battery Powered Sensor Node or impC001 Breakout Board.
+In this example we will create a refrigerator monitoring application that takes an asynchronous reading from the temperature/humidity senor. We will use the internal light sensor to determine if the refrigerator door is open. We will conserve power by turning off the WiFi or cellular connection and taking readings while offline then connecting periodically to send the readings we have collected to the cloud. This code can be easily configured for use with an imp006 Breakout Kit, impExplorer Kit, impAccelerator Battery Powered Sensor Node or impC001 Breakout Board.
 
 ## Skill level
 
 **Intermediate**
 
-This example will focus on writing squirrel code. Please visit the [getting started guide](https://developer.electricimp.com/gettingstarted) on the Electric Imp Dev Center for insturctions on how to configure your device with BlinkUp and how to use the Electric Imp IDE, impCentral.
+This example will focus on writing Squirrel code. Please visit the [**Getting Started Guide**](https://developer.electricimp.com/gettingstarted) on the Electric Imp Dev Center to learn how to configure your device with BlinkUp™ and how to use the Electric Imp IDE, impCentral™.
 
 ## What You Learn
 
-* How to use Electric Imp libraries
-* How to use a Hardware Abstraction Layer (HAL)
-* How to write a `class` in Squirrel
-* How to configure a sensor to take an asychronous reading
-* How to program your device to [run offline](https://developer.electricimp.com/resources/offline)
-* How to send data between device and agent using Message Manager library
-* How to send data to Initial State
+* How to use Electric Imp libraries.
+* How to send data to a cloud service such as Initial State.
+* How to use a Hardware Abstraction Layer (HAL).
+* How to write a class in Squirrel.
+* How to configure a sensor to take an asynchronous reading.
+* How to program your device to [run offline](https://developer.electricimp.com/resources/offline).
+* How to send data between device and agent using the [Message Manager library](https://developer.electricimp.com/libraries/utilities/messagemanager).
 
 ## What You Need
 
-* Your 2.4GHz 802.11bgn WiFi network name (SSID) and password (not needed for Cellular, impC001)
-* A computer with a web browser
-* A smartphone with the Electric Imp app ([iOS](https://itunes.apple.com/us/app/electric-imp/id547133856) or [Android](https://play.google.com/store/apps/details?id=com.electricimp.electricimp))
-* A free [Electric Imp Developer Account](https://impcentral.electricimp.com/login)
-* A free [Initial State Account](https://www.initialstate.com/)
-* One of the imp hardware boards listed below
-    * [imp006 Breakout Board Kit](https://store.electricimp.com/collections/breakout-boards/products/imp006-cellular-and-wifi-breakout-board-kit?variant=30294487924759)
-    * [impExplorer Developer Kit](https://store.electricimp.com/collections/featured-products/products/impexplorer-developer-kit?variant=31118866130)
+* Your WiFi network name (SSID) and password (not needed for cellular with imp006 or impC001).
+* A computer with a web browser.
+* A smartphone with the Electric Imp app ([iOS](https://itunes.apple.com/us/app/electric-imp/id547133856) or [Android](https://play.google.com/store/apps/details?id=com.electricimp.electricimp)) installed.
+* A free [Electric Imp Developer Account](https://impcentral.electricimp.com/login).
+* A free [Initial State Account](https://www.initialstate.com/).
+* One of the imp hardware boards listed below:
+    * [imp006 Breakout Kit](https://store.electricimp.com/collections/breakout-boards/products/imp006-cellular-and-wifi-breakout-board-kit?variant=30294487924759)
+    * [impExplorer Kit](https://store.electricimp.com/collections/featured-products/products/impexplorer-developer-kit?variant=31118866130)
     * [impAccelerator Battery Powered Sensor Node](https://developer.electricimp.com/hardware/resources/reference-designs/sensornode)
-    * [impC001 Cellular Breakout Board Kit](https://developer.electricimp.com/hardware/resources/reference-designs/impc001breakout)
+    * [impC001 Breakout Board](https://developer.electricimp.com/hardware/resources/reference-designs/impc001breakout)
 
 ## Instructions
 
-* BlinkUp your device
-* Log into the [impCentral](https://impcentral.electricimp.com/login).
+* Activate your device with BlinkUp.
+* Log into [impCentral](https://impcentral.electricimp.com/login).
 * Create a new [Product](https://developer.electricimp.com/tools/impcentral/impcentralintroduction#app-products) and [Development Device Group](https://developer.electricimp.com/tools/impcentral/impcentralintroduction#app-development-devicegroup).
-* Copy and Paste the Device Code into the Device coding pane in the impCentral code editor.
-* Locate the HAL for your hardware. The HAL files can be found on Github in the repositories linked below. Find the `.HAL.nut` file in the repository that matches your hardware.
+* Copy and Paste the Device Code into the **Device Code** pane in the impCentral code editor.
+* Locate the HAL for your hardware. The HAL files can be found on GitHub in the repositories linked below. Find the `.HAL.nut` file in the repository that matches your hardware.
     * [imp006 Breakout Board HAL](https://github.com/electricimp/imp006BreakoutBoardHAL)
-    * [impExplorer Developer Kit HAL](https://github.com/electricimp/ExplorerKitHAL)
-    * [impAccelerator Battery Powered Sensor Node](https://github.com/electricimp/SensorNodeHAL)
-    * [impC001 Cellular Breakout Board](https://github.com/electricimp/CellularBreakoutHAL)
-* Copy and Paste the HAL table into the code in the HARDWARE ABSTRACTION LAYER section. Below is an example of what a HAL table will look like when insterted into the code. *Please note:* DO NOT copy and paste from thie example, use the HAL found in github.
+    * [impExplorer Kit HAL](https://github.com/electricimp/ExplorerKitHAL)
+    * [impAccelerator Battery Powered Sensor Node HAL](https://github.com/electricimp/SensorNodeHAL)
+    * [impC001 Breakout Board HAL](https://github.com/electricimp/CellularBreakoutHAL)
+* Copy and Paste the HAL table into the code in the *HARDWARE ABSTRACTION LAYER* section. Below is an example of what a HAL table will look like when inserted into the code. **Do not** copy and paste from this example, use the HAL found in GitHub.
 
-```
+```squirrel
 // HARDWARE ABSTRACTION LAYER
 // ---------------------------------------------------
 // HAL's are tables that map human readable names to
@@ -61,13 +61,9 @@ ExplorerKit_001 <- {
     "AD_GROVE1_DATA1" : hardware.pin2,
     "AD_GROVE2_DATA1" : hardware.pin5
 }
-
-
-// REMOTE MONITORING APPLICATION CODE
-// ---------------------------------------------------
 ```
 
-* Assign your hardware class variables. In the Application class before the constructor you will find a number of class variables. You will need to re-assign the hardware variables so they look something like the example below. *Please note:* DO NOT copy and paste from thie example, as these values may differ from the ones in your HAL.
+* Assign your hardware class variables. In the *Application* class before the constructor you will find a number of class variables. You will need to re-assign the hardware variables so they look something like the example below. **Do not** copy and paste from this example, as these values may differ from the ones in your HAL.
 
 ```
 // REMOTE MONITORING APPLICATION CODE
@@ -96,12 +92,12 @@ class Application {
     constructor() {...}
 ```
 
-* Copy and paste the Agent Code into the Agent Code pane in the impCentral code editor.
+* Copy and paste the Agent Code into the **Agent Code** pane in the impCentral code editor.
 * Sign into [Initial State](https://api.init.st/auth/#/login/).
-* Find your Streaming Access Key on the [My Account page](https://iot.app.initialstate.com/#/account).
-* Navigate back to the [impCentral](https://impcentral.electricimp.com/).
-* In the Agent code enter your Initial State Streaming Access Key into the Application class static STREAMING_ACCESS_KEY variable on line 24.
-* Hit Build and Force Restart button to start the code.
+* Find your **Streaming Access Key** on the [My Account page](https://iot.app.initialstate.com/#/account).
+* Navigate back to [impCentral](https://impcentral.electricimp.com/).
+* In the Agent code enter your **Streaming Access Key** into the *Application* class static variable *STREAMING_ACCESS_KEY* on line 24.
+* Hit the **Build and Force Restart** button to start the code.
 * Note the agent ID in the logs.
 * Navigate back to Initial State, find the Bucket that matches your agent ID.
-* Watch your data update in the Source, Lines, Waves, and Tile views on the Inital State website.
+* Watch your data update in the Source, Lines, Waves and Tile views on the Initial State website.
