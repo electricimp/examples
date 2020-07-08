@@ -1,8 +1,9 @@
 // Power Efficient Remote Monitoring Application Device Code
 // ---------------------------------------------------
-// NOTE: This code doesn't support imp004m or imp005 devices,
-// since it makes use of nv table
-// See developer docs - https://developer.electricimp.com/api/nv
+// NOTE: imp004m, and imp006 devices do not have nv storage. 
+// This code will work around this on limitation by using shallow sleep
+// See developer docs - https://developer.electricimp.com/api/nv and 
+// https://developer.electricimp.com/resources/sleepstatesexplained
 
 // SENSOR LIBRARIES
 // ---------------------------------------------------
@@ -72,7 +73,7 @@ class Application {
         // Power save mode is not supported on impC001 and is not
         // recommended for imp004m, so don't set for those types of imps.
         local type = imp.info().type;
-        if (type != "impC001") {
+        if (type != "imp004m" && type != "impC001") {
             imp.setpowersave(true);
         }
 
@@ -84,7 +85,7 @@ class Application {
         mm = MessageManager();
         // Message Manager allows us to call a function when a message
         // has been delivered. We will use this to know when it is ok
-        // to disconnect
+        // to disconnect.
         mm.onAck(readingsAckHandler.bindenv(this));
         // Message Manager allows us to call a function if a message
         // fails to be delivered. We will use this to condense data
@@ -159,7 +160,7 @@ class Application {
                 if ("y" in results[1]) reading.accel_y <- results[1].y;
                 if ("z" in results[1]) reading.accel_z <- results[1].z;
                 // Add table to the readings array for storage til next connection
-                nv.readings.push(reading);
+                status.readings.push(reading);
 
                 return("Readings Done");
             }.bindenv(this))
@@ -173,7 +174,7 @@ class Application {
                 if (!_connecting) {
                     // Only send readings if we have some and are either
                     // already connected or if it is time to connect
-                    if (nv.readings.len() > 0 && (server.isconnected() || timeToConnect())) {
+                    if (status.readings.len() > 0 && (server.isconnected() || timeToConnect())) {
 
                         // Update the next connection time varaible
                         setNextConnectTime(now);
@@ -197,7 +198,7 @@ class Application {
                                 } else {
                                     // We were not able to connect
                                     // Let's make sure we don't run out
-                                    // of meemory with our stored readings
+                                    // of memory with our stored readings
                                     failHandler();
                                 }
                             }.bindenv(this));
@@ -209,7 +210,7 @@ class Application {
                     }
                 } else {
                     // Calculate how long before next reading time
-                    local timer = nv.nextReadTime - now;
+                    local timer = status.nextReadTime - now;
                     // Schedule next reading
                     imp.wakeup(timer, takeReadings.bindenv(this));
                 }
@@ -234,7 +235,7 @@ class Application {
 
     function sendReadings() {
         // Send readings to the agent
-        mm.send("readings", nv.readings);
+        mm.send("readings", status.readings);
 
         // If this message is acknowleged by the agent
         // the readingsAckHandler will be triggered
@@ -246,10 +247,10 @@ class Application {
     function readingsAckHandler(msg) {
         // We connected successfully & sent data
         // Clear readings we just sent
-        nv.readings.clear();
+        status.readings.clear();
 
         // Reset numFailedConnects
-        nv.numFailedConnects <- 0;
+        status.numFailedConnects <- 0;
 
         // Disconnect from server
         powerDown();
@@ -262,32 +263,36 @@ class Application {
         failHandler();
     }
 
+    function setWakeup(timer) {
+        imp.wakeup(timer, function() {
+            powerUpSensors();
+            takeReadings();
+        }.bindenv(this))
+    }
+
     function powerDown() {
         // Power Down sensors
         powerDownSensors();
 
         // Calculate how long before next reading time
-        local timer = nv.nextReadTime - time();
+        local timer = status.nextReadTime - time();
 
-        // Check that we did not just boot up and are
-        // not about to take a reading
+        // Check that we did not just boot up, are
+        // not about to take a reading, and have an 'nv' table
         if (!_boot && timer > 2) {
-            // Go to sleep
-            if (server.isconnected()) {
+            if ("nv" in getroottable()) { // We have nv, so deep sleep
                 imp.onidle(function() {
-                    // This method flushes server before sleep
                     server.sleepfor(timer);
                 }.bindenv(this));
-            } else {
-                // This method just put's the device to sleep
-                imp.deepsleepfor(timer);
+            } else { // No nv table, so just disconnect and sleep
+                setWakeup(timer);
+                imp.onidle(function() {
+                    server.disconnect();
+                }.bindenv(this));
             }
-        } else {
+       } else {
             // Schedule next reading, but don't go to sleep
-            imp.wakeup(timer, function() {
-                powerUpSensors();
-                takeReadings();
-            }.bindenv(this))
+            setWakeup(timer);
         }
     }
 
@@ -310,13 +315,13 @@ class Application {
         // Find the number of times we have failed
         // to connect (use this to determine new readings
         // vs. previously condensed readings)
-        local failed = nv.numFailedConnects;
+        local failed = status.numFailedConnects;
         local readings;
 
         // Make a copy of the stored readings
-        readings = nv.readings.slice(0);
+        readings = status.readings.slice(0);
         // Clear stored readings
-        nv.readings.clear();
+        status.readings.clear();
 
         // Create an array to store condensed readings
         local condensed = [];
@@ -337,17 +342,17 @@ class Application {
 
         // If new readings have come in while we were processing
         // Add those to the condensed readings
-        if (nv.readings.len() > 0) {
-            foreach(item in nv.readings) {
+        if (status.readings.len() > 0) {
+            foreach(item in status.readings) {
                 condensed.push(item);
             }
         }
 
         // Replace the stored readings with the condensed readings
-        nv.readings <- condensed;
+        status.readings <- condensed;
 
         // Update the number of failed connections
-        nv.numFailedConnects <- failed++;
+        status.numFailedConnects <- failed++;
 
         powerDown();
     }
@@ -385,28 +390,37 @@ class Application {
     }
 
     function configureNV() {
+        local type = imp.info().type;
         local root = getroottable();
-        if (!("nv" in root)) root.nv <- {};
+        // Create a table for storing status and recent readings
+        if (!("status" in root)) root.status <- {};
+
+        if (type != "imp004m" && type != "imp006") {
+            // There is an nv table, so make the status table a
+            // reference to nv so it will be persisted
+            if (!("nv" in root)) root.nv <- {};
+            status = nv;
+        }
 
         local now = time();
         setNextConnectTime(now);
         setNextReadTime(now);
-        nv.readings <- [];
-        nv.numFailedConnects <- 0;
+        status.readings <- [];
+        status.numFailedConnects <- 0;
     }
 
     function setNextConnectTime(now) {
-        nv.nextConectTime <- now + REPORTING_INTERVAL_SEC;
+        status.nextConectTime <- now + REPORTING_INTERVAL_SEC;
     }
 
     function setNextReadTime(now) {
-        nv.nextReadTime <- now + READING_INTERVAL_SEC;
+        status.nextReadTime <- now + READING_INTERVAL_SEC;
     }
 
     function timeToConnect() {
         // return a boolean - if it is time to connect based on
         // the current time
-        return (time() >= nv.nextConectTime);
+        return (time() >= status.nextConectTime);
     }
 
     function initializeSensors() {

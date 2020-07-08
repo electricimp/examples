@@ -1,8 +1,9 @@
 // Power Efficient Refrigerator Monitor Device Code
 // --------------------------------------------------------
-// NOTE: This code doesn't support imp004m or imp005 devices,
-// since it makes use of nv table
-// See developer docs - https://developer.electricimp.com/api/nv
+// NOTE: imp004m, and imp006 devices do not have nv storage. 
+// This code will work around this on limitation by using shallow sleep
+// See developer docs - https://developer.electricimp.com/api/nv and 
+// https://developer.electricimp.com/resources/sleepstatesexplained
 
 // SENSOR LIBRARIES
 // --------------------------------------------------------
@@ -94,7 +95,7 @@ class Application {
         // Power save mode is not supported on impC001 and is not
         // recommended for imp004m, so don't set for those types of imps.
         local type = imp.info().type;
-        if (type != "impC001") {
+        if (type != "imp004m" && type != "impC001") {
             imp.setpowersave(true);
         }
 
@@ -165,7 +166,7 @@ class Application {
                 imp.wakeup(BOOT_TIMER_SEC, function() {
                     _boot = false;
                     powerDown();
-                }.bindenv(this))
+                }.bindenv(this));
 
                 // Configure Sensors to take readings
                 configureSensors();
@@ -191,14 +192,14 @@ class Application {
             if (reading.len() > 0) {
                 // Add a timestamp
                 reading.time <- time();
-                nv.readings.push(reading);
+                status.readings.push(reading);
                 // Check for Temp/Humid alert conditions
                 checkForTempHumidAlerts(reading);
-                checkConnetionTime();
-            } else if (nv.readings.len() > 0 || nv.alerts.len() > 0) {
+                checkConnectionTime();
+            } else if (status.readings.len() > 0 || status.alerts.len() > 0) {
                 // Even if this reading failed if we have stored readings
                 // or events continue to run the connection flow
-                checkConnetionTime();
+                checkConnectionTime();
             } else {
                 // We don't have any data to send
                 // Update the next reading time varaible
@@ -213,7 +214,7 @@ class Application {
     function checkForTempHumidAlerts(reading) {
         // If door is open or has been open recently and there are no
         // active temperature or humidity alerts skip alert checks
-        if ((nv.doorOpen || reading.time <= nv.doorTimeout) && !(nv.tempAlert || nv.humidAlert)) return;
+        if ((status.doorOpen || reading.time <= status.doorTimeout) && !(status.tempAlert || status.humidAlert)) return;
 
         local now = time();
 
@@ -221,28 +222,28 @@ class Application {
         if ("temperature" in reading) {
             if (reading.temperature >= TEMP_THRESHOLD) {
                 // Condition met
-                if (!nv.tempAlert) {
+                if (!status.tempAlert) {
                     // Build alert
-                    nv.tempAlert <- {"timeStarted" : now, "reported" : false};
+                    status.tempAlert <- {"timeStarted" : now, "reported" : false};
                 } else {
                     // Update alert
-                    local highFor = now - nv.tempAlert.timeStarted;
+                    local highFor = now - status.tempAlert.timeStarted;
                     // We haven't reported alert, check time
-                    if (!nv.tempAlert.reported && highFor >= TEMP_ALERT_CONDITION) {
+                    if (!status.tempAlert.reported && highFor >= TEMP_ALERT_CONDITION) {
                         // Create alert if temp too high for too long
-                        nv.alerts.tempHighFor <- highFor;
-                        nv.tempAlert.reported <- true;
+                        status.alerts.tempHighFor <- highFor;
+                        status.tempAlert.reported <- true;
                         // Force a connection, we want to report this
-                        nv.nextConectTime <- now;
-                    } else if ("tempHighFor" in nv.alerts) {
+                        status.nextConnectTime <- now;
+                    } else if ("tempHighFor" in status.alerts) {
                         // Update how long
-                        nv.alerts.tempHighFor <- highFor;
+                        status.alerts.tempHighFor <- highFor;
                     }
                 }
-            } else if (nv.tempAlert) {
+            } else if (status.tempAlert) {
                 // Clear alert
-                nv.tempAlert <- false;
-                nv.alerts.rawdelete("tempHighFor");
+                status.tempAlert <- false;
+                status.alerts.rawdelete("tempHighFor");
             }
         }
 
@@ -250,28 +251,28 @@ class Application {
         if ("humidity" in reading) {
             if (reading.humidity >= HUMID_THRESHOLD) {
                 // Condition met
-                if (!nv.humidAlert) {
+                if (!status.humidAlert) {
                     // Build alert
-                    nv.humidAlert <- {"timeStarted" : now, "reported" : false};
+                    status.humidAlert <- {"timeStarted" : now, "reported" : false};
                 } else {
                     // Update alert
-                    local highFor = now - nv.humidAlert.timeStarted;
+                    local highFor = now - status.humidAlert.timeStarted;
                     // We haven't reported alert, check time
-                    if (!nv.humidAlert.reported && highFor >= HUMID_ALERT_CONDITION) {
+                    if (!status.humidAlert.reported && highFor >= HUMID_ALERT_CONDITION) {
                         // Create alert if temp too high for too long
-                        nv.alerts.humidHighFor <- highFor;
-                        nv.humidAlert.reported <- true;
+                        status.alerts.humidHighFor <- highFor;
+                        status.humidAlert.reported <- true;
                         // Force a connection, we want to report this
-                        nv.nextConectTime <- now;
-                    } else if ("humidHighFor" in nv.alerts) {
+                        status.nextConnectTime <- now;
+                    } else if ("humidHighFor" in status.alerts) {
                         // Update how long
-                        nv.alerts.humidHighFor <- highFor;
+                        status.alerts.humidHighFor <- highFor;
                     }
                 }
-            } else if (nv.humidAlert) {
+            } else if (status.humidAlert) {
                 // Clear alert
-                nv.humidAlert <- false;
-                nv.alerts.rawdelete("humidHighFor");
+                status.humidAlert <- false;
+                status.alerts.rawdelete("humidHighFor");
             }
         }
     }
@@ -286,48 +287,48 @@ class Application {
 
         // If door is open check alert conditions
         if (doorOpen) {
-            if (!nv.doorAlert) {
-                nv.doorAlert <- {"timeStarted" : now, "reported" : false};
+            if (!status.doorAlert) {
+                status.doorAlert <- {"timeStarted" : now, "reported" : false};
             } else {
-                local openedFor = now - nv.doorAlert.timeStarted;
+                local openedFor = now - status.doorAlert.timeStarted;
                 // We haven't reported a door alert check how long
-                if (!nv.doorAlert.reported && openedFor >= DOOR_ALERT_TIMEOUT) {
+                if (!status.doorAlert.reported && openedFor >= DOOR_ALERT_TIMEOUT) {
                     // Create alert if door has been open too long
-                    nv.alerts.doorOpenFor <- openedFor;
-                    nv.doorAlert.reported <- true;
-                } else if ("doorOpenFor" in nv.alerts) {
+                    status.alerts.doorOpenFor <- openedFor;
+                    status.doorAlert.reported <- true;
+                } else if ("doorOpenFor" in status.alerts) {
                     // Update how long
-                    nv.alerts.doorOpenFor <- openedFor;
+                    status.alerts.doorOpenFor <- openedFor;
                 }
             }
         }
 
         // Check for a change in door status
-        if (doorOpen != nv.doorOpen) {
+        if (doorOpen != status.doorOpen) {
             // Update stored door state
-            nv.doorOpen = doorOpen;
+            status.doorOpen = doorOpen;
             // Force a connection, we want to report this
-            nv.nextConectTime <- now;
+            status.nextConnectTime <- now;
 
             // The door just closed
             if (!doorOpen) {
                 // Set door timeout timestamp
-                nv.doorTimeout = now + DOOR_CONDITION_TIMEOUT;
+                status.doorTimeout = now + DOOR_CONDITION_TIMEOUT;
                 // Reset alert conditions
-                nv.doorAlert <- false;
-                nv.alerts.rawdelete("doorOpenFor");
+                status.doorAlert <- false;
+                status.alerts.rawdelete("doorOpenFor");
             }
 
             // Return bool - door changed state
             return true;
         }
 
-        // Return bool - door did not changed state
+        // Return bool - door did not change state
         return false;
     }
 
     // Runs a check then either powers down or connects & sends store data
-    function checkConnetionTime(resetReadingTime = true) {
+    function checkConnectionTime(resetReadingTime = true) {
         // Grab a timestamp
         local now = time();
 
@@ -375,7 +376,7 @@ class Application {
                 powerDown();
             }
         } else {
-            local timer = nv.nextReadTime - time();
+            local timer = status.nextReadTime - time();
             // Schedule next reading, but don't go to sleep
             _nextActTimer = imp.wakeup(timer, function() {
                 if (_nextActTimer != null) {
@@ -389,13 +390,13 @@ class Application {
 
     // Sends current door status and all stored readings and alerts
     function sendData() {
-        local data = {"doorOpen" : nv.doorOpen};
+        local data = {"doorOpen" : status.doorOpen};
 
-        if (nv.readings.len() > 0) {
-            data.readings <- nv.readings;
+        if (status.readings.len() > 0) {
+            data.readings <- status.readings;
         }
-        if (nv.alerts.len() > 0) {
-            data.alerts <- nv.alerts;
+        if (status.alerts.len() > 0) {
+            data.alerts <- status.alerts;
         }
 
         // Send data to the agent
@@ -412,10 +413,10 @@ class Application {
     function readingsAckHandler(msg) {
         // We connected successfully & sent data
         // Clear readings we just sent
-        nv.readings.clear();
+        status.readings.clear();
 
         // Reset numFailedConnects
-        nv.numFailedConnects <- 0;
+        status.numFailedConnects <- 0;
 
         // Disconnect from server
         powerDown();
@@ -431,6 +432,13 @@ class Application {
         failHandler();
     }
 
+    function setWakeup(timer) {
+        imp.wakeup(timer, function() {
+            powerUpSensors();
+            takeReadings();
+        }.bindenv(this))
+    }
+
     // Puts sensor into power down mode, then determines whether
     // to sleep or just disconnect til next reading time
     // or door open check time
@@ -439,21 +447,21 @@ class Application {
         powerDownSensors();
 
         // Calculate how long before next reading time
-        local timer = (nv.doorOpen) ? DOOR_OPEN_INTERVAL_SEC : nv.nextReadTime - time();
+        local timer = (status.doorOpen) ? DOOR_OPEN_INTERVAL_SEC : status.nextReadTime - time();
 
         // If we did not just boot up, the door is closed, the interrupt
         // pin is not triggered, and we are not about to take a reading
-        if (!_boot && wakePin.read() == 0 && !nv.doorOpen &&  timer > 2) {
+        if (!_boot && wakePin.read() == 0 && !status.doorOpen &&  timer > 2) {
             // Go to sleep
-            if (server.isconnected()) {
+            if ("nv" in getroottable()) { // We have nv, so deep sleep
                 imp.onidle(function() {
-                    // This method flushes server before sleep
                     server.sleepfor(timer);
                 }.bindenv(this));
-            } else {
-                // This method just put's the device to sleep
-                imp.deepsleepfor(timer);
-            }
+            } else { // No nv table, so just disconnect and sleep
+                setWakeup(timer);
+                imp.onidle(function() {
+                    server.disconnect();
+                }.bindenv(this));
         } else {
             // Disconnect if we didn't just boot
             if (!_boot && server.isconnected()) server.disconnect();
@@ -465,12 +473,12 @@ class Application {
                     _nextActTimer = null;
                 }
                 local now = time();
-                if (nv.nextReadTime <= now) {
+                if (status.nextReadTime <= now) {
                     // Time for a reading
                     powerUpSensors();
                     run();
                 } else {
-                    (checkDoor()) ? checkConnetionTime(false) : powerDown();
+                    (checkDoor()) ? checkConnectionTime(false) : powerDown();
                 }
             }.bindenv(this));
         }
@@ -487,21 +495,21 @@ class Application {
     }
 
     // If connection has failed condense data so our
-    // persistant storeage doesn't run out of space
+    // persistant storage doesn't run out of space
     function failHandler() {
         // We are having connection issues
         // Let's condense and re-store the data
 
         // Find the number of times we have failed
         // to connect (use this to determine new readings
-        // previously condensed readings)
-        local failed = nv.numFailedConnects;
+        // vs. previously condensed readings)
+        local failed = status.numFailedConnects;
         local readings;
 
         // Make a copy of the stored readings
-        readings = nv.readings.slice(0);
+        readings = status.readings.slice(0);
         // Clear stored readings
-        nv.readings.clear();
+        status.readings.clear();
 
         if (readings.len() > 0) {
             // Create an array to store condensed readings
@@ -523,18 +531,18 @@ class Application {
 
             // If new readings have come in while we were processing
             // Add those to the condensed readings
-            if (nv.readings.len() > 0) {
-                foreach(item in nv.readings) {
+            if (status.readings.len() > 0) {
+                foreach(item in status.readings) {
                     condensed.push(item);
                 }
             }
 
             // Replace the stored readings with the condensed readings
-            nv.readings <- condensed;
+            status.readings <- condensed;
         }
 
         // Update the number of failed connections
-        nv.numFailedConnects <- failed++;
+        status.numFailedConnects <- failed++;
 
         powerDown();
     }
@@ -574,8 +582,17 @@ class Application {
 
     // Configure NV (persistant storage) with default values
     function configureNV() {
+        local type = imp.info().type;
         local root = getroottable();
-        if (!("nv" in root)) root.nv <- {};
+        // Create a table for storing status and recent readings
+        if (!("status" in root)) root.status <- {};
+
+        if (type != "imp004m" && type != "imp006") {
+            // There is an nv table, so make the status table a
+            // reference to nv so it will be persisted
+            if (!("nv" in root)) root.nv <- {};
+            status = nv;
+        }       
 
         // Store sleep and connection varaibles
         local now = time();
@@ -583,38 +600,38 @@ class Application {
         setNextReadTime(now);
 
         // Readings to be sent to agent
-        nv.readings <- [];
+        status.readings <- [];
         // Alerts to be sent to agent
-        nv.alerts <- {};
+        status.alerts <- {};
 
         // Status vars that we need to persist through sleep
-        nv.numFailedConnects <- 0;
+        status.numFailedConnects <- 0;
         // Previous state of the door (set a default of closed)
-        nv.doorOpen <- false;
+        status.doorOpen <- false;
         // Time at which to start checking for temp/humid alerts
-        nv.doorTimeout <- now;
+        status.doorTimeout <- now;
         // Store alert status info: defaults to false,
         // when alert tracking needed will be a table with
         // keys "timeStarted" and "reported"
-        nv.doorAlert <- false;
-        nv.tempAlert <- false;
-        nv.humidAlert <- false;
+        status.doorAlert <- false;
+        status.tempAlert <- false;
+        status.humidAlert <- false;
     }
 
     // Update stored connection time based on REPORTING_INTERVAL_SEC
     function setNextConnectTime(now) {
-        nv.nextConectTime <- now + REPORTING_INTERVAL_SEC;
+        status.nextConnectTime <- now + REPORTING_INTERVAL_SEC;
     }
 
     // Update stored connection time based on READING_INTERVAL_SEC
     function setNextReadTime(now) {
-        nv.nextReadTime <- now + READING_INTERVAL_SEC;
+        status.nextReadTime <- now + READING_INTERVAL_SEC;
     }
 
     // Return a boolean - if it is time to connect based on
     // the current time
     function timeToConnect() {
-        return (time() >= nv.nextConectTime);
+        return (time() >= status.nextConnectTime);
     }
 
     // Configures a latching click interrupt, and interrupt wake pin
@@ -635,7 +652,7 @@ class Application {
         if (interrupt.singleClick) {
             // Check of door state has changed
             if (checkDoor()) {
-                checkConnetionTime(false);
+                checkConnectionTime(false);
                 return;
             }
         }
