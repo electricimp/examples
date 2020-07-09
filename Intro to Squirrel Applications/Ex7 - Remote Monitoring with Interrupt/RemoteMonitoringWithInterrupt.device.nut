@@ -462,6 +462,7 @@ class Application {
         // Configure wake pin
         wakePin.configure(DIGITAL_IN_WAKEUP, function() {
             if (wakePin.read() && checkInterrupt()) {
+                powerUpSensors();
                 takeReadings();
             }
         }.bindenv(this));
