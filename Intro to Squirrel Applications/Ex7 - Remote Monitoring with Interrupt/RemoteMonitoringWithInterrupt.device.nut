@@ -73,7 +73,7 @@ class Application {
         // Power save mode is not supported on impC001 and is not
         // recommended for imp004m, so don't set for those types of imps.
         local type = imp.info().type;
-        if (type != "imp004m" && type != "impC001") {
+        if (!(type == "imp004m" || type == "impC001")) {
             imp.setpowersave(true);
         }
 
@@ -105,16 +105,17 @@ class Application {
         switch (hardware.wakereason()) {
             case WAKEREASON_TIMER :
                 // We woke up after sleep timer expired.
-                // No extra config needed.
+                restoreNV(); 
                 break;
             case WAKEREASON_PIN :
-                // We woke up because an interrupt pin was triggerd.
+                // We woke up because an interrupt pin was triggered.
+                restoreNV(); 
                 // Let's check our interrupt
                 checkInterrupt();
                 break;
             case WAKEREASON_SNOOZE :
                 // We woke up after connection timeout.
-                // No extra config needed.
+                restoreNV(); 
                 break;
             default :
                 // We pushed new code or just rebooted the device, etc. Lets
@@ -303,7 +304,7 @@ class Application {
         // Check that we did not just boot up, are
         // not about to take a reading, and have an 'nv' table
         if (!_boot && timer > 2) {
-            if ("nv" in getroottable()) { // We have nv, so deep sleep
+            if (!(type == "imp004m" || type == "imp006")) { // We have nv, so deep sleep
                 imp.onidle(function() {
                     server.sleepfor(timer);
                 }.bindenv(this));
@@ -417,7 +418,7 @@ class Application {
         // Create a table for storing status and recent readings
         if (!("status" in root)) root.status <- {};
 
-        if (type != "imp004m" && type != "imp006") {
+        if (!(type == "imp004m" || type == "imp006")) {
             // There is an nv table, so make the status table a
             // reference to nv so it will be persisted
             if (!("nv" in root)) root.nv <- {};
@@ -430,6 +431,12 @@ class Application {
         status.readings <- [];
         status.alerts <-[];
         status.numFailedConnects <- 0;
+    }
+
+    function restoreNV() {
+        local root = getroottable();
+        if (!("status" in root)) root.status <- {};
+        status = nv;
     }
 
     function setNextConnectTime(now) {

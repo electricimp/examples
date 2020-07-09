@@ -95,7 +95,7 @@ class Application {
         // Power save mode is not supported on impC001 and is not
         // recommended for imp004m, so don't set for those types of imps.
         local type = imp.info().type;
-        if (type != "imp004m" && type != "impC001") {
+        if (!(type == "imp004m" || type == "impC001")) {
             imp.setpowersave(true);
         }
 
@@ -132,18 +132,22 @@ class Application {
         switch (hardware.wakereason()) {
             case WAKEREASON_TIMER :
                 // We woke up after sleep timer expired.
+                restoreNV(); 
                 // Configure Sensors to take readings
                 configureSensors();
                 run();
                 break;
             case WAKEREASON_PIN :
-                // We woke up because an interrupt pin was triggerd.
+                // We woke up because an interrupt pin was triggered.
+                restoreNV(); 
+
                 // Let's check our interrupt
                 checkInterrupt();
                 break;
             case WAKEREASON_SNOOZE :
                 // We woke up after connection timeout.
                 // Configure Sensors to take readings
+                restoreNV(); 
                 configureSensors();
                 run();
                 break;
@@ -453,7 +457,7 @@ class Application {
         // pin is not triggered, and we are not about to take a reading
         if (!_boot && wakePin.read() == 0 && !status.doorOpen &&  timer > 2) {
             // Go to sleep
-            if ("nv" in getroottable()) { // We have nv, so deep sleep
+            if (!(type == "imp004m" || type == "imp006")) { // We have nv, so deep sleep
                 imp.onidle(function() {
                     server.sleepfor(timer);
                 }.bindenv(this));
@@ -587,7 +591,7 @@ class Application {
         // Create a table for storing status and recent readings
         if (!("status" in root)) root.status <- {};
 
-        if (type != "imp004m" && type != "imp006") {
+        if (!(type == "imp004m" || type == "imp006")) {
             // There is an nv table, so make the status table a
             // reference to nv so it will be persisted
             if (!("nv" in root)) root.nv <- {};
@@ -617,6 +621,13 @@ class Application {
         status.tempAlert <- false;
         status.humidAlert <- false;
     }
+
+    function restoreNV() {
+        local root = getroottable();
+        if (!("status" in root)) root.status <- {};
+        status = nv;
+    }
+
 
     // Update stored connection time based on REPORTING_INTERVAL_SEC
     function setNextConnectTime(now) {
