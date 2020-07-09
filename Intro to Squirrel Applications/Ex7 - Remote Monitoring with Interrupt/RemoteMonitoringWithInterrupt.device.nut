@@ -300,6 +300,7 @@ class Application {
 
         // Calculate how long before next reading time
         local timer = status.nextReadTime - time();
+        local type = imp.info().type;
 
         // Check that we did not just boot up, are
         // not about to take a reading, and have an 'nv' table
@@ -435,8 +436,9 @@ class Application {
 
     function restoreNV() {
         local root = getroottable();
+        local type = imp.info().type;
         if (!("status" in root)) root.status <- {};
-        status = nv;
+        if (!(type == "imp004m" || type == "imp006")) status = nv ;
     }
 
     function setNextConnectTime(now) {

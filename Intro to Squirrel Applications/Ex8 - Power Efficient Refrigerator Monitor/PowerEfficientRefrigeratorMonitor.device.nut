@@ -452,6 +452,7 @@ class Application {
 
         // Calculate how long before next reading time
         local timer = (status.doorOpen) ? DOOR_OPEN_INTERVAL_SEC : status.nextReadTime - time();
+        local type = imp.info().type;
 
         // If we did not just boot up, the door is closed, the interrupt
         // pin is not triggered, and we are not about to take a reading
@@ -624,8 +625,9 @@ class Application {
 
     function restoreNV() {
         local root = getroottable();
+        local type = imp.info().type;
         if (!("status" in root)) root.status <- {};
-        status = nv;
+        if (!(type == "imp004m" || type == "imp006")) status = nv ;
     }
 
 
