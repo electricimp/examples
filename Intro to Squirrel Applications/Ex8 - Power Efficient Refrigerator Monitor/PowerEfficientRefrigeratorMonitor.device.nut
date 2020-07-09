@@ -71,7 +71,7 @@ class Application {
     accelAddr       = null; // Replace with your accel i2c addr
     wakePin         = null; // Replace with your wake pin
 
-    // Sensor variables
+        // Sensor variables
     tempHumid = null;
     accel = null;
 
@@ -436,13 +436,6 @@ class Application {
         failHandler();
     }
 
-    function setWakeup(timer) {
-        imp.wakeup(timer, function() {
-            powerUpSensors();
-            takeReadings();
-        }.bindenv(this))
-    }
-
     // Puts sensor into power down mode, then determines whether
     // to sleep or just disconnect til next reading time
     // or door open check time
@@ -456,17 +449,11 @@ class Application {
 
         // If we did not just boot up, the door is closed, the interrupt
         // pin is not triggered, and we are not about to take a reading
-        if (!_boot && wakePin.read() == 0 && !status.doorOpen &&  timer > 2) {
+        if (!_boot && wakePin.read() == 0 && !status.doorOpen &&  timer > 2 && (!(type == "imp004m" || type == "imp006"))) {
             // Go to sleep
-            if (!(type == "imp004m" || type == "imp006")) { // We have nv, so deep sleep
-                imp.onidle(function() {
-                    server.sleepfor(timer);
-                }.bindenv(this));
-            } else { // No nv table, so just disconnect and sleep
-                setWakeup(timer);
-                imp.onidle(function() {
-                    server.disconnect();
-                }.bindenv(this));
+            imp.onidle(function() {
+                server.sleepfor(timer);
+            }.bindenv(this));
         } else {
             // Disconnect if we didn't just boot
             if (!_boot && server.isconnected()) server.disconnect();
@@ -653,10 +640,9 @@ class Application {
         accel.configureClickInterrupt(true, LIS3DH_SINGLE_CLICK, ACCEL_THRESHOLD, ACCEL_DURATION);
 
         // Configure wake pin
-        wakePin.configure(DIGITAL_IN_WAKEUP);
-        // wakePin.configure(DIGITAL_IN_WAKEUP, function() {
-        //     if (wakePin.read()) checkInterrupt();
-        // }.bindenv(this));
+        wakePin.configure(DIGITAL_IN_WAKEUP, function() {
+            if (wakePin.read()) checkInterrupt();
+        }.bindenv(this));
     }
 
     // Clear interrupt, then run check door flow
