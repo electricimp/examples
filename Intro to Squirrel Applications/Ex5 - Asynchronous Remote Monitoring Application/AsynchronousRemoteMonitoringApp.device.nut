@@ -6,13 +6,13 @@
 // Libraries must be required before all other code
 
 // Accelerometer Library
-#require "LIS3DH.device.lib.nut:2.0.2"
+#require "LIS3DH.device.lib.nut:3.0.0"
 // Temperature Humidity sensor Library
-#require "HTS221.device.lib.nut:2.0.1"
+#require "HTS221.device.lib.nut:2.0.2"
 // Library to help with asynchonous programming
 #require "promise.lib.nut:4.0.0"
 // Library to manage agent/device communication
-#require "MessageManager.lib.nut:2.2.0"
+#require "MessageManager.lib.nut:2.4.0"
 
 // HARDWARE ABSTRACTION LAYER
 // ---------------------------------------------------

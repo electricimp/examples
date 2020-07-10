@@ -6,9 +6,9 @@
 // Libraries must be required before all other code
 
 // Temperature Humidity sensor Library
-#require "HTS221.device.lib.nut:2.0.1"
+#require "HTS221.device.lib.nut:2.0.2"
 // Library to manage agent/device communication
-#require "MessageManager.lib.nut:2.2.0"
+#require "MessageManager.lib.nut:2.4.0"
 
 // HARDWARE ABSTRACTION LAYER
 // ---------------------------------------------------

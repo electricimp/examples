@@ -1,8 +1,8 @@
 // Power Efficient Refrigerator Monitor Device Code
 // --------------------------------------------------------
-// NOTE: imp004m, and imp006 devices do not have nv storage. 
+// NOTE: imp004m, and imp006 devices do not have nv storage.
 // This code will work around this on limitation by using shallow sleep
-// See developer docs - https://developer.electricimp.com/api/nv and 
+// See developer docs - https://developer.electricimp.com/api/nv and
 // https://developer.electricimp.com/resources/sleepstatesexplained
 
 // SENSOR LIBRARIES
@@ -10,11 +10,11 @@
 // Libraries must be required before all other code
 
 // Accelerometer Library
-#require "LIS3DH.device.lib.nut:2.0.2"
+#require "LIS3DH.device.lib.nut:3.0.0"
 // Temperature Humidity sensor Library
-#require "HTS221.device.lib.nut:2.0.1"
+#require "HTS221.device.lib.nut:2.0.2"
 // Library to manage agent/device communication
-#require "MessageManager.lib.nut:2.2.0"
+#require "MessageManager.lib.nut:2.4.0"
 
 // HARDWARE ABSTRACTION LAYER
 // --------------------------------------------------------
@@ -132,14 +132,14 @@ class Application {
         switch (hardware.wakereason()) {
             case WAKEREASON_TIMER :
                 // We woke up after sleep timer expired.
-                restoreNV(); 
+                restoreNV();
                 // Configure Sensors to take readings
                 configureSensors();
                 run();
                 break;
             case WAKEREASON_PIN :
                 // We woke up because an interrupt pin was triggered.
-                restoreNV(); 
+                restoreNV();
 
                 // Let's check our interrupt
                 checkInterrupt();
@@ -147,7 +147,7 @@ class Application {
             case WAKEREASON_SNOOZE :
                 // We woke up after connection timeout.
                 // Configure Sensors to take readings
-                restoreNV(); 
+                restoreNV();
                 configureSensors();
                 run();
                 break;
@@ -584,7 +584,7 @@ class Application {
             // reference to nv so it will be persisted
             if (!("nv" in root)) root.nv <- {};
             status = nv;
-        }       
+        }
 
         // Store sleep and connection varaibles
         local now = time();

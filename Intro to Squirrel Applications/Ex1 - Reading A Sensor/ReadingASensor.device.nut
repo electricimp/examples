@@ -6,7 +6,7 @@
 // Libraries must be included before all other code
 
 // Temperature Humidity sensor Library
-#require "HTS221.device.lib.nut:2.0.1"
+#require "HTS221.device.lib.nut:2.0.2"
 
 
 // SETUP

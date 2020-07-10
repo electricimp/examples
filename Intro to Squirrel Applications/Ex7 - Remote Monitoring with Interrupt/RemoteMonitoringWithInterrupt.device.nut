@@ -1,8 +1,8 @@
 // Remote Monitoring Application With Interrupt Device Code
 // ---------------------------------------------------
-// NOTE: imp004m, and imp006 devices do not have nv storage. 
+// NOTE: imp004m, and imp006 devices do not have nv storage.
 // This code will work around this on limitation by using shallow sleep
-// See developer docs - https://developer.electricimp.com/api/nv and 
+// See developer docs - https://developer.electricimp.com/api/nv and
 // https://developer.electricimp.com/resources/sleepstatesexplained
 
 // SENSOR LIBRARIES
@@ -10,13 +10,13 @@
 // Libraries must be required before all other code
 
 // Accelerometer Library
-#require "LIS3DH.device.lib.nut:2.0.2"
+#require "LIS3DH.device.lib.nut:3.0.0"
 // Temperature Humidity sensor Library
-#require "HTS221.device.lib.nut:2.0.1"
+#require "HTS221.device.lib.nut:2.0.2"
 // Library to help with asynchonous programming
 #require "promise.lib.nut:4.0.0"
 // Library to manage agent/device communication
-#require "MessageManager.lib.nut:2.2.0"
+#require "MessageManager.lib.nut:2.4.0"
 
 // HARDWARE ABSTRACTION LAYER
 // --------------------------------------------------------
@@ -105,17 +105,17 @@ class Application {
         switch (hardware.wakereason()) {
             case WAKEREASON_TIMER :
                 // We woke up after sleep timer expired.
-                restoreNV(); 
+                restoreNV();
                 break;
             case WAKEREASON_PIN :
                 // We woke up because an interrupt pin was triggered.
-                restoreNV(); 
+                restoreNV();
                 // Let's check our interrupt
                 checkInterrupt();
                 break;
             case WAKEREASON_SNOOZE :
                 // We woke up after connection timeout.
-                restoreNV(); 
+                restoreNV();
                 break;
             default :
                 // We pushed new code or just rebooted the device, etc. Lets
