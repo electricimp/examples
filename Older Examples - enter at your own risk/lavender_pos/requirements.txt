@@ -9,7 +9,7 @@ MarkupSafe==0.18
 SQLAlchemy==0.8.0
 WTForms==1.0.4
 Werkzeug==0.15.3
-paramiko==1.11.0
+paramiko==2.10.1
 py-bcrypt==0.3
 pycrypto==2.6
 requests==2.20.0
