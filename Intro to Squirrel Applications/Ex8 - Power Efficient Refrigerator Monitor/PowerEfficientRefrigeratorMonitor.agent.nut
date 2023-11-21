@@ -8,7 +8,7 @@
 // Initial State Library
 #require "InitialState.class.nut:1.0.0"
 // Library to manage agent/device communication
-#require "MessageManager.lib.nut:2.2.0"
+#require "MessageManager.lib.nut:2.4.0"
 
 // POWER EFFICIENT REFRIGERATOR MONITOR APPLICATION CODE
 // -------------------------------------------------------

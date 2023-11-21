@@ -6,9 +6,9 @@
 // Libraries must be required before all other code
 
 // Accelerometer Library
-#require "LIS3DH.device.lib.nut:2.0.2"
+#require "LIS3DH.device.lib.nut:3.0.0"
 // Temperature Humidity sensor Library
-#require "HTS221.device.lib.nut:2.0.1"
+#require "HTS221.device.lib.nut:2.0.2"
 
 
 // HARDWARE ABSTRACTION LAYER
