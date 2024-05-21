@@ -12,5 +12,5 @@ Werkzeug==3.0.3
 paramiko==3.4.0
 py-bcrypt==0.3
 pycrypto==2.6.1
-requests==2.31.0
+requests==2.32.0
 wsgiref==0.1.2
